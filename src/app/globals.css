@@ -1,0 +1,92 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Surfaces */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 7%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+
+    /* neutral gray secondary background */
+    --secondary: 210 14% 97.3%;
+    --secondary-foreground: 0 0% 7%;
+
+    --muted: 210 12% 96%;
+    --muted-foreground: 0 0% 40%;
+
+    --accent: 210 12% 96%;
+    --accent-foreground: 0 0% 7%;
+
+    /* primary = ink black for confident CTAs */
+    --primary: 0 0% 7%;
+    --primary-foreground: 0 0% 100%;
+
+    /* light neutral gray borders */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 38 30% 55%;
+
+    /* muted gold point color */
+    --gold: 38 34% 52%;
+    --gold-soft: 210 14% 94%;
+
+    --sand: 210 14% 97.3%;
+    --ink: 0 0% 7%;
+    --subtle: 0 0% 40%;
+
+    --radius: 1rem;
+
+    --font-sans: "Pretendard Variable", "Pretendard", -apple-system,
+      BlinkMacSystemFont, system-ui, sans-serif;
+    /* 모든 텍스트를 Pretendard로 통일 */
+    --font-serif: "Pretendard Variable", "Pretendard", -apple-system,
+      BlinkMacSystemFont, system-ui, sans-serif;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: hsl(var(--gold-soft));
+    color: hsl(var(--ink));
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar for product rails while keeping scroll */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* subtle premium hairline */
+  .hairline {
+    box-shadow: inset 0 0 0 1px hsl(var(--border));
+  }
+}

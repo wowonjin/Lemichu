@@ -1,0 +1,770 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  ImagePlus,
+  Loader2,
+  PlusCircle,
+  ShoppingBag,
+  UploadCloud,
+  X,
+  XCircle,
+} from "lucide-react";
+import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
+import { fetchAdminProducts } from "@/lib/admin";
+import {
+  createStoreProduct,
+  toNaverProductInput,
+  type CreateStoreProductInput,
+  type NaverSyncInfo,
+  type StoreProduct,
+} from "@/lib/products";
+import { formatPriceWithUnit } from "@/lib/formatPrice";
+import { cn } from "@/lib/cn";
+import {
+  deleteProductImageAssets,
+  uploadProductImage,
+  type ProductImageAsset,
+} from "@/lib/product-images";
+
+type FormState = {
+  name: string;
+  brand: string;
+  salePrice: string;
+  retailPrice: string;
+  stockQuantity: string;
+  detailContent: string;
+  leafCategoryId: string;
+  originAreaCode: string;
+  deliveryFee: string;
+  afterServiceTelephoneNumber: string;
+  afterServiceGuideContent: string;
+};
+
+const emptyForm: FormState = {
+  name: "",
+  brand: "",
+  salePrice: "",
+  retailPrice: "",
+  stockQuantity: "1",
+  detailContent: "",
+  leafCategoryId: "",
+  originAreaCode: "",
+  deliveryFee: "0",
+  afterServiceTelephoneNumber: "",
+  afterServiceGuideContent: "",
+};
+
+const maxOptionalImages = 8;
+
+export function AdminProductsPage() {
+  const [products, setProducts] = useState<StoreProduct[]>([]);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadProducts();
+
+    const params = new URLSearchParams(window.location.search);
+    const created = params.get("created");
+    if (created === "naver") {
+      setSuccess("상품이 우리 쇼핑몰과 네이버 스마트스토어에 동시 등록되었습니다.");
+    } else if (created === "local") {
+      setSuccess("상품이 우리 쇼핑몰에 저장되었습니다. (네이버 등록 생략)");
+    }
+
+    if (created) {
+      params.delete("created");
+      const query = params.toString();
+      window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+    }
+  }, []);
+
+  async function loadProducts() {
+    setIsLoading(true);
+    try {
+      setProducts(await fetchAdminProducts());
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error ? loadError.message : "상품 목록을 불러오지 못했어요."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  return (
+    <AdminShell>
+      <AdminPageHeader
+        title="상품 관리"
+        actions={
+          <Link
+            href="/admin/products/new"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <PlusCircle className="size-4" />
+            신규 상품 등록
+          </Link>
+        }
+      />
+
+      {error ? <AdminNotice message={error} /> : null}
+      {success ? (
+        <div className="mb-6 border-l-2 border-emerald-400 bg-emerald-50/60 px-4 py-3 text-sm font-medium text-emerald-700">
+          {success}
+        </div>
+      ) : null}
+
+      <section>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-foreground">등록된 상품</h3>
+          <span className="text-xs font-semibold text-muted-foreground">{products.length}개</span>
+        </div>
+
+        <div className="mt-4 divide-y divide-border">
+          {isLoading ? (
+            <EmptyAdminState text="상품 목록을 불러오는 중입니다." />
+          ) : products.length === 0 ? (
+            <EmptyAdminState text="아직 등록된 상품이 없습니다." />
+          ) : (
+            products.map((product) => <ProductRow key={product.id} product={product} />)
+          )}
+        </div>
+      </section>
+    </AdminShell>
+  );
+}
+
+export function AdminProductCreatePage() {
+  const router = useRouter();
+  const [form, setForm] = useState<FormState>(emptyForm);
+  const [representativeImageFile, setRepresentativeImageFile] = useState<File | null>(null);
+  const [optionalImageFiles, setOptionalImageFiles] = useState<File[]>([]);
+  const [syncToNaver, setSyncToNaver] = useState(true);
+  const [naverConfigured, setNaverConfigured] = useState<boolean | null>(null);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/naver/products")
+      .then((res) => res.json())
+      .then((data) => setNaverConfigured(Boolean(data?.configured)))
+      .catch(() => setNaverConfigured(false));
+  }, []);
+
+  const update = (key: keyof FormState) => (value: string) =>
+    setForm((current) => ({ ...current, [key]: value }));
+
+  function buildInput({
+    representativeImage,
+    optionalImages,
+  }: {
+    representativeImage: ProductImageAsset;
+    optionalImages: ProductImageAsset[];
+  }): CreateStoreProductInput {
+    return {
+      name: form.name.trim(),
+      brand: form.brand.trim(),
+      salePrice: Number(form.salePrice) || 0,
+      retailPrice: form.retailPrice ? Number(form.retailPrice) : undefined,
+      stockQuantity: Number(form.stockQuantity) || 0,
+      representativeImageUrl: representativeImage.original.url,
+      optionalImageUrls: optionalImages.map((image) => image.original.url),
+      representativeImage,
+      optionalImages,
+      detailContent: form.detailContent.trim(),
+      leafCategoryId: form.leafCategoryId.trim(),
+      originAreaCode: form.originAreaCode.trim(),
+      deliveryFee: Number(form.deliveryFee) || 0,
+      afterServiceTelephoneNumber: form.afterServiceTelephoneNumber.trim(),
+      afterServiceGuideContent: form.afterServiceGuideContent.trim(),
+    };
+  }
+
+  function validate(): string | null {
+    if (!form.name.trim()) return "상품명을 입력해주세요.";
+    if (!form.brand.trim()) return "브랜드를 입력해주세요.";
+    if ((Number(form.salePrice) || 0) <= 0) return "판매가를 올바르게 입력해주세요.";
+    if ((Number(form.stockQuantity) || 0) <= 0) return "재고 수량을 1 이상 입력해주세요.";
+    if (!representativeImageFile) return "대표 이미지를 업로드해주세요.";
+    if (syncToNaver) {
+      if (!form.leafCategoryId.trim()) return "네이버 동시 등록 시 카테고리 ID는 필수입니다.";
+      if (!form.originAreaCode.trim()) return "네이버 동시 등록 시 원산지 코드는 필수입니다.";
+      if (!form.detailContent.trim()) return "네이버 동시 등록 시 상세 설명은 필수입니다.";
+      if (!form.afterServiceTelephoneNumber.trim()) return "네이버 동시 등록 시 A/S 전화번호는 필수입니다.";
+      if (!form.afterServiceGuideContent.trim()) return "네이버 동시 등록 시 A/S 안내는 필수입니다.";
+    }
+    return null;
+  }
+
+  function handleRepresentativeImageAdded(files: File[]) {
+    if (files.length > 0) setRepresentativeImageFile(files[0]);
+  }
+
+  function handleOptionalImagesAdded(files: File[]) {
+    setOptionalImageFiles((current) =>
+      [...current, ...files].slice(0, maxOptionalImages)
+    );
+  }
+
+  function handleOptionalImageRemove(index: number) {
+    setOptionalImageFiles((current) => current.filter((_, i) => i !== index));
+  }
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setError("");
+
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    const selectedRepresentativeImageFile = representativeImageFile;
+    if (!selectedRepresentativeImageFile) return;
+
+    setIsSubmitting(true);
+    let uploadedImages: ProductImageAsset[] = [];
+    let naverWasCreated = false;
+    try {
+      let naverSync: NaverSyncInfo = { status: "skipped" };
+      const imageDirectory = `products/${Date.now()}-${crypto.randomUUID()}`;
+      const imageAlt = `${form.brand.trim()} ${form.name.trim()}`.trim();
+      const representativeImage = await uploadProductImage({
+        file: selectedRepresentativeImageFile,
+        directory: imageDirectory,
+        alt: imageAlt,
+        index: 0,
+      });
+      const optionalImages = await Promise.all(
+        optionalImageFiles.map((file, index) =>
+          uploadProductImage({
+            file,
+            directory: `${imageDirectory}/optional`,
+            alt: `${imageAlt} 추가 이미지 ${index + 1}`,
+            index,
+          })
+        )
+      );
+      uploadedImages = [representativeImage, ...optionalImages];
+      const input = buildInput({ representativeImage, optionalImages });
+
+      if (syncToNaver) {
+        const response = await fetch("/api/naver/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(toNaverProductInput(input)),
+        });
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          // 네이버 등록 실패 시 로컬 저장도 중단하여 반쪽 상태를 방지합니다.
+          await deleteProductImageAssets(uploadedImages);
+          setError(
+            `네이버 스마트스토어 등록 실패: ${data?.message ?? `HTTP ${response.status}`}`
+          );
+          setIsSubmitting(false);
+          return;
+        }
+
+        naverSync = {
+          status: "synced",
+          originProductNo: data.originProductNo,
+          channelProductNo: data.channelProductNo,
+          syncedAt: new Date().toISOString(),
+        };
+        naverWasCreated = true;
+      }
+
+      await createStoreProduct(input, naverSync);
+
+      setForm(emptyForm);
+      setRepresentativeImageFile(null);
+      setOptionalImageFiles([]);
+      router.push(`/admin/products?created=${syncToNaver ? "naver" : "local"}`);
+    } catch (submitError) {
+      if (!naverWasCreated) {
+        await deleteProductImageAssets(uploadedImages);
+      }
+      setError(
+        submitError instanceof Error ? submitError.message : "상품 저장 중 오류가 발생했습니다."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const naverBanner = useMemo(() => {
+    if (naverConfigured === null || naverConfigured) return null;
+    return (
+      <div className="mb-6 border-l-2 border-amber-400 bg-amber-50/60 px-4 py-3 text-sm text-amber-700">
+        네이버 커머스 API 환경변수(NAVER_COMMERCE_CLIENT_ID / SECRET)가 설정되지 않았습니다. 동시
+        등록을 사용하려면 .env.local에 값을 추가하고 서버를 재시작해주세요. 현재는 우리 쇼핑몰
+        저장만 가능합니다.
+      </div>
+    );
+  }, [naverConfigured]);
+
+  return (
+    <AdminShell>
+      <AdminPageHeader
+        title="상품 등록"
+        actions={
+          <Link
+            href="/admin/products"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+          >
+            <ArrowLeft className="size-4" />
+            목록으로
+          </Link>
+        }
+      />
+
+      {naverBanner}
+      {error ? <AdminNotice message={error} /> : null}
+
+      <form onSubmit={handleSubmit} className="max-w-4xl space-y-6">
+        <FormSection
+          title="기본 정보"
+          description="쇼핑몰 목록과 상세 페이지에 노출되는 핵심 정보입니다."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="상품명" required className="sm:col-span-2">
+              <Input value={form.name} onChange={update("name")} placeholder="샤넬 클래식 플랩백" />
+            </Field>
+            <Field label="브랜드" required>
+              <Input value={form.brand} onChange={update("brand")} placeholder="샤넬" />
+            </Field>
+            <Field label="재고 수량" required>
+              <Input value={form.stockQuantity} onChange={update("stockQuantity")} type="number" />
+            </Field>
+            <Field label="판매가 (원)" required>
+              <Input value={form.salePrice} onChange={update("salePrice")} type="number" />
+            </Field>
+            <Field label="정가 (원, 선택)">
+              <Input value={form.retailPrice} onChange={update("retailPrice")} type="number" />
+            </Field>
+          </div>
+        </FormSection>
+
+        <FormSection
+          title="상품 이미지"
+          description="이미지를 박스에 끌어다 놓거나, 박스를 클릭해 파일을 선택할 수 있습니다."
+        >
+          <div className="space-y-5">
+            <Field label="대표 이미지" required>
+              <ImageDropzone
+                files={representativeImageFile ? [representativeImageFile] : []}
+                onFilesAdded={handleRepresentativeImageAdded}
+                onFileRemove={() => setRepresentativeImageFile(null)}
+                disabled={isSubmitting}
+                emptyTitle="대표 이미지를 끌어다 놓거나 클릭해서 선택하세요"
+                emptyHint="목록용 썸네일과 상세용 이미지를 자동 생성합니다. (JPEG, PNG, WebP, AVIF)"
+              />
+            </Field>
+            <Field label={`추가 이미지 (최대 ${maxOptionalImages}장)`}>
+              <ImageDropzone
+                files={optionalImageFiles}
+                onFilesAdded={handleOptionalImagesAdded}
+                onFileRemove={handleOptionalImageRemove}
+                disabled={isSubmitting || optionalImageFiles.length >= maxOptionalImages}
+                multiple
+                maxFiles={maxOptionalImages}
+                emptyTitle="추가 이미지를 끌어다 놓거나 클릭해서 선택하세요"
+                emptyHint="상세 갤러리에 사용할 이미지를 여러 장 넣을 수 있습니다."
+              />
+            </Field>
+          </div>
+        </FormSection>
+
+        <FormSection
+          title="네이버 스마트스토어 등록 정보"
+          description="동시 등록을 사용할 때 필요한 정보입니다."
+          headerRight={
+            <label className="flex cursor-pointer items-center gap-2.5">
+              <input
+                type="checkbox"
+                checked={syncToNaver}
+                onChange={(event) => setSyncToNaver(event.target.checked)}
+                className="size-4 accent-[hsl(var(--gold))]"
+              />
+              <span className="text-sm font-medium text-foreground">동시 등록</span>
+            </label>
+          }
+        >
+          <div
+            className={cn(
+              "grid gap-4 sm:grid-cols-2 transition-opacity",
+              !syncToNaver && "opacity-50"
+            )}
+          >
+            <Field label="카테고리 ID (leafCategoryId)" required={syncToNaver}>
+              <Input
+                value={form.leafCategoryId}
+                onChange={update("leafCategoryId")}
+                placeholder="50000837"
+              />
+            </Field>
+            <Field label="원산지 코드 (originAreaCode)" required={syncToNaver}>
+              <Input
+                value={form.originAreaCode}
+                onChange={update("originAreaCode")}
+                placeholder="0200037"
+              />
+            </Field>
+            <Field label="배송비 (원, 0=무료)">
+              <Input value={form.deliveryFee} onChange={update("deliveryFee")} type="number" />
+            </Field>
+            <Field label="A/S 전화번호" required={syncToNaver}>
+              <Input
+                value={form.afterServiceTelephoneNumber}
+                onChange={update("afterServiceTelephoneNumber")}
+                placeholder="1600-0000"
+              />
+            </Field>
+            <Field label="A/S 안내" required={syncToNaver} className="sm:col-span-2">
+              <Input
+                value={form.afterServiceGuideContent}
+                onChange={update("afterServiceGuideContent")}
+                placeholder="평일 10:00~18:00 고객센터 운영"
+              />
+            </Field>
+            <Field label="상품 상세 설명 (HTML 가능)" required={syncToNaver} className="sm:col-span-2">
+              <Textarea
+                value={form.detailContent}
+                onChange={update("detailContent")}
+                rows={4}
+                placeholder="<p>정품 보장, 검수 완료된 상품입니다.</p>"
+              />
+            </Field>
+          </div>
+        </FormSection>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+          <Link
+            href="/admin/products"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-background px-6 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+          >
+            취소
+          </Link>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-8 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+          >
+            {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <ShoppingBag className="size-4" />}
+            {isSubmitting ? "이미지 업로드 및 등록 중..." : "상품 등록"}
+          </button>
+        </div>
+      </form>
+    </AdminShell>
+  );
+}
+
+function ProductRow({ product }: { product: StoreProduct }) {
+  const imageUrl = product.representativeImage?.thumbnail.url ?? product.representativeImageUrl;
+  const imageAlt = product.representativeImage?.alt ?? product.name;
+
+  return (
+    <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={imageUrl}
+        alt={imageAlt}
+        width={48}
+        height={48}
+        loading="lazy"
+        className="size-12 shrink-0 rounded-md object-cover"
+      />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-foreground">
+          {product.brand} {product.name}
+        </p>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          {formatPriceWithUnit(product.salePrice)} · 재고 {product.stockQuantity}개
+        </p>
+      </div>
+      <NaverSyncBadge sync={product.naverSync} />
+    </div>
+  );
+}
+
+function NaverSyncBadge({ sync }: { sync: NaverSyncInfo }) {
+  if (sync.status === "synced") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
+        <CheckCircle2 className="size-3.5" />
+        네이버 연동
+      </span>
+    );
+  }
+  if (sync.status === "failed") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600">
+        <XCircle className="size-3.5" />
+        연동 실패
+      </span>
+    );
+  }
+  return <span className="text-xs font-semibold text-muted-foreground">로컬만</span>;
+}
+
+function FormSection({
+  title,
+  description,
+  headerRight,
+  children,
+}: {
+  title: string;
+  description?: string;
+  headerRight?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-xl border border-border bg-background p-5 md:p-6">
+      <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
+        <div>
+          <h3 className="text-base font-semibold text-foreground">{title}</h3>
+          {description ? (
+            <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+          ) : null}
+        </div>
+        {headerRight}
+      </div>
+      <div className="pt-5">{children}</div>
+    </section>
+  );
+}
+
+const acceptedImageTypes = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+
+function ImageDropzone({
+  files,
+  onFilesAdded,
+  onFileRemove,
+  disabled,
+  multiple,
+  maxFiles,
+  emptyTitle,
+  emptyHint,
+}: {
+  files: File[];
+  onFilesAdded: (files: File[]) => void;
+  onFileRemove: (index: number) => void;
+  disabled?: boolean;
+  multiple?: boolean;
+  maxFiles?: number;
+  emptyTitle: string;
+  emptyHint: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  function acceptFiles(incoming: FileList | null) {
+    if (!incoming) return;
+    const imageFiles = Array.from(incoming).filter((file) =>
+      acceptedImageTypes.includes(file.type)
+    );
+    if (imageFiles.length === 0) return;
+    onFilesAdded(multiple ? imageFiles : imageFiles.slice(0, 1));
+  }
+
+  function handleDrop(event: React.DragEvent) {
+    event.preventDefault();
+    setIsDragOver(false);
+    if (disabled) return;
+    acceptFiles(event.dataTransfer.files);
+  }
+
+  function openFilePicker() {
+    if (!disabled) inputRef.current?.click();
+  }
+
+  return (
+    <div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={acceptedImageTypes.join(",")}
+        multiple={multiple}
+        disabled={disabled}
+        onChange={(event) => {
+          acceptFiles(event.target.files);
+          event.target.value = "";
+        }}
+        className="sr-only"
+      />
+
+      <div
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        onClick={openFilePicker}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openFilePicker();
+          }
+        }}
+        onDragOver={(event) => {
+          event.preventDefault();
+          if (!disabled) setIsDragOver(true);
+        }}
+        onDragLeave={() => setIsDragOver(false)}
+        onDrop={handleDrop}
+        className={cn(
+          "grid min-h-32 cursor-pointer place-items-center rounded-lg border-2 border-dashed px-4 py-6 text-center transition-colors",
+          isDragOver
+            ? "border-gold bg-gold-soft/40"
+            : "border-border bg-secondary/40 hover:border-muted-foreground/40 hover:bg-secondary/70",
+          disabled && "cursor-not-allowed opacity-60"
+        )}
+      >
+        <div>
+          <span className="mx-auto grid size-11 place-items-center rounded-full bg-background text-muted-foreground shadow-sm">
+            {isDragOver ? <ImagePlus className="size-5" /> : <UploadCloud className="size-5" />}
+          </span>
+          <p className="mt-3 text-sm font-semibold text-foreground">{emptyTitle}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{emptyHint}</p>
+          {maxFiles ? (
+            <p className="mt-1 text-xs font-medium text-muted-foreground">
+              {files.length}/{maxFiles}장 선택됨
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      {files.length > 0 ? (
+        <ul className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
+          {files.map((file, index) => (
+            <ImagePreviewItem
+              key={`${file.name}-${file.size}-${index}`}
+              file={file}
+              disabled={disabled}
+              onRemove={() => onFileRemove(index)}
+            />
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+function ImagePreviewItem({
+  file,
+  disabled,
+  onRemove,
+}: {
+  file: File;
+  disabled?: boolean;
+  onRemove: () => void;
+}) {
+  const [previewUrl, setPreviewUrl] = useState("");
+
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  return (
+    <li className="group relative overflow-hidden rounded-lg border border-border bg-secondary">
+      {previewUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={previewUrl}
+          alt={file.name}
+          className="aspect-square w-full object-cover"
+        />
+      ) : (
+        <div className="aspect-square w-full" />
+      )}
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={(event) => {
+          event.stopPropagation();
+          onRemove();
+        }}
+        aria-label={`${file.name} 삭제`}
+        className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-foreground/70 text-background opacity-0 transition-opacity hover:bg-foreground focus-visible:opacity-100 group-hover:opacity-100 disabled:hidden"
+      >
+        <X className="size-3.5" />
+      </button>
+      <p className="truncate px-2 py-1.5 text-[11px] font-medium text-muted-foreground">
+        {file.name} · {(file.size / 1024 / 1024).toFixed(2)}MB
+      </p>
+    </li>
+  );
+}
+
+function Field({
+  label,
+  required,
+  className,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <label className={cn("block", className)}>
+      <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
+        {label}
+        {required ? <span className="ml-0.5 text-rose-500">*</span> : null}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+function Input({
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  type?: string;
+}) {
+  return (
+    <input
+      type={type}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      placeholder={placeholder}
+      className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-gold placeholder:text-muted-foreground"
+    />
+  );
+}
+
+function Textarea({
+  value,
+  onChange,
+  placeholder,
+  rows = 3,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  rows?: number;
+}) {
+  return (
+    <textarea
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      placeholder={placeholder}
+      rows={rows}
+      className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-gold placeholder:text-muted-foreground"
+    />
+  );
+}
