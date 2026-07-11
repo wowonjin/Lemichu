@@ -7,7 +7,12 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
-import { requestPasswordReset, signInWithEmail, signInWithGoogle } from "@/lib/auth";
+import {
+  requestPasswordReset,
+  signInWithEmail,
+  signInWithGoogle,
+  startNaverLogin,
+} from "@/lib/auth";
 import { normalizeRedirectPath } from "@/lib/redirect";
 
 function getAuthMessage(error: unknown) {
@@ -23,6 +28,10 @@ function getAuthMessage(error: unknown) {
 
   if (message.includes("auth/wrong-password")) {
     return "비밀번호가 올바르지 않아요.";
+  }
+
+  if (message.includes("AUTH_REQUEST_TIMEOUT")) {
+    return "Firebase 로그인 응답이 지연되고 있어요. 네트워크 상태, Firebase Auth 사용 설정, 승인된 도메인을 확인해주세요.";
   }
 
   if (message.includes("Firebase 설정")) {
@@ -74,6 +83,11 @@ export default function LoginPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setRedirectPath(normalizeRedirectPath(params.get("redirect")));
+
+    const oauthError = params.get("error");
+    if (oauthError) {
+      setError(oauthError);
+    }
   }, []);
 
   const handleEmailLogin = async (event: FormEvent<HTMLFormElement>) => {
@@ -103,6 +117,12 @@ export default function LoginPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleNaverLogin = () => {
+    setError("");
+    setIsSubmitting(true);
+    startNaverLogin(redirectPath);
   };
 
   const openRecoveryDialog = () => {
@@ -154,7 +174,12 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-7">
-            <SocialLoginButtons mode="login" onSuccess={handleGoogleLogin} />
+            <SocialLoginButtons
+              mode="login"
+              disabled={isSubmitting}
+              onGoogle={handleGoogleLogin}
+              onNaver={handleNaverLogin}
+            />
           </div>
 
           <div className="my-6 flex items-center gap-4 text-xs text-muted-foreground">

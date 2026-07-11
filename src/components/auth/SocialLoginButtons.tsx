@@ -5,10 +5,14 @@ import { cn } from "@/lib/cn";
 
 export function SocialLoginButtons({
   mode = "login",
-  onSuccess,
+  onGoogle,
+  onNaver,
+  disabled = false,
 }: {
   mode?: "login" | "signup";
-  onSuccess?: () => void;
+  onGoogle?: () => void | Promise<void>;
+  onNaver?: () => void | Promise<void>;
+  disabled?: boolean;
 }) {
   const verb = mode === "signup" ? "가입하기" : "로그인";
   const buttonRadius = mode === "login" ? "rounded-lg" : "rounded-full";
@@ -20,9 +24,10 @@ export function SocialLoginButtons({
     <div className="space-y-2.5">
       <button
         type="button"
-        onClick={onSuccess}
+        disabled={disabled}
+        onClick={() => void onGoogle?.()}
         className={cn(
-          "flex h-12 w-full items-center justify-center gap-2 border border-border bg-neutral-200 text-sm font-semibold text-foreground transition-colors hover:bg-neutral-300",
+          "flex h-12 w-full items-center justify-center gap-2 border border-border bg-neutral-200 text-sm font-semibold text-foreground transition-colors hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-60",
           buttonRadius
         )}
       >
@@ -34,9 +39,10 @@ export function SocialLoginButtons({
 
       <button
         type="button"
-        onClick={() => handleUnavailableProvider("네이버")}
+        disabled={disabled}
+        onClick={() => void onNaver?.()}
         className={cn(
-          "flex h-12 w-full items-center justify-center gap-2 border border-[#03c75a] bg-[#03c75a] text-sm font-semibold text-white transition-colors hover:bg-[#02b351]",
+          "flex h-12 w-full items-center justify-center gap-2 border border-[#03c75a] bg-[#03c75a] text-sm font-semibold text-white transition-colors hover:bg-[#02b351] disabled:cursor-not-allowed disabled:opacity-60",
           buttonRadius
         )}
       >
@@ -46,9 +52,10 @@ export function SocialLoginButtons({
 
       <button
         type="button"
+        disabled={disabled}
         onClick={() => handleUnavailableProvider("카카오")}
         className={cn(
-          "flex h-12 w-full items-center justify-center gap-2 border border-[#fee500] bg-[#fee500] text-sm font-semibold text-[#191919] transition-colors hover:bg-[#f4dc00]",
+          "flex h-12 w-full items-center justify-center gap-2 border border-[#fee500] bg-[#fee500] text-sm font-semibold text-[#191919] transition-colors hover:bg-[#f4dc00] disabled:cursor-not-allowed disabled:opacity-60",
           buttonRadius
         )}
       >

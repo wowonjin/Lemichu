@@ -8,7 +8,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
 import { privacyDoc, termsDoc, type InfoDoc } from "@/data/pageContent";
-import { createAccountWithEmail, signInWithGoogle } from "@/lib/auth";
+import { createAccountWithEmail, signInWithGoogle, startNaverLogin } from "@/lib/auth";
 
 function getSignupMessage(error: unknown) {
   const message = error instanceof Error ? error.message : "회원가입 중 문제가 발생했어요.";
@@ -19,6 +19,10 @@ function getSignupMessage(error: unknown) {
 
   if (message.includes("auth/weak-password")) {
     return "비밀번호는 6자 이상으로 입력해주세요.";
+  }
+
+  if (message.includes("AUTH_REQUEST_TIMEOUT")) {
+    return "Firebase 회원가입 응답이 지연되고 있어요. 네트워크 상태, Firebase Auth 사용 설정, 승인된 도메인을 확인해주세요.";
   }
 
   if (message.includes("Firebase 설정")) {
@@ -60,6 +64,12 @@ export default function SignupPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleNaverSignup = () => {
+    setError("");
+    setIsSubmitting(true);
+    startNaverLogin("/my");
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -113,7 +123,12 @@ export default function SignupPage() {
           </div>
 
           <div className="mt-7">
-            <SocialLoginButtons mode="signup" onSuccess={handleGoogleSignup} />
+            <SocialLoginButtons
+              mode="signup"
+              disabled={isSubmitting}
+              onGoogle={handleGoogleSignup}
+              onNaver={handleNaverSignup}
+            />
           </div>
 
           <div className="my-6 flex items-center gap-4 text-xs text-muted-foreground">

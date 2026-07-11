@@ -2,6 +2,7 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   sendPasswordResetEmail,
+  signInWithCustomToken,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
@@ -10,13 +11,16 @@ import {
 } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { firebaseAuth, firestoreDb, googleProvider, isFirebaseConfigured } from "@/lib/firebase";
+import { normalizeRedirectPath } from "@/lib/redirect";
+
+export type AuthProvider = "email" | "google" | "naver";
 
 export type AuthUser = {
   uid?: string;
   name: string;
   email: string;
   phone?: string;
-  provider?: "email" | "google";
+  provider?: AuthProvider;
   photoURL?: string | null;
   role?: "admin" | "member";
 };
@@ -34,6 +38,20 @@ const defaultUser: AuthUser = {
 
 const firebaseConfigError =
   "Firebase 설정이 필요합니다. .env.local에 NEXT_PUBLIC_FIREBASE_* 값을 입력하고 개발 서버를 다시 시작해주세요.";
+const authRequestTimeoutMs = 15_000;
+
+function withAuthTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      reject(new Error(`AUTH_REQUEST_TIMEOUT:${label}`));
+    }, authRequestTimeoutMs);
+
+    promise
+      .then(resolve)
+      .catch(reject)
+      .finally(() => window.clearTimeout(timeoutId));
+  });
+}
 
 function requireFirebaseAuth() {
   if (!isFirebaseConfigured || !firebaseAuth) {
@@ -55,15 +73,24 @@ function persistAuthUser(user: AuthUser | null) {
   window.dispatchEvent(new CustomEvent(AUTH_STATE_CHANGE, { detail: user }));
 }
 
+function resolveAuthProvider(user: User): AuthProvider {
+  if (user.uid.startsWith("naver:")) {
+    return "naver";
+  }
+
+  if (user.providerData.some((provider) => provider.providerId === "google.com")) {
+    return "google";
+  }
+
+  return "email";
+}
+
 function toAuthUser(user: User): AuthUser {
   return {
     uid: user.uid,
     name: user.displayName || user.email?.split("@")[0] || defaultUser.name,
     email: user.email || defaultUser.email,
-    provider:
-      user.providerData.find((provider) => provider.providerId === "google.com")
-        ? "google"
-        : "email",
+    provider: resolveAuthProvider(user),
     photoURL: user.photoURL,
   };
 }
@@ -160,10 +187,13 @@ export async function signInWithEmail(email: string, password: string) {
   }
 
   const auth = requireFirebaseAuth();
-  const credential = await signInWithEmailAndPassword(auth, email, password);
+  const credential = await withAuthTimeout(
+    signInWithEmailAndPassword(auth, email, password),
+    "signInWithEmail"
+  );
   const user = toAuthUser(credential.user);
-  await syncUserProfile(user);
   persistAuthUser(user);
+  syncUserProfile(user).catch(() => undefined);
   return user;
 }
 
@@ -179,21 +209,59 @@ export async function createAccountWithEmail({
   password: string;
 }) {
   const auth = requireFirebaseAuth();
-  const credential = await createUserWithEmailAndPassword(auth, email, password);
+  const credential = await withAuthTimeout(
+    createUserWithEmailAndPassword(auth, email, password),
+    "createAccountWithEmail"
+  );
 
-  await updateProfile(credential.user, { displayName: name });
-  const user = { ...toAuthUser(credential.user), phone };
-  await syncUserProfile(user);
+  updateProfile(credential.user, { displayName: name }).catch(() => undefined);
+  const user = { ...toAuthUser(credential.user), name, phone };
   persistAuthUser(user);
+  syncUserProfile(user).catch(() => undefined);
   return user;
 }
 
 export async function signInWithGoogle() {
   const auth = requireFirebaseAuth();
-  const credential = await signInWithPopup(auth, googleProvider);
+  const credential = await withAuthTimeout(
+    signInWithPopup(auth, googleProvider),
+    "signInWithGoogle"
+  );
   const user = toAuthUser(credential.user);
-  await syncUserProfile(user);
   persistAuthUser(user);
+  syncUserProfile(user).catch(() => undefined);
+  return user;
+}
+
+export function startNaverLogin(redirectPath = "/my") {
+  if (typeof window === "undefined") return;
+
+  const params = new URLSearchParams({
+    redirect: normalizeRedirectPath(redirectPath),
+  });
+  window.location.assign(`/api/auth/naver/start?${params.toString()}`);
+}
+
+export async function completeNaverSignIn() {
+  const auth = requireFirebaseAuth();
+  const response = await fetch("/api/auth/naver/session", {
+    method: "GET",
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  const result = (await response.json()) as { token?: string; message?: string };
+
+  if (!response.ok || !result.token) {
+    throw new Error(result.message || "네이버 로그인 세션을 확인할 수 없습니다.");
+  }
+
+  const credential = await withAuthTimeout(
+    signInWithCustomToken(auth, result.token),
+    "completeNaverSignIn"
+  );
+  const user = { ...toAuthUser(credential.user), provider: "naver" as const };
+  persistAuthUser(user);
+  syncUserProfile(user).catch(() => undefined);
   return user;
 }
 

@@ -15,7 +15,7 @@ export type AdminUserProfile = {
   name: string;
   email: string;
   phone?: string;
-  provider: "email" | "google";
+  provider: "email" | "google" | "naver";
   role: "admin" | "member";
   photoURL?: string | null;
   createdAt?: Timestamp;
