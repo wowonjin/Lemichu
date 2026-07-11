@@ -12,6 +12,7 @@ import {
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { firebaseAuth, firestoreDb, googleProvider, isFirebaseConfigured } from "@/lib/firebase";
 import { normalizeRedirectPath } from "@/lib/redirect";
+import { pickDemographics, type UserDemographics } from "@/lib/user-profile";
 
 export type AuthProvider = "email" | "google" | "naver";
 
@@ -23,7 +24,7 @@ export type AuthUser = {
   provider?: AuthProvider;
   photoURL?: string | null;
   role?: "admin" | "member";
-};
+} & UserDemographics;
 
 export const ADMIN_EMAIL = "admin@gmail.com";
 
@@ -102,6 +103,8 @@ export function isAdminUser(user: AuthUser | null | undefined): user is AuthUser
 async function syncUserProfile(user: AuthUser) {
   if (!isFirebaseConfigured || !firestoreDb || !user.uid) return;
 
+  const demographics = pickDemographics(user);
+
   await setDoc(
     doc(firestoreDb, "users", user.uid),
     {
@@ -109,6 +112,7 @@ async function syncUserProfile(user: AuthUser) {
       name: user.name,
       email: user.email,
       ...(user.phone ? { phone: user.phone } : {}),
+      ...demographics,
       provider: user.provider ?? "email",
       photoURL: user.photoURL ?? null,
       role: isAdminUser(user) ? "admin" : "member",
@@ -202,12 +206,16 @@ export async function createAccountWithEmail({
   email,
   phone,
   password,
+  gender,
+  birthday,
+  ageRange,
+  birthYear,
 }: {
   name: string;
   email: string;
   phone: string;
   password: string;
-}) {
+} & UserDemographics) {
   const auth = requireFirebaseAuth();
   const credential = await withAuthTimeout(
     createUserWithEmailAndPassword(auth, email, password),
@@ -215,7 +223,8 @@ export async function createAccountWithEmail({
   );
 
   updateProfile(credential.user, { displayName: name }).catch(() => undefined);
-  const user = { ...toAuthUser(credential.user), name, phone };
+  const demographics = pickDemographics({ gender, birthday, ageRange, birthYear });
+  const user = { ...toAuthUser(credential.user), name, phone, ...demographics };
   persistAuthUser(user);
   syncUserProfile(user).catch(() => undefined);
   return user;

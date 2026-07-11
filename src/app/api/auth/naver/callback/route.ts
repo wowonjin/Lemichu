@@ -12,6 +12,7 @@ import {
 } from "@/lib/naver-login/cookies";
 import { buildNaverUid, exchangeNaverCode, fetchNaverProfile } from "@/lib/naver-login/oauth";
 import { normalizeRedirectPath } from "@/lib/redirect";
+import { pickDemographics } from "@/lib/user-profile";
 
 function redirectWithError(baseUrl: string, message: string) {
   const loginUrl = new URL("/login", baseUrl);
@@ -106,6 +107,13 @@ export async function GET(request: Request) {
       }
     }
 
+    const demographics = pickDemographics({
+      gender: profile.gender,
+      birthday: profile.birthday,
+      ageRange: profile.ageRange,
+      birthYear: profile.birthYear,
+    });
+
     const now = new Date();
     await getAdminDb()
       .collection("users")
@@ -116,6 +124,7 @@ export async function GET(request: Request) {
           name: displayName,
           email: profile.email || `${uid}@naver.local`,
           ...(profile.mobile ? { phone: profile.mobile } : {}),
+          ...demographics,
           provider: "naver",
           photoURL: profile.profileImage || null,
           role: "member",

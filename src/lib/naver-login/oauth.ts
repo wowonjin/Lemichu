@@ -13,6 +13,10 @@ export type NaverProfile = {
   nickname?: string;
   profileImage?: string;
   mobile?: string;
+  gender?: string;
+  birthday?: string;
+  ageRange?: string;
+  birthYear?: string;
 };
 
 type NaverTokenResponse = {
@@ -34,6 +38,10 @@ type NaverProfileResponse = {
     nickname?: string;
     profile_image?: string;
     mobile?: string;
+    gender?: string;
+    birthday?: string;
+    age?: string;
+    birthyear?: string;
   };
 };
 
@@ -96,6 +104,10 @@ export async function fetchNaverProfile(accessToken: string): Promise<NaverProfi
     nickname: profile.nickname?.trim() || undefined,
     profileImage: profile.profile_image?.trim() || undefined,
     mobile: profile.mobile?.trim() || undefined,
+    gender: profile.gender?.trim() || undefined,
+    birthday: profile.birthday?.trim() || undefined,
+    ageRange: profile.age?.trim() || undefined,
+    birthYear: profile.birthyear?.trim() || undefined,
   };
 }
 

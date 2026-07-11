@@ -9,6 +9,13 @@ import { Button } from "@/components/ui/button";
 import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
 import { privacyDoc, termsDoc, type InfoDoc } from "@/data/pageContent";
 import { createAccountWithEmail, signInWithGoogle, startNaverLogin } from "@/lib/auth";
+import {
+  AGE_RANGE_OPTIONS,
+  ageRangeFromBirthYear,
+  GENDER_OPTIONS,
+  normalizeBirthday,
+  normalizeBirthYear,
+} from "@/lib/user-profile";
 
 function getSignupMessage(error: unknown) {
   const message = error instanceof Error ? error.message : "회원가입 중 문제가 발생했어요.";
@@ -51,6 +58,10 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [policyDoc, setPolicyDoc] = useState<InfoDoc | null>(null);
+  const [gender, setGender] = useState("");
+  const [birthday, setBirthday] = useState("");
+  const [birthYear, setBirthYear] = useState("");
+  const [ageRange, setAgeRange] = useState("");
 
   const handleGoogleSignup = async () => {
     setError("");
@@ -72,6 +83,15 @@ export default function SignupPage() {
     startNaverLogin("/my");
   };
 
+  const handleBirthYearChange = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 4);
+    setBirthYear(digits);
+    const nextAgeRange = ageRangeFromBirthYear(digits);
+    if (nextAgeRange) {
+      setAgeRange(nextAgeRange);
+    }
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
@@ -80,6 +100,8 @@ export default function SignupPage() {
     const password = String(formData.get("password") || "");
     const passwordConfirm = String(formData.get("passwordConfirm") || "");
     const phone = normalizePhoneNumber(String(formData.get("phone") || ""));
+    const normalizedBirthday = normalizeBirthday(birthday);
+    const normalizedBirthYear = normalizeBirthYear(birthYear);
 
     if (password !== passwordConfirm) {
       setError("비밀번호 확인이 일치하지 않아요.");
@@ -91,6 +113,26 @@ export default function SignupPage() {
       return;
     }
 
+    if (!gender) {
+      setError("성별을 선택해주세요.");
+      return;
+    }
+
+    if (!normalizedBirthday) {
+      setError("생일은 MM-DD 형식으로 입력해주세요. 예: 03-15");
+      return;
+    }
+
+    if (!normalizedBirthYear) {
+      setError("출생연도는 4자리 숫자로 입력해주세요.");
+      return;
+    }
+
+    if (!ageRange) {
+      setError("연령대를 선택해주세요.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -99,6 +141,10 @@ export default function SignupPage() {
         email: String(formData.get("email") || ""),
         phone,
         password,
+        gender: gender as "M" | "F" | "U",
+        birthday: normalizedBirthday,
+        birthYear: normalizedBirthYear,
+        ageRange,
       });
       router.push("/my");
     } catch (authError) {
@@ -170,6 +216,69 @@ export default function SignupPage() {
                 pattern="[0-9\\-\\s]{10,13}"
                 className="h-12 rounded-lg border border-border bg-background px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30"
               />
+            </label>
+            <label className="grid gap-2 text-sm font-bold text-foreground">
+              성별
+              <select
+                required
+                value={gender}
+                onChange={(event) => setGender(event.target.value)}
+                className="h-12 rounded-lg border border-border bg-background px-4 text-base font-medium outline-none transition-colors focus:border-foreground/30"
+              >
+                <option value="" disabled>
+                  성별 선택
+                </option>
+                {GENDER_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-2 text-sm font-bold text-foreground">
+                생일
+                <input
+                  type="text"
+                  required
+                  inputMode="numeric"
+                  value={birthday}
+                  onChange={(event) => setBirthday(event.target.value)}
+                  placeholder="MM-DD (예: 03-15)"
+                  className="h-12 rounded-lg border border-border bg-background px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30"
+                />
+              </label>
+              <label className="grid gap-2 text-sm font-bold text-foreground">
+                출생연도
+                <input
+                  type="text"
+                  required
+                  inputMode="numeric"
+                  value={birthYear}
+                  onChange={(event) => handleBirthYearChange(event.target.value)}
+                  placeholder="YYYY (예: 1998)"
+                  maxLength={4}
+                  className="h-12 rounded-lg border border-border bg-background px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30"
+                />
+              </label>
+            </div>
+            <label className="grid gap-2 text-sm font-bold text-foreground">
+              연령대
+              <select
+                required
+                value={ageRange}
+                onChange={(event) => setAgeRange(event.target.value)}
+                className="h-12 rounded-lg border border-border bg-background px-4 text-base font-medium outline-none transition-colors focus:border-foreground/30"
+              >
+                <option value="" disabled>
+                  연령대 선택
+                </option>
+                {AGE_RANGE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="grid gap-2 text-sm font-bold text-foreground">
               비밀번호

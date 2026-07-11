@@ -9,6 +9,7 @@ import {
 import { firestoreDb, isFirebaseConfigured } from "@/lib/firebase";
 import type { OrderStatus, PurchaseOrder } from "@/lib/orders";
 import type { StoreProduct } from "@/lib/products";
+import type { UserDemographics } from "@/lib/user-profile";
 
 export type AdminUserProfile = {
   uid: string;
@@ -21,7 +22,7 @@ export type AdminUserProfile = {
   createdAt?: Timestamp;
   lastLoginAt?: Timestamp;
   updatedAt?: Timestamp;
-};
+} & UserDemographics;
 
 const firebaseConfigError =
   "Firestore 설정이 필요합니다. .env.local에 Firebase 값을 넣고 개발 서버를 다시 시작해주세요.";
