@@ -81,8 +81,14 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-10 flex flex-col gap-3 border-t border-border/50 pt-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <p>레미츄 | 대표 배살렘 | 사업자등록번호 142-17-02111 | 통신판매업 2024-서울중랑-1242</p>
+        <div className="mt-10 flex flex-col gap-3 border-t border-border/50 pt-6 text-xs leading-relaxed text-muted-foreground md:flex-row md:items-start md:justify-between">
+          <div className="space-y-1">
+            <p>
+              레미츄 | 대표 배살렘 | 사업자등록번호 142-17-02111 | 통신판매업
+              2024-서울중랑-1242
+            </p>
+            <p>사업장 소재지: 서울시 상봉로 23길 11, 804호</p>
+          </div>
           <p>© 2026 LEMICHU. All rights reserved.</p>
         </div>
       </div>

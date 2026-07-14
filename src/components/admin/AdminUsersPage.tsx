@@ -6,7 +6,6 @@ import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
 import { fetchAdminUsers, type AdminUserProfile } from "@/lib/admin";
 import { cn } from "@/lib/cn";
-import { formatGenderLabel } from "@/lib/user-profile";
 
 export function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUserProfile[]>([]);
@@ -49,17 +48,9 @@ export function AdminUsersPage() {
     if (!keyword) return users;
 
     return users.filter((user) =>
-      [
-        user.name,
-        user.email,
-        user.phone,
-        user.role,
-        user.provider,
-        formatGenderLabel(user.gender),
-        user.birthday,
-        user.ageRange,
-        user.birthYear,
-      ].some((value) => value?.toLowerCase().includes(keyword))
+      [user.name, user.email, user.phone, user.role, user.provider].some((value) =>
+        value?.toLowerCase().includes(keyword)
+      )
     );
   }, [query, users]);
 
@@ -75,7 +66,7 @@ export function AdminUsersPage() {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="이름, 이메일, 성별, 연령대 검색"
+            placeholder="이름, 이메일, 권한 검색"
             className="h-full w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
@@ -85,16 +76,12 @@ export function AdminUsersPage() {
       </div>
 
       <div className="mt-5 overflow-x-auto">
-        <table className="w-full min-w-[1180px] text-left text-sm">
+        <table className="w-full min-w-[860px] text-left text-sm">
           <thead>
             <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
               <th className="py-3 pr-4 font-semibold first:pl-0 last:pr-0">회원</th>
               <th className="px-4 py-3 font-semibold last:pr-0">이메일</th>
               <th className="px-4 py-3 font-semibold last:pr-0">휴대전화번호</th>
-              <th className="px-4 py-3 font-semibold last:pr-0">성별</th>
-              <th className="px-4 py-3 font-semibold last:pr-0">생일</th>
-              <th className="px-4 py-3 font-semibold last:pr-0">연령대</th>
-              <th className="px-4 py-3 font-semibold last:pr-0">출생연도</th>
               <th className="px-4 py-3 font-semibold last:pr-0">가입 방식</th>
               <th className="px-4 py-3 font-semibold last:pr-0">권한</th>
               <th className="px-4 py-3 font-semibold last:pr-0">최근 로그인</th>
@@ -116,12 +103,6 @@ export function AdminUsersPage() {
                 </td>
                 <td className="px-4 py-4 text-muted-foreground">{user.email}</td>
                 <td className="px-4 py-4 text-muted-foreground">{user.phone ?? "-"}</td>
-                <td className="px-4 py-4 text-muted-foreground">
-                  {formatGenderLabel(user.gender)}
-                </td>
-                <td className="px-4 py-4 text-muted-foreground">{user.birthday ?? "-"}</td>
-                <td className="px-4 py-4 text-muted-foreground">{user.ageRange ?? "-"}</td>
-                <td className="px-4 py-4 text-muted-foreground">{user.birthYear ?? "-"}</td>
                 <td className="px-4 py-4 text-muted-foreground">{user.provider}</td>
                 <td className="px-4 py-4">
                   <span
