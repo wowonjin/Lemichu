@@ -28,6 +28,7 @@ export type StoreProduct = {
   id: string;
   name: string;
   brand: string;
+  size?: string;
   salePrice: number;
   retailPrice?: number;
   stockQuantity: number;
@@ -58,6 +59,7 @@ const seededStoreProducts: StoreProduct[] = allProducts.map((product, index) => 
   id: product.id,
   name: product.name,
   brand: product.brand,
+  size: product.size,
   salePrice: product.price,
   retailPrice: product.retailPrice,
   stockQuantity: 2 + (index % 4),
@@ -105,9 +107,11 @@ export async function createStoreProduct(
   naverSync: NaverSyncInfo
 ): Promise<string> {
   const db = requireFirestore();
+  const { size, ...productInput } = input;
 
   const docRef = await addDoc(collection(db, "products"), {
-    ...input,
+    ...productInput,
+    ...(size ? { size } : {}),
     optionalImageUrls: input.optionalImageUrls ?? [],
     optionalImages: input.optionalImages ?? [],
     retailPrice: input.retailPrice ?? null,

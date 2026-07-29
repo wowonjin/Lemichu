@@ -35,6 +35,7 @@ import {
 type FormState = {
   name: string;
   brand: string;
+  size: string;
   salePrice: string;
   retailPrice: string;
   stockQuantity: string;
@@ -46,9 +47,12 @@ type FormState = {
   afterServiceGuideContent: string;
 };
 
+type UploadTarget = "local" | "smartstore" | "both";
+
 const emptyForm: FormState = {
   name: "",
   brand: "",
+  size: "",
   salePrice: "",
   retailPrice: "",
   stockQuantity: "1",
@@ -61,6 +65,37 @@ const emptyForm: FormState = {
 };
 
 const maxOptionalImages = 8;
+const productDraftStorageKey = "lemichu-admin-product-draft";
+
+const uploadTargetOptions: Array<{
+  value: UploadTarget;
+  label: string;
+  description: string;
+}> = [
+  {
+    value: "local",
+    label: "자사몰 업로드",
+    description: "LEMICHU 쇼핑몰에만 상품을 저장합니다.",
+  },
+  {
+    value: "smartstore",
+    label: "스마트스토어 업로드",
+    description: "네이버 스마트스토어에만 상품을 등록합니다.",
+  },
+  {
+    value: "both",
+    label: "자사몰+스마트스토어 업로드",
+    description: "자사몰 저장 후 스마트스토어에도 함께 등록합니다.",
+  },
+];
+
+function requiresSmartstoreUpload(target: UploadTarget) {
+  return target === "smartstore" || target === "both";
+}
+
+function requiresLocalUpload(target: UploadTarget) {
+  return target === "local" || target === "both";
+}
 
 export function AdminProductsPage() {
   const [products, setProducts] = useState<StoreProduct[]>([]);
@@ -73,8 +108,10 @@ export function AdminProductsPage() {
 
     const params = new URLSearchParams(window.location.search);
     const created = params.get("created");
-    if (created === "naver") {
+    if (created === "both") {
       setSuccess("상품이 우리 쇼핑몰과 네이버 스마트스토어에 동시 등록되었습니다.");
+    } else if (created === "smartstore") {
+      setSuccess("상품이 네이버 스마트스토어에 등록되었습니다. (자사몰 저장 생략)");
     } else if (created === "local") {
       setSuccess("상품이 우리 쇼핑몰에 저장되었습니다. (네이버 등록 생략)");
     }
@@ -146,12 +183,33 @@ export function AdminProductCreatePage() {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [representativeImageFile, setRepresentativeImageFile] = useState<File | null>(null);
   const [optionalImageFiles, setOptionalImageFiles] = useState<File[]>([]);
-  const [syncToNaver, setSyncToNaver] = useState(true);
+  const [uploadTarget, setUploadTarget] = useState<UploadTarget>("both");
   const [naverConfigured, setNaverConfigured] = useState<boolean | null>(null);
   const [error, setError] = useState("");
+  const [draftMessage, setDraftMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    const savedDraft = window.localStorage.getItem(productDraftStorageKey);
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft) as {
+          form?: Partial<FormState>;
+          syncToNaver?: boolean;
+          uploadTarget?: UploadTarget;
+        };
+        setForm({ ...emptyForm, ...draft.form });
+        if (draft.uploadTarget) {
+          setUploadTarget(draft.uploadTarget);
+        } else if (typeof draft.syncToNaver === "boolean") {
+          setUploadTarget(draft.syncToNaver ? "both" : "local");
+        }
+        setDraftMessage("임시 저장된 내용을 불러왔습니다. 이미지는 다시 선택해주세요.");
+      } catch {
+        window.localStorage.removeItem(productDraftStorageKey);
+      }
+    }
+
     fetch("/api/naver/products")
       .then((res) => res.json())
       .then((data) => setNaverConfigured(Boolean(data?.configured)))
@@ -171,6 +229,7 @@ export function AdminProductCreatePage() {
     return {
       name: form.name.trim(),
       brand: form.brand.trim(),
+      size: form.size.trim() || undefined,
       salePrice: Number(form.salePrice) || 0,
       retailPrice: form.retailPrice ? Number(form.retailPrice) : undefined,
       stockQuantity: Number(form.stockQuantity) || 0,
@@ -193,14 +252,29 @@ export function AdminProductCreatePage() {
     if ((Number(form.salePrice) || 0) <= 0) return "판매가를 올바르게 입력해주세요.";
     if ((Number(form.stockQuantity) || 0) <= 0) return "재고 수량을 1 이상 입력해주세요.";
     if (!representativeImageFile) return "대표 이미지를 업로드해주세요.";
-    if (syncToNaver) {
-      if (!form.leafCategoryId.trim()) return "네이버 동시 등록 시 카테고리 ID는 필수입니다.";
-      if (!form.originAreaCode.trim()) return "네이버 동시 등록 시 원산지 코드는 필수입니다.";
-      if (!form.detailContent.trim()) return "네이버 동시 등록 시 상세 설명은 필수입니다.";
-      if (!form.afterServiceTelephoneNumber.trim()) return "네이버 동시 등록 시 A/S 전화번호는 필수입니다.";
-      if (!form.afterServiceGuideContent.trim()) return "네이버 동시 등록 시 A/S 안내는 필수입니다.";
+    if (requiresSmartstoreUpload(uploadTarget)) {
+      const targetLabel =
+        uploadTarget === "smartstore" ? "스마트스토어 업로드" : "자사몰+스마트스토어 업로드";
+      if (!form.leafCategoryId.trim()) return `${targetLabel} 시 카테고리 ID는 필수입니다.`;
+      if (!form.originAreaCode.trim()) return `${targetLabel} 시 원산지 코드는 필수입니다.`;
+      if (!form.detailContent.trim()) return `${targetLabel} 시 상세 설명은 필수입니다.`;
+      if (!form.afterServiceTelephoneNumber.trim()) return `${targetLabel} 시 A/S 전화번호는 필수입니다.`;
+      if (!form.afterServiceGuideContent.trim()) return `${targetLabel} 시 A/S 안내는 필수입니다.`;
     }
     return null;
+  }
+
+  function handleDraftSave() {
+    window.localStorage.setItem(
+      productDraftStorageKey,
+      JSON.stringify({
+        form,
+        uploadTarget,
+        savedAt: new Date().toISOString(),
+      })
+    );
+    setDraftMessage("입력한 내용을 임시 저장했습니다. 이미지는 보안상 다시 선택해야 합니다.");
+    setError("");
   }
 
   function handleRepresentativeImageAdded(files: File[]) {
@@ -255,7 +329,7 @@ export function AdminProductCreatePage() {
       uploadedImages = [representativeImage, ...optionalImages];
       const input = buildInput({ representativeImage, optionalImages });
 
-      if (syncToNaver) {
+      if (requiresSmartstoreUpload(uploadTarget)) {
         const response = await fetch("/api/naver/products", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -282,12 +356,15 @@ export function AdminProductCreatePage() {
         naverWasCreated = true;
       }
 
-      await createStoreProduct(input, naverSync);
+      if (requiresLocalUpload(uploadTarget)) {
+        await createStoreProduct(input, naverSync);
+      }
 
       setForm(emptyForm);
       setRepresentativeImageFile(null);
       setOptionalImageFiles([]);
-      router.push(`/admin/products?created=${syncToNaver ? "naver" : "local"}`);
+      window.localStorage.removeItem(productDraftStorageKey);
+      router.push(`/admin/products?created=${uploadTarget}`);
     } catch (submitError) {
       if (!naverWasCreated) {
         await deleteProductImageAssets(uploadedImages);
@@ -328,8 +405,51 @@ export function AdminProductCreatePage() {
 
       {naverBanner}
       {error ? <AdminNotice message={error} /> : null}
+      {draftMessage ? (
+        <div className="mb-6 border-l-2 border-gold bg-gold-soft/50 px-4 py-3 text-sm font-medium text-foreground">
+          {draftMessage}
+        </div>
+      ) : null}
 
       <form onSubmit={handleSubmit} className="max-w-4xl space-y-6">
+        <FormSection
+          title="업로드 대상"
+          description="상품을 등록할 위치를 선택하세요."
+        >
+          <div className="grid gap-3 md:grid-cols-3">
+            {uploadTargetOptions.map((option) => {
+              const selected = uploadTarget === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    setUploadTarget(option.value);
+                    setError("");
+                  }}
+                  className={cn(
+                    "rounded-lg border p-4 text-left transition-colors disabled:opacity-60",
+                    selected
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border bg-secondary/40 text-foreground hover:border-muted-foreground"
+                  )}
+                >
+                  <span className="block text-sm font-semibold">{option.label}</span>
+                  <span
+                    className={cn(
+                      "mt-1 block text-xs leading-5",
+                      selected ? "text-background/70" : "text-muted-foreground"
+                    )}
+                  >
+                    {option.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </FormSection>
+
         <FormSection
           title="기본 정보"
           description="쇼핑몰 목록과 상세 페이지에 노출되는 핵심 정보입니다."
@@ -340,6 +460,9 @@ export function AdminProductCreatePage() {
             </Field>
             <Field label="브랜드" required>
               <Input value={form.brand} onChange={update("brand")} placeholder="샤넬" />
+            </Field>
+            <Field label="사이즈">
+              <Input value={form.size} onChange={update("size")} placeholder="미디움 / 36 / 단일 사이즈" />
             </Field>
             <Field label="재고 수량" required>
               <Input value={form.stockQuantity} onChange={update("stockQuantity")} type="number" />
@@ -385,33 +508,26 @@ export function AdminProductCreatePage() {
 
         <FormSection
           title="네이버 스마트스토어 등록 정보"
-          description="동시 등록을 사용할 때 필요한 정보입니다."
-          headerRight={
-            <label className="flex cursor-pointer items-center gap-2.5">
-              <input
-                type="checkbox"
-                checked={syncToNaver}
-                onChange={(event) => setSyncToNaver(event.target.checked)}
-                className="size-4 accent-[hsl(var(--gold))]"
-              />
-              <span className="text-sm font-medium text-foreground">동시 등록</span>
-            </label>
+          description={
+            requiresSmartstoreUpload(uploadTarget)
+              ? "스마트스토어 업로드에 필요한 필수 정보입니다."
+              : "자사몰 업로드만 선택하면 입력하지 않아도 됩니다."
           }
         >
           <div
             className={cn(
               "grid gap-4 sm:grid-cols-2 transition-opacity",
-              !syncToNaver && "opacity-50"
+              !requiresSmartstoreUpload(uploadTarget) && "opacity-50"
             )}
           >
-            <Field label="카테고리 ID (leafCategoryId)" required={syncToNaver}>
+            <Field label="카테고리 ID (leafCategoryId)" required={requiresSmartstoreUpload(uploadTarget)}>
               <Input
                 value={form.leafCategoryId}
                 onChange={update("leafCategoryId")}
                 placeholder="50000837"
               />
             </Field>
-            <Field label="원산지 코드 (originAreaCode)" required={syncToNaver}>
+            <Field label="원산지 코드 (originAreaCode)" required={requiresSmartstoreUpload(uploadTarget)}>
               <Input
                 value={form.originAreaCode}
                 onChange={update("originAreaCode")}
@@ -421,21 +537,21 @@ export function AdminProductCreatePage() {
             <Field label="배송비 (원, 0=무료)">
               <Input value={form.deliveryFee} onChange={update("deliveryFee")} type="number" />
             </Field>
-            <Field label="A/S 전화번호" required={syncToNaver}>
+            <Field label="A/S 전화번호" required={requiresSmartstoreUpload(uploadTarget)}>
               <Input
                 value={form.afterServiceTelephoneNumber}
                 onChange={update("afterServiceTelephoneNumber")}
                 placeholder="1600-0000"
               />
             </Field>
-            <Field label="A/S 안내" required={syncToNaver} className="sm:col-span-2">
+            <Field label="A/S 안내" required={requiresSmartstoreUpload(uploadTarget)} className="sm:col-span-2">
               <Input
                 value={form.afterServiceGuideContent}
                 onChange={update("afterServiceGuideContent")}
                 placeholder="평일 10:00~18:00 고객센터 운영"
               />
             </Field>
-            <Field label="상품 상세 설명 (HTML 가능)" required={syncToNaver} className="sm:col-span-2">
+            <Field label="상품 상세 설명 (HTML 가능)" required={requiresSmartstoreUpload(uploadTarget)} className="sm:col-span-2">
               <Textarea
                 value={form.detailContent}
                 onChange={update("detailContent")}
@@ -447,6 +563,14 @@ export function AdminProductCreatePage() {
         </FormSection>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={handleDraftSave}
+            className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-background px-6 text-sm font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
+          >
+            임시 저장
+          </button>
           <Link
             href="/admin/products"
             className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-background px-6 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
@@ -543,6 +667,13 @@ function FormSection({
 }
 
 const acceptedImageTypes = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+const acceptedImageExtensions = /\.(jpe?g|png|webp|avif)$/i;
+
+function isAcceptedImageFile(file: File) {
+  if (file.type) return acceptedImageTypes.includes(file.type);
+  // 일부 환경에서는 file.type이 비어 있으므로 확장자로도 판별한다.
+  return acceptedImageExtensions.test(file.name);
+}
 
 function ImageDropzone({
   files,
@@ -565,13 +696,17 @@ function ImageDropzone({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [rejectMessage, setRejectMessage] = useState("");
 
   function acceptFiles(incoming: FileList | null) {
-    if (!incoming) return;
-    const imageFiles = Array.from(incoming).filter((file) =>
-      acceptedImageTypes.includes(file.type)
-    );
-    if (imageFiles.length === 0) return;
+    if (!incoming || incoming.length === 0) return;
+    const selected = Array.from(incoming);
+    const imageFiles = selected.filter(isAcceptedImageFile);
+    if (imageFiles.length === 0) {
+      setRejectMessage("JPEG, PNG, WebP, AVIF 형식의 이미지 파일만 업로드할 수 있습니다.");
+      return;
+    }
+    setRejectMessage("");
     onFilesAdded(multiple ? imageFiles : imageFiles.slice(0, 1));
   }
 
@@ -582,7 +717,10 @@ function ImageDropzone({
     acceptFiles(event.dataTransfer.files);
   }
 
-  function openFilePicker() {
+  function openFilePicker(event?: React.SyntheticEvent) {
+    // 부모 Field가 <label>이라 기본 동작을 막지 않으면 파일 대화상자가 중복으로 열린다.
+    event?.preventDefault();
+    event?.stopPropagation();
     if (!disabled) inputRef.current?.click();
   }
 
@@ -594,6 +732,7 @@ function ImageDropzone({
         accept={acceptedImageTypes.join(",")}
         multiple={multiple}
         disabled={disabled}
+        onClick={(event) => event.stopPropagation()}
         onChange={(event) => {
           acceptFiles(event.target.files);
           event.target.value = "";
@@ -607,8 +746,7 @@ function ImageDropzone({
         onClick={openFilePicker}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            openFilePicker();
+            openFilePicker(event);
           }
         }}
         onDragOver={(event) => {
@@ -638,6 +776,10 @@ function ImageDropzone({
           ) : null}
         </div>
       </div>
+
+      {rejectMessage ? (
+        <p className="mt-2 text-xs font-medium text-rose-500">{rejectMessage}</p>
+      ) : null}
 
       {files.length > 0 ? (
         <ul className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
