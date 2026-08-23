@@ -1,4 +1,3 @@
-import { allProducts } from "@/data/mockProducts";
 import { getProductKind, productHaystack, type ProductKind } from "@/lib/productKind";
 import type { Product } from "@/types/product";
 
@@ -12,7 +11,7 @@ const categoryToKind: Record<string, ProductKind> = {
   apparel: "apparel",
 };
 
-export function filterByCategory(categoryId: string, products = allProducts): Product[] {
+export function filterByCategory(categoryId: string, products: Product[]): Product[] {
   const kind = categoryToKind[categoryId];
   return products.filter((product) => {
     if (product.categoryId) return product.categoryId === categoryId;
@@ -20,7 +19,7 @@ export function filterByCategory(categoryId: string, products = allProducts): Pr
   });
 }
 
-export function filterByBrand(brandName: string, products = allProducts): Product[] {
+export function filterByBrand(brandName: string, products: Product[]): Product[] {
   const target = brandName.trim().toLowerCase();
   return products.filter(
     (product) => product.brand.trim().toLowerCase() === target
@@ -31,7 +30,10 @@ export function filterByBrand(brandName: string, products = allProducts): Produc
  * Free-text + faceted search. Any product matching ANY of the provided terms
  * is returned. Empty terms return the full catalog.
  */
-export function searchProducts(terms: (string | undefined)[], products = allProducts): Product[] {
+export function searchProducts(
+  terms: (string | undefined)[],
+  products: Product[]
+): Product[] {
   const cleaned = terms
     .map((term) => term?.trim().toLowerCase())
     .filter((term): term is string => Boolean(term));
@@ -45,6 +47,6 @@ export function searchProducts(terms: (string | undefined)[], products = allProd
 }
 
 /** A stable set of recommendations used for empty states. */
-export function getRecommended(limit = 8, products = allProducts): Product[] {
+export function getRecommended(limit: number, products: Product[]): Product[] {
   return products.slice(0, limit);
 }

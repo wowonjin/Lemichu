@@ -1,9 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ChevronRight } from "lucide-react";
+import { CatalogImage } from "@/components/product/CatalogImage";
 import { cn } from "@/lib/cn";
 import { formatPrice, getDiscountRate } from "@/lib/formatPrice";
-import { getPlaceholderGradient, isRealImage } from "@/lib/placeholder";
 import type { Product } from "@/types/product";
 
 type TrendStory = {
@@ -39,23 +38,16 @@ function ProductImage({
 }) {
   return (
     <div className={cn("relative overflow-hidden bg-[#F7F7F7] dark:bg-muted", className)}>
-      {isRealImage(product.imageUrl) ? (
-        <Image
-          src={product.imageUrl}
-          alt=""
-          fill
-          sizes={sizes}
-          className={cn(
-            "object-contain mix-blend-multiply dark:mix-blend-normal",
-            paddingClassName
-          )}
-        />
-      ) : (
-        <div
-          className="h-full w-full"
-          style={{ backgroundImage: getPlaceholderGradient(product.id) }}
-        />
-      )}
+      <CatalogImage
+        src={product.imageUrl}
+        alt=""
+        seed={product.id}
+        sizes={sizes}
+        className={cn(
+          "object-contain mix-blend-multiply dark:mix-blend-normal",
+          paddingClassName
+        )}
+      />
     </div>
   );
 }

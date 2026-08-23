@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { WishlistToggleButton } from "@/components/product/WishlistToggleButton";
-import { formatPrice } from "@/lib/formatPrice";
+import { useProductVariantPurchase } from "@/components/product/ProductVariantPurchase";
+import { formatPrice, getDiscountRate } from "@/lib/formatPrice";
 import { createProductCheckoutItem } from "@/lib/checkout";
 import { readAuthUser } from "@/lib/auth";
 import { getLoginHref } from "@/lib/redirect";
@@ -22,13 +23,28 @@ export function ProductPurchaseBar({
   product: Product;
 }) {
   const router = useRouter();
+  const {
+    selectedVariant,
+    selectedPrice,
+    canPurchase,
+    requiresVariantSelection,
+  } = useProductVariantPurchase();
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [message, setMessage] = useState("");
-  const price = product.price;
-  const discountRate = product.discountRate;
+  const price = selectedPrice;
+  const discountRate = getDiscountRate(price, product.retailPrice);
 
   const handlePurchase = async () => {
     setMessage("");
+
+    if (!canPurchase) {
+      setMessage(
+        requiresVariantSelection
+          ? "구매 가능한 옵션을 선택해주세요."
+          : "현재 구매할 수 없는 상품입니다."
+      );
+      return;
+    }
 
     const user = readAuthUser();
     if (!user?.uid) {
@@ -39,7 +55,7 @@ export function ProductPurchaseBar({
 
     setIsPurchasing(true);
     try {
-      await requestTossPayment([createProductCheckoutItem(product)]);
+      await requestTossPayment([createProductCheckoutItem(product, selectedVariant)]);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "결제 요청 중 문제가 발생했어요.");
       setIsPurchasing(false);
@@ -51,7 +67,7 @@ export function ProductPurchaseBar({
       <div className="flex items-center gap-3">
         <WishlistToggleButton
           product={product}
-          className="size-12 shrink-0 rounded-xl border border-border bg-background"
+          className="size-12 shrink-0 rounded-full border border-[#EBEBEB] bg-background dark:border-border"
           iconClassName="fill-transparent"
         />
 
@@ -71,11 +87,15 @@ export function ProductPurchaseBar({
 
         <Button
           size="lg"
-          disabled={isPurchasing}
+          disabled={isPurchasing || !canPurchase}
           onClick={handlePurchase}
           className="h-12 flex-1"
         >
-          {isPurchasing ? "결제 준비 중..." : "구매하기"}
+          {isPurchasing
+            ? "결제 준비 중..."
+            : !canPurchase && requiresVariantSelection
+              ? "옵션 선택"
+              : "구매하기"}
         </Button>
       </div>
       {message ? (

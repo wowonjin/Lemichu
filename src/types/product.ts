@@ -6,6 +6,19 @@ export type DeliveryBadge = "오늘출고" | "국내배송" | "해외배송" | "
 
 export type ProductAvailability = "available" | "temporarily_unavailable" | "sold";
 
+export type ProductVariantStockStatus = "available" | "soldout" | "quantity_managed";
+
+export type ProductVariant = {
+  id: string;
+  color?: string;
+  colorOriginal?: string;
+  size?: string;
+  surchargeKrw: number;
+  stockStatus: ProductVariantStockStatus;
+  quantity?: number;
+  measurements?: Record<string, string>;
+};
+
 export type Product = {
   id: string;
   brand: string;
@@ -13,6 +26,7 @@ export type Product = {
   imageUrl: string;
   imageUrls?: string[];
   price: number;
+  basePrice?: number;
   retailPrice?: number;
   discountRate?: number;
   color?: string;
@@ -27,6 +41,7 @@ export type Product = {
   href: string;
   availability?: ProductAvailability;
   stockQuantity?: number;
+  variants?: ProductVariant[];
 };
 
 export type RankedProduct = Product & {

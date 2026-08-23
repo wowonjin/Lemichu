@@ -55,26 +55,7 @@ export const defaultHomeCategories: HomeCategoryContent[] = [
     imageSrc: "/category-images/cat-women-bags-cut.png",
     visible: true,
     order: 0,
-    items: [
-      {
-        id: "women-bags-1",
-        brand: "샤넬",
-        title: "클래식 미디움 플랩백 캐비어",
-        description: "골드 하드웨어의 정석 플랩백. 오늘 출고 가능한 검수 완료 상품입니다.",
-        imageSrc: "/category-images/cat-women-bags-cut.png",
-        priceLabel: "₩9,480,000",
-        href: "/product/lp-001",
-      },
-      {
-        id: "women-bags-2",
-        brand: "더로우",
-        title: "마고 15 소프트 레더 토트백",
-        description: "출근과 주말 모두 소화하는 미니멀 토트. 베이지 레더의 정돈된 실루엣입니다.",
-        imageSrc: "/category-images/feat-women-bags-cut.png",
-        priceLabel: "₩3,420,000",
-        href: "/product/lp-012",
-      },
-    ],
+    items: [],
   },
   {
     id: "men-bags",
@@ -85,26 +66,7 @@ export const defaultHomeCategories: HomeCategoryContent[] = [
     imageSrc: "/category-images/cat-men-bags-cut.png",
     visible: true,
     order: 1,
-    items: [
-      {
-        id: "men-bags-1",
-        brand: "프라다",
-        title: "사피아노 레더 비즈니스 브리프케이스",
-        description: "서류와 노트북을 함께 넣는 정장 브리프. 구조가 또렷한 남성 비즈니스 백입니다.",
-        imageSrc: "/category-images/cat-men-bags-cut.png",
-        priceLabel: "₩3,180,000",
-        href: "/product/lp-051",
-      },
-      {
-        id: "men-bags-2",
-        brand: "보테가베네타",
-        title: "인트레치아토 레더 백팩",
-        description: "출퇴근과 짧은 여행에 쓰는 가죽 백팩. 직조 텍스처가 포인트입니다.",
-        imageSrc: "/category-images/feat-men-bags-cut.png",
-        priceLabel: "₩2,640,000",
-        href: "/product/lp-052",
-      },
-    ],
+    items: [],
   },
   {
     id: "wallets",
@@ -115,26 +77,7 @@ export const defaultHomeCategories: HomeCategoryContent[] = [
     imageSrc: "/category-images/cat-wallets-cut.png",
     visible: true,
     order: 2,
-    items: [
-      {
-        id: "wallets-1",
-        brand: "생로랑",
-        title: "카산드라 모노그램 컴팩트 월릿",
-        description: "카드와 지폐를 얇게 정리하는 컴팩트 지갑. 오늘출고 상품입니다.",
-        imageSrc: "/category-images/cat-wallets-cut.png",
-        priceLabel: "₩540,000",
-        href: "/product/lp-027",
-      },
-      {
-        id: "wallets-2",
-        brand: "루이비통",
-        title: "모노그램 지퍼 카드지갑",
-        description: "주머니에 들어가는 카드홀더. 선물용으로 고르기 쉬운 사이즈입니다.",
-        imageSrc: "/category-images/feat-wallets-cut.png",
-        priceLabel: "₩480,000",
-        href: "/product/lp-044",
-      },
-    ],
+    items: [],
   },
   {
     id: "watches",
@@ -145,26 +88,7 @@ export const defaultHomeCategories: HomeCategoryContent[] = [
     imageSrc: "/category-images/cat-watches-cut.png",
     visible: true,
     order: 3,
-    items: [
-      {
-        id: "watches-1",
-        brand: "롤렉스",
-        title: "데이저스트 36 오이스터 퍼페츄얼",
-        description: "샴페인 다이얼의 클래식 드레스 워치. 오늘 출고 가능한 검수 완료 상품입니다.",
-        imageSrc: "/category-images/cat-watches-cut.png",
-        priceLabel: "₩14,200,000",
-        href: "/product/lp-005",
-      },
-      {
-        id: "watches-2",
-        brand: "롤렉스",
-        title: "서브마리너 데이트 오이스터",
-        description: "블루 다이얼 스포츠 워치. 상태와 구성품을 확인한 뒤 등록했습니다.",
-        imageSrc: "/category-images/feat-watches-cut.png",
-        priceLabel: "₩18,900,000",
-        href: "/product/lp-050",
-      },
-    ],
+    items: [],
   },
   {
     id: "jewelry",
@@ -175,26 +99,7 @@ export const defaultHomeCategories: HomeCategoryContent[] = [
     imageSrc: "/category-images/cat-jewelry-cut.png",
     visible: true,
     order: 4,
-    items: [
-      {
-        id: "jewelry-1",
-        brand: "까르띠에",
-        title: "러브 브레이슬릿 옐로우골드",
-        description: "매일 착용해도 부담 없는 골드 브레이슬릿. 구성과 각인을 검수했습니다.",
-        imageSrc: "/category-images/cat-jewelry-cut.png",
-        priceLabel: "₩6,820,000",
-        href: "/product/lp-031",
-      },
-      {
-        id: "jewelry-2",
-        brand: "까르띠에",
-        title: "저스트 앵끌루 링",
-        description: "포인트가 분명한 골드 링. 선물용으로 고르기 쉬운 사이즈입니다.",
-        imageSrc: "/category-images/feat-jewelry-cut.png",
-        priceLabel: "₩2,150,000",
-        href: "/product/lp-049",
-      },
-    ],
+    items: [],
   },
   {
     id: "shoes",
@@ -205,26 +110,7 @@ export const defaultHomeCategories: HomeCategoryContent[] = [
     imageSrc: "/category-images/cat-shoes-cut.png",
     visible: true,
     order: 5,
-    items: [
-      {
-        id: "shoes-1",
-        brand: "발렌티노",
-        title: "다운타운 레더 스니커즈",
-        description: "흰 레더 스니커즈의 정석. 오늘출고로 바로 신을 수 있습니다.",
-        imageSrc: "/category-images/cat-shoes-cut.png",
-        priceLabel: "₩890,000",
-        href: "/product/lp-030",
-      },
-      {
-        id: "shoes-2",
-        brand: "토즈",
-        title: "페니 로퍼 슈즈",
-        description: "검은 레더 페니 로퍼. 정장과 캐주얼 사이에 두기 좋은 한 켤레입니다.",
-        imageSrc: "/category-images/feat-shoes-cut.png",
-        priceLabel: "₩720,000",
-        href: "/product/lp-053",
-      },
-    ],
+    items: [],
   },
   {
     id: "pre-owned",
@@ -235,26 +121,7 @@ export const defaultHomeCategories: HomeCategoryContent[] = [
     imageSrc: "/category-images/cat-pre-owned-cut.png",
     visible: true,
     order: 6,
-    items: [
-      {
-        id: "pre-owned-1",
-        brand: "샤넬",
-        title: "보이백 올드미디움 캐비어",
-        description: "A급 중고로 검수 완료된 클래식 백. 하드웨어와 코너 상태를 공개합니다.",
-        imageSrc: "/category-images/cat-pre-owned-cut.png",
-        priceLabel: "₩7,620,000",
-        href: "/product/lp-014",
-      },
-      {
-        id: "pre-owned-2",
-        brand: "까르띠에",
-        title: "탱크 머스트 레더 스트랩 워치",
-        description: "빈티지 무드의 가죽 스트랩 워치. 케이스와 브레이슬릿 상태를 검수했습니다.",
-        imageSrc: "/category-images/feat-pre-owned-cut.png",
-        priceLabel: "₩4,280,000",
-        href: "/product/lp-011",
-      },
-    ],
+    items: [],
   },
   {
     id: "today-ship",
@@ -265,26 +132,7 @@ export const defaultHomeCategories: HomeCategoryContent[] = [
     imageSrc: "/category-images/cat-today-ship-cut.png",
     visible: true,
     order: 7,
-    items: [
-      {
-        id: "today-ship-1",
-        brand: "샤넬",
-        title: "클래식 미디움 플랩백",
-        description: "검수 완료 후 국내 센터에 대기 중인 플랩백. 오늘 결제 시 당일 출고입니다.",
-        imageSrc: "/category-images/cat-today-ship-cut.png",
-        priceLabel: "₩9,480,000",
-        href: "/product/lp-001",
-      },
-      {
-        id: "today-ship-2",
-        brand: "샤넬",
-        title: "WOC 체인 월릿 캐비어",
-        description: "미니 백처럼 쓰는 체인 월릿. 국내 재고로 오늘 출고됩니다.",
-        imageSrc: "/category-images/feat-today-ship-cut.png",
-        priceLabel: "₩4,280,000",
-        href: "/product/lp-039",
-      },
-    ],
+    items: [],
   },
 ];
 
@@ -335,7 +183,9 @@ export function normalizeHomeCategoryItem(
   };
 }
 
-export function mergeHomeCategories(stored: Array<Record<string, unknown> & { id: string }>): HomeCategoryContent[] {
+export function mergeHomeCategories(
+  stored: Array<Record<string, unknown> & { id: string }>
+): HomeCategoryContent[] {
   const byId = new Map(stored.map((item) => [item.id, item]));
 
   return defaultHomeCategories.map((fallback) => {
@@ -354,7 +204,9 @@ export function mergeHomeCategories(stored: Array<Record<string, unknown> & { id
       href: asString(override.href, fallback.href) || fallback.href,
       hint: asString(override.hint, fallback.hint) || fallback.hint,
       description: asString(override.description, fallback.description),
-      imageSrc: toCutoutImageSrc(asString(override.imageSrc, fallback.imageSrc) || fallback.imageSrc),
+      imageSrc: toCutoutImageSrc(
+        asString(override.imageSrc, fallback.imageSrc) || fallback.imageSrc
+      ),
       visible: asBoolean(override.visible, fallback.visible),
       order: asNumber(override.order, fallback.order),
       items,
@@ -362,6 +214,10 @@ export function mergeHomeCategories(stored: Array<Record<string, unknown> & { id
   });
 }
 
-export function getDefaultHomeCategory(id: string): HomeCategoryContent | undefined {
-  return isHomeCategoryId(id) ? defaultHomeCategories.find((item) => item.id === id) : undefined;
+export function getDefaultHomeCategory(
+  id: string
+): HomeCategoryContent | undefined {
+  return isHomeCategoryId(id)
+    ? defaultHomeCategories.find((item) => item.id === id)
+    : undefined;
 }

@@ -207,38 +207,18 @@ export const inspectionEvidence = [
   },
 ] as const;
 
-export const homePurchaseReviews = [
-  {
-    id: "rv-1",
-    brand: "샤넬",
-    name: "클래식 미디움 플랩백",
-    imageUrl: "https://firebasestorage.googleapis.com/v0/b/lemichu-25c26.firebasestorage.app/o/products%2Fseed-lp-001%2F0-lp-001%2Foriginal.png?alt=media&token=a896f806-511f-4537-b53f-1b38c1d8eaf7",
-    href: "/product/lp-001",
-    rating: 5,
-    verified: true,
-    body: "검수 리포트와 상태가 설명 그대로였어요. 받자마자 따로 확인할 필요가 없었습니다.",
-  },
-  {
-    id: "rv-2",
-    brand: "루이비통",
-    name: "온더고 MM",
-    imageUrl: "https://firebasestorage.googleapis.com/v0/b/lemichu-25c26.firebasestorage.app/o/products%2Fseed-lp-003%2F0-lp-003%2Foriginal.png?alt=media&token=f6aefc3e-7972-4498-bae9-2fd5d8891b6b",
-    href: "/product/lp-003",
-    rating: 5,
-    verified: true,
-    body: "포장이 꼼꼼하고 안내받은 기간 안에 도착했어요. 구성품도 사진과 같았습니다.",
-  },
-  {
-    id: "rv-3",
-    brand: "에르메스",
-    name: "가든파티 36",
-    imageUrl: "https://firebasestorage.googleapis.com/v0/b/lemichu-25c26.firebasestorage.app/o/products%2Fseed-lp-002%2F0-lp-002%2Foriginal.png?alt=media&token=0f86389f-6cc2-44d2-a84b-82908ba26736",
-    href: "/product/lp-002",
-    rating: 5,
-    verified: true,
-    body: "구성품 사진과 실물이 같아서 안심이 됐습니다. 다음에도 여기서 살 것 같아요.",
-  },
-] as const;
+export type HomePurchaseReview = {
+  id: string;
+  brand: string;
+  name: string;
+  imageUrl: string;
+  href: string;
+  rating: number;
+  verified: boolean;
+  body: string;
+};
+
+export const homePurchaseReviews: HomePurchaseReview[] = [];
 
 export const homeFaqItems = [
   {

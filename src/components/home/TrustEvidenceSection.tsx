@@ -65,6 +65,7 @@ export function TrustEvidenceSection() {
           ))}
         </ul>
 
+        {homePurchaseReviews.length > 0 ? (
         <div className="mt-12 md:mt-16">
           <h3 className="text-[18px] font-bold tracking-tight text-foreground md:text-[20px]">
             구매 인증 후기
@@ -112,6 +113,7 @@ export function TrustEvidenceSection() {
             ))}
           </ul>
         </div>
+        ) : null}
 
         <Link
           href="/policy/guarantee"

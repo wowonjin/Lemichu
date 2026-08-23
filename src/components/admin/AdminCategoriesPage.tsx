@@ -447,7 +447,7 @@ export function AdminCategoriesPage() {
                 <Input
                   value={itemDraft.href}
                   onChange={(value) => setItemDraft((current) => ({ ...current, href: value }))}
-                  placeholder="/product/lp-001"
+                  placeholder="/product/buyma-123456789"
                 />
               </Field>
               <Field label="이미지" required className="sm:col-span-2">

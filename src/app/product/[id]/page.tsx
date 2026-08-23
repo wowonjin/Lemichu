@@ -4,26 +4,25 @@ import Link from "next/link";
 import {
   ChevronRight,
   MessageCircle,
-  Package,
   ShieldCheck,
   Star,
   Truck,
 } from "lucide-react";
-import { PriceDisplay } from "@/components/product/PriceDisplay";
-import {
-  AuthenticationBadge,
-  ConditionBadge,
-} from "@/components/product/ProductBadge";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductFaq } from "@/components/product/ProductFaq";
-import { ProductInquiryChat } from "@/components/product/ProductInquiryChat";
 import { ProductReviews } from "@/components/product/ProductReviews";
 import { ProductPurchaseBar } from "@/components/product/ProductPurchaseBar";
 import { ProductCheckoutActions } from "@/components/product/ProductCheckoutActions";
+import {
+  ProductVariantPrice,
+  ProductVariantPurchaseProvider,
+  ProductVariantSelector,
+} from "@/components/product/ProductVariantPurchase";
 import { RecentlyViewedTracker } from "@/components/account/RecentlyViewedTracker";
+import { ProductAdminEditor } from "@/components/product/ProductAdminEditor";
+import { ProductImageGallery } from "@/components/product/ProductImageGallery";
 import { getCatalogProductById, getCatalogProducts } from "@/lib/catalog";
 import { AUTHENTICITY_GUARANTEE } from "@/lib/guarantee";
-import { getPlaceholderGradient, isRealImage } from "@/lib/placeholder";
 import { formatProductOptions } from "@/lib/productOptions";
 import { defaultProductReviews, getReviewSummary } from "@/data/productReviews";
 import type { Product } from "@/types/product";
@@ -97,171 +96,76 @@ export default async function ProductDetailPage({
   return (
     <div className="bg-background pb-28">
       <RecentlyViewedTracker productId={product.id} />
+      <ProductAdminEditor product={product} />
       <div className="container py-6 md:py-10">
-        <nav className="flex items-center gap-1.5 border-b border-border pb-4 text-xs text-muted-foreground">
+        <nav className="flex items-center gap-1.5 text-[13px] text-[#8B8B8B] dark:text-muted-foreground">
           <Link href="/" className="transition-colors hover:text-foreground">
             홈
           </Link>
-          <ChevronRight className="size-3.5" />
+          <ChevronRight className="size-3.5 text-[#D0D0D0]" />
           <Link href="/brand" className="transition-colors hover:text-foreground">
             브랜드
           </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="text-foreground">{product.brand}</span>
+          <ChevronRight className="size-3.5 text-[#D0D0D0]" />
+          <span className="font-medium text-foreground">{product.brand}</span>
         </nav>
 
-        <section className="grid gap-10 border-b border-border py-8 lg:grid-cols-[minmax(0,58%)_minmax(380px,1fr)] lg:gap-14">
-          <div className="grid gap-4 md:grid-cols-[76px_minmax(0,1fr)]">
-            <div className="hidden space-y-3 md:block">
-              {galleryImages.slice(0, 4).map(
-                (imageUrl, index) => (
-                  <div
-                    key={`${imageUrl}-${index}`}
-                    className="aspect-square border border-border bg-[#f8f8f8] p-1.5"
-                  >
-                    <div
-                      className="h-full bg-[#f3f3f3]"
-                      style={
-                        isRealImage(imageUrl)
-                          ? undefined
-                          : { backgroundImage: getPlaceholderGradient(`${product.id}-${index}`) }
-                      }
-                    >
-                      {isRealImage(imageUrl) ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={imageUrl}
-                          alt={`${product.brand} ${product.name}`}
-                          className="h-full w-full object-contain p-1 mix-blend-multiply"
-                        />
-                      ) : null}
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
+        <section className="grid gap-10 py-6 md:py-8 lg:grid-cols-[minmax(0,58%)_minmax(380px,1fr)] lg:gap-14">
+          <ProductImageGallery product={product} images={galleryImages} />
 
-            <div>
-              <div className="relative aspect-square border border-border bg-[#f8f8f8]">
-                <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-1.5">
-                  <AuthenticationBadge status={product.authenticationStatus} />
-                  {product.isPreOwned && product.condition ? (
-                    <ConditionBadge condition={product.condition} />
-                  ) : null}
-                </div>
-                {isRealImage(galleryImages[0]) ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={galleryImages[0]}
-                    alt={`${product.brand} ${product.name}`}
-                    className="h-full w-full object-contain p-10 mix-blend-multiply md:p-16"
-                  />
-                ) : (
-                  <div
-                    className="h-full w-full"
-                    style={{ backgroundImage: getPlaceholderGradient(product.id) }}
-                  />
-                )}
-              </div>
-
-              <div className="mt-5 grid grid-cols-3 border border-border text-center text-sm">
-                <TrustCell icon={ShieldCheck} title="정품 검수" description="출고 전 확인" />
-                <TrustCell icon={Truck} title={product.deliveryBadge} description={deliveryCopy} />
-                <TrustCell icon={Package} title="구성품" description={packageItems.join(" / ")} />
-              </div>
-            </div>
-          </div>
-
+          <ProductVariantPurchaseProvider product={product}>
           <aside className="lg:sticky lg:top-28 lg:self-start">
-            <div className="border-b border-border pb-5">
+            <div className="pb-5">
               <Link
                 href={`/search?q=${encodeURIComponent(product.brand)}`}
-                className="inline-flex items-center gap-1 text-sm font-semibold text-foreground underline-offset-4 hover:underline"
+                className="group inline-flex items-center gap-0.5 text-[15px] font-bold tracking-tight text-foreground"
               >
                 {product.brand}
-                <ChevronRight className="size-4 text-muted-foreground" />
+                <ChevronRight className="size-4 text-[#B0B0B0] transition-transform group-hover:translate-x-0.5" />
               </Link>
 
-              <h1 className="mt-3 text-xl font-medium leading-8 tracking-tight text-foreground md:text-2xl">
+              <h1 className="mt-2.5 text-[20px] font-semibold leading-[1.4] tracking-tight text-foreground md:text-[22px]">
                 {product.name}
               </h1>
 
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+              <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px]">
                 <span className="inline-flex items-center gap-1 text-foreground">
-                  <Star className="size-4 fill-gold text-gold" />
+                  <Star className="size-3.5 fill-gold text-gold" />
                   <span className="font-semibold">{reviewSummary.averageLabel}</span>
                 </span>
-                <Link href="#reviews" className="text-muted-foreground underline-offset-4 hover:underline">
+                <Link
+                  href="#reviews"
+                  className="text-[#8B8B8B] underline-offset-4 transition-colors hover:text-foreground hover:underline dark:text-muted-foreground"
+                >
                   리뷰 {reviewSummary.count}개
                 </Link>
-                <span className="text-muted-foreground">상품번호 {product.id.toUpperCase()}</span>
+                <span className="text-[#B0B0B0] dark:text-muted-foreground">
+                  상품번호 {product.id.toUpperCase()}
+                </span>
               </div>
             </div>
 
-            <div className="border-b border-border py-5">
-              <PriceDisplay
-                price={product.price}
-                retailPrice={product.retailPrice}
-                discountRate={product.discountRate}
-                size="lg"
-              />
-              <dl className="mt-4 divide-y divide-border text-sm">
+            <div className="rounded-[20px] bg-[#F7F7F7] px-6 py-6 dark:bg-muted">
+              <ProductVariantPrice />
+              <dl className="mt-5 space-y-3 border-t border-[#E8E8E8] pt-5 text-[13px] dark:border-border">
                 <InfoLine label="카드혜택" value="무이자 할부 및 카드사 혜택 적용 가능" />
                 <InfoLine label="배송정보" value={deliveryCopy} />
                 <InfoLine label="관부가세" value="상품가 포함, 추가 비용 없음" />
                 <InfoLine label="정품보장" value={AUTHENTICITY_GUARANTEE} />
+                <InfoLine label="구성" value={packageItems.join(" / ")} />
               </dl>
             </div>
 
-            <div className="border-b border-border py-5">
-              {options.sizes.length > 0 ? (
-                <OptionBlock title={options.sizeLabel}>
-                  <div className="grid gap-2">
-                    {options.sizes.map((size) => (
-                      <div
-                        key={size.label}
-                        className="flex min-h-12 items-center justify-between border border-foreground bg-secondary px-4 text-left text-sm"
-                      >
-                        <span className="font-semibold text-foreground">{size.label}</span>
-                        {size.detail ? (
-                          <span className="text-xs text-muted-foreground">{size.detail}</span>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
-                </OptionBlock>
-              ) : null}
-
-              {options.colors.length > 0 ? (
-                <OptionBlock title="색상">
-                  <div className="grid grid-cols-2 gap-2">
-                    {options.colors.map((color) => (
-                      <div
-                        key={color.label}
-                        className="min-h-11 border border-foreground bg-secondary px-3 text-left text-sm font-semibold leading-[2.75rem] text-foreground"
-                      >
-                        {color.label}
-                      </div>
-                    ))}
-                  </div>
-                </OptionBlock>
-              ) : null}
-            </div>
-
-            <div className="border-b border-border py-5">
-              <p className="text-sm font-semibold text-foreground">구성</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {packageItems.join(" / ")}
-              </p>
-            </div>
+            <ProductVariantSelector />
 
             <ProductCheckoutActions product={product} />
-            <ProductInquiryChat product={product} />
           </aside>
+          <ProductPurchaseBar product={product} />
+          </ProductVariantPurchaseProvider>
         </section>
 
-        <nav className="sticky top-[113px] z-20 -mx-4 border-b border-border bg-background/95 px-4 backdrop-blur">
-          <div className="container flex h-14 gap-8 overflow-x-auto px-0 text-sm font-semibold no-scrollbar">
+        <nav className="sticky top-[113px] z-20 -mx-4 border-b border-[#EEEEEE] bg-background/95 px-4 backdrop-blur dark:border-border">
+          <div className="container flex h-14 gap-7 overflow-x-auto px-0 text-[14px] font-semibold no-scrollbar">
             {[
               ["#detail", "상품정보"],
               ["#delivery", "배송/반품"],
@@ -271,7 +175,7 @@ export default async function ProductDetailPage({
               <a
                 key={href}
                 href={href}
-                className="flex shrink-0 items-center border-b-2 border-transparent text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+                className="flex shrink-0 items-center border-b-2 border-transparent text-[#8B8B8B] transition-colors hover:border-foreground hover:text-foreground dark:text-muted-foreground"
               >
                 {label}
               </a>
@@ -279,20 +183,25 @@ export default async function ProductDetailPage({
           </div>
         </nav>
 
-        <section id="detail" className="grid gap-10 border-b border-border py-10 lg:grid-cols-[180px_minmax(0,1fr)]">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">상품정보</h2>
-            <p className="mt-2 text-sm text-muted-foreground">구매 전 필수 확인 정보</p>
+        <section id="detail" className="scroll-mt-40 py-12 md:py-16">
+          <div className="max-w-[640px]">
+            <h2 className="text-[24px] font-bold leading-[1.3] tracking-tight text-foreground md:text-[30px]">
+              상품정보
+            </h2>
+            <p className="mt-2 text-[14px] leading-6 text-[#8B8B8B] dark:text-muted-foreground md:text-[15px]">
+              구매 전 꼭 확인해야 할 정보를 모았어요.
+            </p>
           </div>
-          <div>
-            <section className="border-b border-border pb-8">
-              <h3 className="text-lg font-semibold text-foreground">
+
+          <div className="mt-7 grid gap-3 md:mt-8 lg:grid-cols-2 lg:gap-4">
+            <div className="rounded-[20px] bg-[#F7F7F7] px-6 py-6 dark:bg-muted md:px-7 md:py-7">
+              <h3 className="text-[16px] font-bold tracking-tight text-foreground md:text-[17px]">
                 {product.brand} {product.name}
               </h3>
-              <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground">
+              <div className="mt-4 space-y-3 text-[14px] leading-6 text-[#6B6B6B] dark:text-muted-foreground">
                 {product.detailContent ? (
                   <div
-                    className="prose prose-sm max-w-none text-muted-foreground"
+                    className="prose prose-sm max-w-none text-[#6B6B6B] dark:text-muted-foreground"
                     dangerouslySetInnerHTML={{ __html: product.detailContent }}
                   />
                 ) : (
@@ -310,49 +219,61 @@ export default async function ProductDetailPage({
                   </>
                 )}
               </div>
-            </section>
+            </div>
 
-            <section className="border-b border-border py-8">
-              <h3 className="text-lg font-semibold text-foreground">상품 상세</h3>
-              <dl className="mt-5 divide-y divide-border border-y border-border">
+            <div className="rounded-[20px] bg-[#F7F7F7] px-6 py-6 dark:bg-muted md:px-7 md:py-7">
+              <h3 className="text-[16px] font-bold tracking-tight text-foreground md:text-[17px]">
+                상품 상세
+              </h3>
+              <dl className="mt-4 divide-y divide-[#EBEBEB] dark:divide-border">
                 {detailRows.map(([label, value]) => (
-                  <div key={label} className="grid grid-cols-[120px_minmax(0,1fr)] py-3 text-sm">
-                    <dt className="text-muted-foreground">{label}</dt>
+                  <div key={label} className="grid grid-cols-[110px_minmax(0,1fr)] py-2.5 text-[13px]">
+                    <dt className="text-[#8B8B8B] dark:text-muted-foreground">{label}</dt>
                     <dd className="font-medium text-foreground">{value}</dd>
                   </div>
                 ))}
               </dl>
-            </section>
-
-            {options.sizeGuide.length > 0 ? (
-              <section className="py-8">
-                <h3 className="text-lg font-semibold text-foreground">사이즈 안내</h3>
-                <div className="mt-5 divide-y divide-border border-y border-border">
-                  {options.sizeGuide.map((size) => (
-                    <div key={size.label} className="grid grid-cols-[120px_minmax(0,1fr)] py-3 text-sm">
-                      <dt className="font-semibold text-foreground">{size.label}</dt>
-                      <dd className="text-muted-foreground">{size.detail ?? "해당 상품 사이즈"}</dd>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ) : null}
+            </div>
           </div>
+
+          {options.sizeGuide.length > 0 ? (
+            <div className="mt-3 rounded-[20px] bg-[#F7F7F7] px-6 py-6 dark:bg-muted md:mt-4 md:px-7 md:py-7">
+              <h3 className="text-[16px] font-bold tracking-tight text-foreground md:text-[17px]">
+                사이즈 안내
+              </h3>
+              <div className="mt-4 divide-y divide-[#EBEBEB] dark:divide-border">
+                {options.sizeGuide.map((size) => (
+                  <div key={size.label} className="grid grid-cols-[110px_minmax(0,1fr)] py-2.5 text-[13px]">
+                    <dt className="font-semibold text-foreground">{size.label}</dt>
+                    <dd className="text-[#8B8B8B] dark:text-muted-foreground">
+                      {size.detail ?? "해당 상품 사이즈"}
+                    </dd>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </section>
 
-        <section id="delivery" className="grid gap-10 border-b border-border py-10 lg:grid-cols-[180px_minmax(0,1fr)]">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">배송/반품</h2>
-            <p className="mt-2 text-sm text-muted-foreground">정책 및 보상 안내</p>
+        <section id="delivery" className="scroll-mt-40 pb-12 md:pb-16">
+          <div className="max-w-[640px]">
+            <h2 className="text-[24px] font-bold leading-[1.3] tracking-tight text-foreground md:text-[30px]">
+              배송/반품
+            </h2>
+            <p className="mt-2 text-[14px] leading-6 text-[#8B8B8B] dark:text-muted-foreground md:text-[15px]">
+              배송 일정과 보상 정책을 구매 전에 확인하세요.
+            </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            <PolicyCard title="배송" description={deliveryCopy} icon={Truck} />
+          <div className="mt-7 grid gap-3 md:mt-8 md:grid-cols-3 md:gap-4">
+            <PolicyCard id="01" title="배송" description={deliveryCopy} icon={Truck} />
             <PolicyCard
+              id="02"
               title="정품 보장"
               description={AUTHENTICITY_GUARANTEE}
               icon={ShieldCheck}
             />
             <PolicyCard
+              id="03"
               title="문의"
               description="상품 옵션과 구성품은 구매 전 문의 가능"
               icon={MessageCircle}
@@ -360,101 +281,78 @@ export default async function ProductDetailPage({
           </div>
         </section>
 
-        <section className="border-b border-border py-10">
-          <div className="mb-6 flex items-end justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">함께 보면 좋은 상품</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
+        <section className="pb-12 md:pb-16">
+          <div className="flex items-end justify-between gap-4">
+            <div className="min-w-0">
+              <h2 className="text-[24px] font-bold leading-[1.3] tracking-tight text-foreground md:text-[30px]">
+                함께 보면 좋은 상품
+              </h2>
+              <p className="mt-2 text-[14px] leading-6 text-[#8B8B8B] dark:text-muted-foreground md:text-[15px]">
                 같은 브랜드와 인기 상품을 함께 확인해 보세요.
               </p>
             </div>
             <Link
               href="/new-arrivals"
-              className="hidden items-center gap-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground md:inline-flex"
+              className="group hidden shrink-0 items-center gap-0.5 text-[13px] font-medium text-[#8B8B8B] transition-colors hover:text-foreground dark:text-muted-foreground md:inline-flex md:text-[14px]"
             >
               더보기
-              <ChevronRight className="size-4" />
+              <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="mt-7 grid grid-cols-2 gap-4 sm:grid-cols-3 md:mt-8 lg:grid-cols-5">
             {recommendedProducts.map((item) => (
               <ProductCard key={item.id} product={item} />
             ))}
           </div>
         </section>
 
-        <section id="reviews" className="border-b border-border py-10">
+        <section id="reviews" className="scroll-mt-40 pb-12 md:pb-16">
           <ProductReviews initialReviews={defaultProductReviews} />
         </section>
 
-        <section id="faq" className="py-10">
+        <section id="faq" className="scroll-mt-40">
           <ProductFaq />
         </section>
 
-        <ProductPurchaseBar product={product} />
       </div>
-    </div>
-  );
-}
-
-function TrustCell({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: typeof ShieldCheck;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="border-r border-border p-4 last:border-r-0">
-      <Icon className="mx-auto size-5 text-gold" strokeWidth={1.8} />
-      <p className="mt-2 text-sm font-semibold text-foreground">{title}</p>
-      <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
-        {description}
-      </p>
     </div>
   );
 }
 
 function InfoLine({ label, value }: { label: string; value: string }) {
   return (
-    <div className="grid grid-cols-[84px_minmax(0,1fr)] gap-4 py-3">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-medium text-foreground">{value}</dd>
-    </div>
-  );
-}
-
-function OptionBlock({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mt-5 first:mt-0">
-      <p className="mb-2 text-sm font-semibold text-foreground">{title}</p>
-      {children}
+    <div className="grid grid-cols-[76px_minmax(0,1fr)] gap-3">
+      <dt className="text-[#8B8B8B] dark:text-muted-foreground">{label}</dt>
+      <dd className="font-medium leading-5 text-foreground">{value}</dd>
     </div>
   );
 }
 
 function PolicyCard({
+  id,
   icon: Icon,
   title,
   description,
 }: {
+  id: string;
   icon: typeof Truck;
   title: string;
   description: string;
 }) {
   return (
-    <div className="border border-border p-5">
-      <Icon className="size-5 text-gold" strokeWidth={1.8} />
-      <h3 className="mt-4 text-sm font-semibold text-foreground">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
+    <div className="flex flex-col rounded-[20px] bg-[#F7F7F7] px-6 py-6 dark:bg-muted md:min-h-[180px] md:px-7 md:py-7">
+      <div className="flex items-start justify-between gap-4">
+        <Icon className="size-5 text-foreground" strokeWidth={1.5} aria-hidden />
+        <span className="text-[12px] font-bold tabular-nums tracking-tight text-[#B0B0B0] dark:text-muted-foreground">
+          {id}
+        </span>
+      </div>
+      <h3 className="mt-5 text-[17px] font-bold tracking-tight text-foreground md:text-[18px]">
+        {title}
+      </h3>
+      <p className="mt-2 text-[14px] leading-6 text-[#8B8B8B] dark:text-muted-foreground">
+        {description}
+      </p>
     </div>
   );
 }

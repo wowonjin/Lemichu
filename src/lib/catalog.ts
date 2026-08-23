@@ -13,6 +13,11 @@ import {
 } from "@/lib/homeCatalog";
 import { getPublishedHomeCategories } from "@/lib/home-categories-server";
 import type { StoreProduct } from "@/lib/products";
+import {
+  getProductAvailabilityFromVariants,
+  getProductStockFromVariants,
+  isVariantAvailable,
+} from "@/lib/product-variants";
 import { getTodaySaleEndIso } from "@/lib/saleWindow";
 import type { Product, RankedProduct } from "@/types/product";
 
@@ -21,6 +26,7 @@ type ProductDoc = StoreProduct & {
   size?: string;
   isPreOwned?: boolean;
   todayShip?: boolean;
+  overseasShipping?: boolean;
   storeCategoryId?: string;
 };
 
@@ -54,6 +60,14 @@ function imageUrlFor(product: ProductDoc) {
 }
 
 export function storeProductToProduct(product: ProductDoc): Product {
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  const stockQuantity = getProductStockFromVariants(variants, product.stockQuantity);
+  const availableVariantSurcharges = variants
+    .filter(isVariantAvailable)
+    .map((variant) => Math.max(variant.surchargeKrw ?? 0, 0));
+  const salePrice =
+    product.salePrice +
+    (availableVariantSurcharges.length > 0 ? Math.min(...availableVariantSurcharges) : 0);
   const retailPrice =
     typeof product.retailPrice === "number" && product.retailPrice > 0
       ? product.retailPrice
@@ -61,8 +75,8 @@ export function storeProductToProduct(product: ProductDoc): Product {
   const isPreOwned = Boolean(product.isPreOwned);
   const deliveryBadge: Product["deliveryBadge"] = product.todayShip
     ? "오늘출고"
-    : product.stockQuantity > 0
-      ? product.deliveryFee > 0
+    : stockQuantity > 0
+      ? product.overseasShipping || product.deliveryFee > 0
         ? "해외배송"
         : "국내배송"
       : "예약배송";
@@ -80,9 +94,10 @@ export function storeProductToProduct(product: ProductDoc): Product {
     name: product.name,
     imageUrl: imageUrlFor(product),
     imageUrls: [imageUrlFor(product), ...(product.optionalImageUrls ?? [])].filter(Boolean),
-    price: product.salePrice,
+    price: salePrice,
+    basePrice: product.salePrice,
     retailPrice,
-    discountRate: getDiscountRate(product.salePrice, retailPrice),
+    discountRate: getDiscountRate(salePrice, retailPrice),
     color: product.color,
     size: product.size,
     detailContent: product.detailContent,
@@ -93,9 +108,9 @@ export function storeProductToProduct(product: ProductDoc): Product {
     deliveryBadge,
     badges,
     href: `/product/${product.id}`,
-    stockQuantity: product.stockQuantity,
-    availability:
-      product.stockQuantity > 0 ? "available" : "temporarily_unavailable",
+    stockQuantity,
+    variants,
+    availability: getProductAvailabilityFromVariants(variants, product.stockQuantity),
   };
 }
 

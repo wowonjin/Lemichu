@@ -234,6 +234,11 @@ export function AdminOrdersPage() {
                       수량 {order.itemCount}개
                       {extraCount > 0 ? ` · 외 ${extraCount}개 상품` : ""}
                     </p>
+                    {firstItem?.option ? (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        옵션 {firstItem.option}
+                      </p>
+                    ) : null}
                   </td>
                   <td className="px-4 py-4 font-semibold tabular-nums text-foreground">
                     {formatPriceWithUnit(order.amounts.finalTotal)}

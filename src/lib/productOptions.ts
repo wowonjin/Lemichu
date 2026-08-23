@@ -1,5 +1,6 @@
 import type { Product } from "@/types/product";
 import { getProductKind, type ProductKind } from "@/lib/productKind";
+import { isVariantAvailable } from "@/lib/product-variants";
 
 export type ProductOption = {
   label: string;
@@ -38,6 +39,31 @@ function asSingle(label?: string, detail?: string): ProductOption[] {
 
 export function getProductOptionSet(product: Product): ProductOptionSet {
   const kind = getProductKind(product);
+  if (product.variants?.length) {
+    const sizes = product.variants.map((variant) => ({
+      label: variant.size?.trim() || "단일 사이즈",
+      detail: isVariantAvailable(variant) ? undefined : "품절",
+    }));
+    const colors = product.variants.map((variant) => ({
+      label: variant.color?.trim() || "기본 색상",
+    }));
+    const sizeGuide = product.variants
+      .filter((variant) => variant.measurements && Object.keys(variant.measurements).length > 0)
+      .map((variant) => ({
+        label: variant.size?.trim() || "단일 사이즈",
+        detail: Object.entries(variant.measurements ?? {})
+          .map(([label, value]) => `${label} ${value}`)
+          .join(" · "),
+      }));
+
+    return {
+      kind,
+      sizeLabel: kind === "watch" ? "케이스 사이즈" : "사이즈",
+      sizes: uniqueOptions(sizes),
+      colors: uniqueOptions(colors),
+      sizeGuide: uniqueOptions(sizeGuide),
+    };
+  }
   const color = asSingle(product.color);
   const size = product.size?.trim();
 

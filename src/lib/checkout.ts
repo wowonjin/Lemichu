@@ -1,7 +1,14 @@
 import type { Product } from "@/types/product";
+import {
+  getVariantLabel,
+  getVariantPrice,
+  isVariantAvailable,
+} from "@/lib/product-variants";
+import type { ProductVariant } from "@/types/product";
 
 export type CheckoutItemInput = {
   productId: string;
+  variantId?: string;
   quantity?: number;
   option?: string;
   expectedArrival?: string;
@@ -10,7 +17,10 @@ export type CheckoutItemInput = {
 
 export type ResolvedCheckoutItem = {
   product: Product;
+  variant?: ProductVariant;
   quantity: number;
+  unitPrice: number;
+  unitRetailPrice?: number;
   option: string;
   expectedArrival: string;
   store: string;
@@ -37,6 +47,11 @@ export type OrderItemSnapshot = {
   quantity: number;
   priceAtPurchase: number;
   retailPriceAtPurchase?: number;
+  variantId?: string;
+  color?: string;
+  size?: string;
+  surchargeKrw?: number;
+  measurements?: Record<string, string>;
   deliveryBadge: Product["deliveryBadge"];
   authenticationStatus: Product["authenticationStatus"];
 };
@@ -57,11 +72,17 @@ export function normalizeQuantity(quantity: unknown): number {
   return Math.min(Math.max(Math.floor(nextQuantity), 1), 99);
 }
 
-export function createProductCheckoutItem(product: Product): CheckoutItemInput {
+export function createProductCheckoutItem(
+  product: Product,
+  variant?: ProductVariant
+): CheckoutItemInput {
   return {
     productId: product.id,
+    variantId: variant?.id,
     quantity: 1,
-    option: [product.color, product.size].filter(Boolean).join(" / ") || "단일 옵션",
+    option: variant
+      ? getVariantLabel(variant)
+      : [product.color, product.size].filter(Boolean).join(" / ") || "단일 옵션",
     store: DEFAULT_STORE,
   };
 }
@@ -84,10 +105,43 @@ export function resolveCheckoutItems(
       throw new Error("PRODUCT_NOT_FOUND");
     }
 
+    const variantId = typeof item.variantId === "string" ? item.variantId.trim() : "";
+    const variant = product.variants?.length
+      ? product.variants.find((candidate) => candidate.id === variantId)
+      : undefined;
+    if (product.variants?.length && !variantId) {
+      throw new Error("VARIANT_REQUIRED");
+    }
+    if (product.variants?.length && !variant) {
+      throw new Error("VARIANT_NOT_FOUND");
+    }
+    if (variant && !isVariantAvailable(variant)) {
+      throw new Error("VARIANT_SOLD_OUT");
+    }
+    const quantity = normalizeQuantity(item.quantity);
+    if (
+      variant?.stockStatus === "quantity_managed" &&
+      quantity > (variant.quantity ?? 0)
+    ) {
+      throw new Error("INSUFFICIENT_VARIANT_STOCK");
+    }
+    const unitPrice = getVariantPrice(product, variant);
+    const unitRetailPrice =
+      product.retailPrice !== undefined
+        ? Math.max(product.retailPrice, unitPrice)
+        : undefined;
+
     return {
       product,
-      quantity: normalizeQuantity(item.quantity),
-      option: item.option?.trim() || product.size || product.color || "단일 옵션",
+      variant,
+      quantity,
+      unitPrice,
+      unitRetailPrice,
+      option:
+        (variant ? getVariantLabel(variant) : item.option?.trim()) ||
+        product.size ||
+        product.color ||
+        "단일 옵션",
       expectedArrival: item.expectedArrival?.trim() || getDefaultExpectedArrival(product),
       store: item.store?.trim() || DEFAULT_STORE,
     };
@@ -96,12 +150,12 @@ export function resolveCheckoutItems(
 
 export function calculateCheckoutAmounts(items: ResolvedCheckoutItem[]): CheckoutAmounts {
   const productTotal = items.reduce(
-    (total, item) => total + item.product.price * item.quantity,
+    (total, item) => total + item.unitPrice * item.quantity,
     0
   );
   const retailTotal = items.reduce(
     (total, item) =>
-      total + (item.product.retailPrice ?? item.product.price) * item.quantity,
+      total + (item.unitRetailPrice ?? item.unitPrice) * item.quantity,
     0
   );
   const instantDiscount = Math.max(retailTotal - productTotal, 0);
@@ -129,13 +183,20 @@ export function toOrderItemSnapshot(item: ResolvedCheckoutItem): OrderItemSnapsh
     store: item.store,
     expectedArrival: item.expectedArrival,
     quantity: item.quantity,
-    priceAtPurchase: item.product.price,
+    priceAtPurchase: item.unitPrice,
     deliveryBadge: item.product.deliveryBadge,
     authenticationStatus: item.product.authenticationStatus,
   };
 
-  if (item.product.retailPrice !== undefined) {
-    snapshot.retailPriceAtPurchase = item.product.retailPrice;
+  if (item.unitRetailPrice !== undefined) {
+    snapshot.retailPriceAtPurchase = item.unitRetailPrice;
+  }
+  if (item.variant) {
+    snapshot.variantId = item.variant.id;
+    snapshot.surchargeKrw = item.variant.surchargeKrw;
+    if (item.variant.color) snapshot.color = item.variant.color;
+    if (item.variant.size) snapshot.size = item.variant.size;
+    if (item.variant.measurements) snapshot.measurements = item.variant.measurements;
   }
 
   return snapshot;

@@ -1,4 +1,4 @@
-﻿import { Plus } from "lucide-react";
+﻿import { ChevronDown } from "lucide-react";
 
 type FaqItem = {
   q: string;
@@ -35,20 +35,25 @@ const faqItems: FaqItem[] = [
 export function ProductFaq() {
   return (
     <section>
-      <h2 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">자주 묻는 질문</h2>
-      <p className="mt-1.5 text-sm text-muted-foreground">구매 전 자주 묻는 내용을 모았습니다.</p>
+      <div className="max-w-[640px]">
+        <h2 className="text-[24px] font-bold leading-[1.3] tracking-tight text-foreground md:text-[30px]">
+          자주 묻는 질문
+        </h2>
+        <p className="mt-2 text-[14px] leading-6 text-[#8B8B8B] dark:text-muted-foreground md:text-[15px]">
+          구매 전 자주 묻는 내용을 모았습니다.
+        </p>
+      </div>
 
-      <div className="mt-6 divide-y divide-border border-y border-border">
+      <div className="mt-6 border-t border-[#EEEEEE] dark:border-border md:mt-8">
         {faqItems.map((item) => (
-          <details key={item.q} className="group">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
-              <span className="flex items-start gap-2">
-                <span className="font-serif text-gold">Q.</span>
-                {item.q}
-              </span>
-              <Plus className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-45" />
+          <details key={item.q} className="group border-b border-[#EEEEEE] dark:border-border">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-3.5 text-left text-[14px] font-medium text-foreground md:py-4 md:text-[15px] [&::-webkit-details-marker]:hidden">
+              {item.q}
+              <ChevronDown className="size-4 shrink-0 text-[#8B8B8B] transition-transform duration-200 group-open:rotate-180 dark:text-muted-foreground" />
             </summary>
-            <div className="pb-5 pl-6 pr-2 text-sm leading-relaxed text-muted-foreground">{item.a}</div>
+            <div className="pb-4 pr-8 text-[13px] leading-6 text-[#8B8B8B] dark:text-muted-foreground md:text-[14px]">
+              {item.a}
+            </div>
           </details>
         ))}
       </div>

@@ -32,6 +32,7 @@ function toCheckoutItems(body: unknown): CheckoutItemInput[] {
     const current = item as Record<string, unknown>;
     return {
       productId: typeof current.productId === "string" ? current.productId : "",
+      variantId: typeof current.variantId === "string" ? current.variantId : undefined,
       quantity: typeof current.quantity === "number" ? current.quantity : Number(current.quantity ?? 1),
       option: typeof current.option === "string" ? current.option : undefined,
       expectedArrival:
@@ -45,6 +46,10 @@ function getErrorMessage(error: unknown) {
   const code = error instanceof Error ? error.message : "";
   if (code === "EMPTY_CHECKOUT_ITEMS") return "구매할 상품을 선택해주세요.";
   if (code === "PRODUCT_NOT_FOUND") return "구매할 상품 정보를 찾을 수 없어요.";
+  if (code === "VARIANT_REQUIRED") return "색상과 사이즈 옵션을 선택해주세요.";
+  if (code === "VARIANT_NOT_FOUND") return "선택한 상품 옵션을 찾을 수 없어요.";
+  if (code === "VARIANT_SOLD_OUT") return "선택한 상품 옵션이 품절되었습니다.";
+  if (code === "INSUFFICIENT_VARIANT_STOCK") return "선택한 옵션의 재고가 부족합니다.";
   if (code === "TOSS_PAYMENT_CLIENT_KEY_NOT_SET") return "토스페이먼츠 클라이언트 키 설정이 필요합니다.";
   if (code === "TOSS_PAYMENT_CLIENT_KEY_IS_SECRET_KEY") return "토스페이먼츠 클라이언트 키에 시크릿 키가 입력되어 있어요.";
   if (code === "TOSS_PAYMENT_CLIENT_KEY_IS_WIDGET_KEY") return "토스 단건 결제에는 API 개별 연동 클라이언트 키가 필요합니다.";
@@ -119,10 +124,17 @@ export async function POST(req: Request) {
 
     const errorCode = error instanceof Error ? error.message : "CREATE_ORDER_FAILED";
     const status =
-      errorCode === "INVALID_REQUEST" || errorCode === "EMPTY_CHECKOUT_ITEMS"
+      [
+        "INVALID_REQUEST",
+        "EMPTY_CHECKOUT_ITEMS",
+        "VARIANT_REQUIRED",
+        "VARIANT_NOT_FOUND",
+      ].includes(errorCode)
         ? 400
         : errorCode === "PRODUCT_NOT_FOUND"
           ? 404
+          : ["VARIANT_SOLD_OUT", "INSUFFICIENT_VARIANT_STOCK"].includes(errorCode)
+            ? 409
           : 500;
     return NextResponse.json(
       {

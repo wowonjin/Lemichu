@@ -27,6 +27,8 @@ export function OrderCard({
             src={firstItem.imageUrl}
             alt={`${firstItem.brand} ${firstItem.name}`}
             fill
+            sizes="88px"
+            unoptimized
             className="object-contain p-2"
           />
         ) : (
@@ -53,6 +55,11 @@ export function OrderCard({
             ? `${firstItem.name}${extraCount > 0 ? ` 외 ${extraCount}개` : ""}`
             : "주문 상품 정보를 불러오지 못했어요."}
         </p>
+        {firstItem?.option ? (
+          <p className="mt-1 text-xs text-muted-foreground">
+            옵션 {firstItem.option} · 수량 {firstItem.quantity}개
+          </p>
+        ) : null}
         <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
           {formatPriceWithUnit(order.amounts.finalTotal)}
         </p>

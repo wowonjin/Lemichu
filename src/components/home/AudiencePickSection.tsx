@@ -2,12 +2,11 @@
 
 import { useId, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { CatalogImage } from "@/components/product/CatalogImage";
 import { cn } from "@/lib/cn";
 import { formatPrice, getDiscountRate } from "@/lib/formatPrice";
-import { getPlaceholderGradient, isRealImage } from "@/lib/placeholder";
 import { WishlistToggleButton } from "@/components/product/WishlistToggleButton";
 import type { HomeTabProducts } from "@/lib/homeCatalog";
 import type { Product } from "@/types/product";
@@ -21,20 +20,13 @@ function AudienceProductCard({ product }: { product: Product }) {
     <article className="group relative">
       <Link href={product.href} className="block">
         <div className="relative aspect-square overflow-hidden rounded-[16px] bg-[#F7F7F7] dark:bg-muted">
-          {isRealImage(product.imageUrl) ? (
-            <Image
-              src={product.imageUrl}
-              alt={`${product.brand} ${product.name}`}
-              fill
-              sizes="(min-width: 1024px) 22vw, 48vw"
-              className="object-contain p-6 mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-[1.03] dark:mix-blend-normal md:p-7"
-            />
-          ) : (
-            <div
-              className="h-full w-full"
-              style={{ backgroundImage: getPlaceholderGradient(product.id) }}
-            />
-          )}
+          <CatalogImage
+            src={product.imageUrl}
+            alt={`${product.brand} ${product.name}`}
+            seed={product.id}
+            sizes="(min-width: 1024px) 22vw, 48vw"
+            className="object-contain p-6 mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-[1.03] dark:mix-blend-normal md:p-7"
+          />
         </div>
 
         <div className="mt-3 min-w-0 md:mt-3.5">

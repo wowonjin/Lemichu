@@ -53,7 +53,7 @@ export function ProductInquiryChat({ product }: { product: Product }) {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="mt-2 flex h-12 w-full items-center justify-center gap-2 border border-border bg-background text-sm font-medium text-foreground transition-colors hover:bg-secondary">
+      <button type="button" onClick={() => setOpen(true)} className="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[#EBEBEB] bg-background text-sm font-semibold text-foreground transition-colors hover:bg-[#F7F7F7] dark:border-border dark:hover:bg-muted">
         <MessageCircle className="size-4 text-gold" />
         상품 문의하기
       </button>

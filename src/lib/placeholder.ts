@@ -31,6 +31,11 @@ export function isRealImage(url: string): boolean {
   return /^https?:\/\//.test(url) || url.startsWith("/");
 }
 
+/** Buyma CDN URLs resolve through NAT64 and fail Next's image optimizer. */
+export function isRemoteImage(url: string): boolean {
+  return /^https?:\/\//i.test(url);
+}
+
 const TEMP_IMAGE_URLS = [
   "/quick-products/new.png",
   "/quick-products/best.png",

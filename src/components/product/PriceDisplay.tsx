@@ -19,7 +19,12 @@ export function PriceDisplay({
   return (
     <div className={cn("flex flex-col gap-0.5", className)}>
       {retailPrice && retailPrice > price ? (
-        <span className="text-xs text-muted-foreground line-through">
+        <span
+          className={cn(
+            "text-muted-foreground line-through",
+            size === "lg" ? "text-[13px]" : "text-xs"
+          )}
+        >
           {formatPrice(retailPrice)}원
         </span>
       ) : null}
@@ -27,15 +32,22 @@ export function PriceDisplay({
       <div className="flex items-baseline gap-1.5">
         <span
           className={cn(
-            "font-semibold tabular-nums text-foreground",
-            size === "lg" ? "text-xl" : "text-[15px]"
+            "tabular-nums text-foreground",
+            size === "lg"
+              ? "text-[26px] font-bold leading-tight tracking-tight"
+              : "text-[15px] font-semibold"
           )}
         >
           {formatPrice(price)}
-          <span className="ml-0.5 text-[0.85em] font-medium">원</span>
+          <span className="ml-0.5 text-[0.8em] font-semibold">원</span>
         </span>
         {computedRate ? (
-          <span className="text-sm font-semibold tabular-nums text-gold">
+          <span
+            className={cn(
+              "font-bold tabular-nums text-gold",
+              size === "lg" ? "text-[16px]" : "text-sm font-semibold"
+            )}
+          >
             {computedRate}%
           </span>
         ) : null}

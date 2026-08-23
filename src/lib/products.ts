@@ -10,6 +10,7 @@ import {
 import { firestoreDb, isFirebaseConfigured } from "@/lib/firebase";
 import type { NaverProductInput } from "@/lib/naver/types";
 import type { ProductImageAsset } from "@/lib/product-images";
+import type { ProductVariant } from "@/types/product";
 
 export type NaverSyncStatus = "synced" | "failed" | "skipped";
 
@@ -31,6 +32,7 @@ export type StoreProduct = {
   brand: string;
   color?: string;
   size?: string;
+  variants?: ProductVariant[];
   salePrice: number;
   retailPrice?: number;
   stockQuantity: number;
@@ -47,6 +49,7 @@ export type StoreProduct = {
   storeCategoryId?: string;
   isPreOwned?: boolean;
   todayShip?: boolean;
+  overseasShipping?: boolean;
   naverSync: NaverSyncInfo;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
@@ -100,8 +103,10 @@ export async function createStoreProduct(
     ...(input.storeCategoryId ? { storeCategoryId: input.storeCategoryId } : {}),
     isPreOwned: Boolean(input.isPreOwned),
     todayShip: Boolean(input.todayShip),
+    overseasShipping: Boolean(input.overseasShipping),
     optionalImageUrls: input.optionalImageUrls ?? [],
     optionalImages: input.optionalImages ?? [],
+    variants: input.variants ?? [],
     retailPrice: input.retailPrice ?? null,
     naverSync,
     createdAt: serverTimestamp(),

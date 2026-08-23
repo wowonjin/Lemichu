@@ -2,12 +2,11 @@
 
 import { useId, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { CatalogImage } from "@/components/product/CatalogImage";
 import { cn } from "@/lib/cn";
 import { formatPrice } from "@/lib/formatPrice";
-import { getPlaceholderGradient, isRealImage } from "@/lib/placeholder";
 import type { RankedProduct } from "@/types/product";
 
 const VISIBLE_LIMIT = 4;
@@ -54,21 +53,13 @@ function RankingCard({ product, rank }: { product: RankedProduct; rank: number }
           {badge}
         </span>
 
-        {isRealImage(product.imageUrl) ? (
-          <Image
-            src={product.imageUrl}
-            alt={`${product.brand} ${product.name}`}
-            fill
-            sizes="(min-width: 768px) 25vw, 50vw"
-            className="object-contain p-6 mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-[1.03] dark:mix-blend-normal md:p-7"
-          />
-        ) : (
-          <div
-            className="h-full w-full"
-            style={{ backgroundImage: getPlaceholderGradient(product.id) }}
-            aria-hidden
-          />
-        )}
+        <CatalogImage
+          src={product.imageUrl}
+          alt={`${product.brand} ${product.name}`}
+          seed={product.id}
+          sizes="(min-width: 768px) 25vw, 50vw"
+          className="object-contain p-6 mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-[1.03] dark:mix-blend-normal md:p-7"
+        />
       </div>
 
       <div className="mt-3 min-w-0 md:mt-3.5">

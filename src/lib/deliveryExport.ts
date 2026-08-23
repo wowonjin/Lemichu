@@ -10,6 +10,7 @@ const deliveryHeaders = [
   "상세주소",
   "배송메시지",
   "상품명",
+  "옵션",
   "수량",
   "결제금액",
   "주문상태",
@@ -70,6 +71,7 @@ function toDeliveryRow(order: PurchaseOrder) {
     delivery?.address2 ?? "",
     delivery?.message ?? "",
     productSummary(order),
+    order.items[0]?.option ?? "",
     order.itemCount,
     order.amounts.finalTotal,
     statusLabels[order.status] ?? order.status,
@@ -104,7 +106,7 @@ function buildExcelHtml(orders: PurchaseOrder[]) {
         .map(
           (row) => `<tr>${row
             .map((value, index) => {
-              const isNumber = index === 9 || index === 10;
+              const isNumber = index === 10 || index === 11;
               const className = isNumber ? "number" : "text";
               return `<td class="${className}">${escapeHtml(value)}</td>`;
             })

@@ -13,8 +13,8 @@ import {
   toOrderItemSnapshot,
   type CheckoutAmounts,
   type OrderItemSnapshot,
+  type ResolvedCheckoutItem,
 } from "@/lib/checkout";
-import type { Product } from "@/types/product";
 
 export type OrderStatus =
   | "pending"
@@ -27,13 +27,7 @@ export type OrderStatus =
 
 export type CreateOrderInput = {
   user: AuthUser;
-  items: Array<{
-    product: Product;
-    quantity: number;
-    option: string;
-    expectedArrival: string;
-    store: string;
-  }>;
+  items: ResolvedCheckoutItem[];
   amounts: {
     retailTotal: number;
     productTotal: number;

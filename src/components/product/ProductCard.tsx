@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
+import { CatalogImage } from "@/components/product/CatalogImage";
 import { cn } from "@/lib/cn";
-import { getPlaceholderGradient, isRealImage } from "@/lib/placeholder";
 import { formatPrice } from "@/lib/formatPrice";
 import type { Product } from "@/types/product";
 import { PriceDisplay } from "./PriceDisplay";
@@ -43,7 +42,6 @@ export function ProductCard({
 }) {
   const { getRecord } = useWishlist();
   const record = getRecord(product.id);
-  const showImage = isRealImage(product.imageUrl);
   const availability = getProductAvailability(product);
   const insight = variant === "wishlist" ? getWishlistInsight(product, record) : null;
   const unavailable = availability !== "available";
@@ -69,21 +67,13 @@ export function ProductCard({
             imageClassName
           )}
         >
-          {showImage ? (
-            <Image
-              src={product.imageUrl}
-              alt={`${product.brand} ${product.name}`}
-              fill
-              sizes="(min-width: 1600px) 20vw, (min-width: 1200px) 25vw, (min-width: 768px) 33vw, 50vw"
-              className="h-full w-full object-contain p-7 mix-blend-multiply dark:mix-blend-normal"
-            />
-          ) : (
-            <div
-              className="h-full w-full"
-              style={{ backgroundImage: getPlaceholderGradient(product.id) }}
-              aria-hidden
-            />
-          )}
+          <CatalogImage
+            src={product.imageUrl}
+            alt={`${product.brand} ${product.name}`}
+            seed={product.id}
+            sizes="(min-width: 1600px) 20vw, (min-width: 1200px) 25vw, (min-width: 768px) 33vw, 50vw"
+            className="h-full w-full object-contain p-7 mix-blend-multiply dark:mix-blend-normal"
+          />
 
           <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
             {imageBadges}
