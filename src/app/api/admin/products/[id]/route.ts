@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
 
@@ -130,7 +130,9 @@ export async function PATCH(
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    revalidateTag("products");
+    revalidateTag("products", "max");
+    revalidatePath(`/product/${id}`);
+    revalidatePath("/");
 
     return NextResponse.json({ ok: true });
   } catch (error) {
