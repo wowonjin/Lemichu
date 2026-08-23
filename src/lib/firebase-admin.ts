@@ -1,6 +1,6 @@
 import "server-only";
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { applicationDefault, cert, getApps, initializeApp, type ServiceAccount } from "firebase-admin/app";
 import { getAuth, type DecodedIdToken } from "firebase-admin/auth";
@@ -45,14 +45,7 @@ function resolveServiceAccountPath(): string | null {
     }
   }
 
-  try {
-    const match = readdirSync(process.cwd()).find(
-      (name) => name.includes("firebase-adminsdk") && name.endsWith(".json")
-    );
-    return match ? path.resolve(process.cwd(), match) : null;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 function getFileServiceAccount(): ServiceAccount | null {

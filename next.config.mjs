@@ -7,6 +7,14 @@ const nextConfig = {
       static: 180,
     },
   },
+  outputFileTracingExcludes: {
+    "*": [
+      "lemichu_전처리공유_2026_08_23/**",
+      "__MACOSX/**",
+      "items.*.csv",
+      "colorsizes.*.csv",
+    ],
+  },
   images: {
     remotePatterns: [
       {

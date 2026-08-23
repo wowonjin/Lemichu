@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "productsSource": "C:\\Lemichu-main\\items.utf8.csv",
+  "optionsSource": "C:\\Lemichu-main\\colorsizes.utf8.csv",
+  "productsSha256": "0f4913a22fe97dd71b227c2fb0358a1b4deadb0db77df5eba0bad53cc84143af",
+  "optionsSha256": "8e382f17e969134685e9a39ee259b81a70bfc2962a82a2f6a8865ce9edbe157c",
+  "productCount": 5099,
+  "optionCount": 27462,
+  "uniqueTranslationUnits": 8918,
+  "translationOccurrences": 95322,
+  "batchCount": 28,
+  "maxBatchChars": 70000,
+  "maxBatchUnits": 350,
+  "productTextFields": [
+    "商品名",
+    "ブランド名",
+    "商品コメント",
+    "色サイズ補足",
+    "配送方法",
+    "買付エリア",
+    "買付都市",
+    "買付ショップ",
+    "発送エリア",
+    "発送都市",
+    "出品メモ",
+    "ブランド品番識別メモ1",
+    "ブランド品番識別メモ2",
+    "ブランド品番識別メモ3",
+    "ブランド品番識別メモ4",
+    "ブランド品番識別メモ5",
+    "ブランド品番識別メモ6",
+    "ブランド品番識別メモ7",
+    "ブランド品番識別メモ8",
+    "ブランド品番識別メモ9",
+    "ブランド品番識別メモ10",
+    "買付先名1",
+    "買付先名2",
+    "買付先名3",
+    "買付先名4",
+    "買付先名5",
+    "買付先名6",
+    "買付先名7",
+    "買付先名8",
+    "買付先名9",
+    "買付先名10",
+    "買付先名11",
+    "買付先名12",
+    "買付先名13",
+    "買付先名14",
+    "買付先名15",
+    "買付先説明1",
+    "買付先説明2",
+    "買付先説明3",
+    "買付先説明4",
+    "買付先説明5",
+    "買付先説明6",
+    "買付先説明7",
+    "買付先説明8",
+    "買付先説明9",
+    "買付先説明10",
+    "買付先説明11",
+    "買付先説明12",
+    "買付先説明13",
+    "買付先説明14",
+    "買付先説明15"
+  ],
+  "optionTextFields": [
+    "商品名",
+    "サイズ名称",
+    "サイズ単位",
+    "色名称",
+    "色サイズリプレイス"
+  ],
+  "batches": [
+    {
+      "file": "inputs/batch_001.json",
+      "unitCount": 104,
+      "charCount": 69827
+    },
+    {
+      "file": "inputs/batch_002.json",
+      "unitCount": 166,
+      "charCount": 69712
+    },
+    {
+      "file": "inputs/batch_003.json",
+      "unitCount": 212,
+      "charCount": 69836
+    },
+    {
+      "file": "inputs/batch_004.json",
+      "unitCount": 251,
+      "charCount": 69907
+    },
+    {
+      "file": "inputs/batch_005.json",
+      "unitCount": 304,
+      "charCount": 69842
+    },
+    {
+      "file": "inputs/batch_006.json",
+      "unitCount": 350,
+      "charCount": 64940
+    },
+    {
+      "file": "inputs/batch_007.json",
+      "unitCount": 350,
+      "charCount": 51086
+    },
+    {
+      "file": "inputs/batch_008.json",
+      "unitCount": 350,
+      "charCount": 39811
+    },
+    {
+      "file": "inputs/batch_009.json",
+      "unitCount": 350,
+      "charCount": 27323
+    },
+    {
+      "file": "inputs/batch_010.json",
+      "unitCount": 350,
+      "charCount": 15960
+    },
+    {
+      "file": "inputs/batch_011.json",
+      "unitCount": 350,
+      "charCount": 14295
+    },
+    {
+      "file": "inputs/batch_012.json",
+      "unitCount": 350,
+      "charCount": 13299
+    },
+    {
+      "file": "inputs/batch_013.json",
+      "unitCount": 350,
+      "charCount": 12499
+    },
+    {
+      "file": "inputs/batch_014.json",
+      "unitCount": 350,
+      "charCount": 11791
+    },
+    {
+      "file": "inputs/batch_015.json",
+      "unitCount": 350,
+      "charCount": 11182
+    },
+    {
+      "file": "inputs/batch_016.json",
+      "unitCount": 350,
+      "charCount": 10471
+    },
+    {
+      "file": "inputs/batch_017.json",
+      "unitCount": 350,
+      "charCount": 9762
+    },
+    {
+      "file": "inputs/batch_018.json",
+      "unitCount": 350,
+      "charCount": 9120
+    },
+    {
+      "file": "inputs/batch_019.json",
+      "unitCount": 350,
+      "charCount": 8449
+    },
+    {
+      "file": "inputs/batch_020.json",
+      "unitCount": 350,
+      "charCount": 7672
+    },
+    {
+      "file": "inputs/batch_021.json",
+      "unitCount": 350,
+      "charCount": 6576
+    },
+    {
+      "file": "inputs/batch_022.json",
+      "unitCount": 350,
+      "charCount": 5487
+    },
+    {
+      "file": "inputs/batch_023.json",
+      "unitCount": 350,
+      "charCount": 4857
+    },
+    {
+      "file": "inputs/batch_024.json",
+      "unitCount": 350,
+      "charCount": 4310
+    },
+    {
+      "file": "inputs/batch_025.json",
+      "unitCount": 350,
+      "charCount": 3832
+    },
+    {
+      "file": "inputs/batch_026.json",
+      "unitCount": 350,
+      "charCount": 3338
+    },
+    {
+      "file": "inputs/batch_027.json",
+      "unitCount": 350,
+      "charCount": 2339
+    },
+    {
+      "file": "inputs/batch_028.json",
+      "unitCount": 181,
+      "charCount": 685
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "productCount": 5099,
+  "optionCount": 27462,
+  "translatedProductCount": 5099,
+  "translatedOptionCount": 27462,
+  "eligibleForOperations": 1342,
+  "orphanOptionProductIds": [],
+  "maxDocumentBytes": 56320,
+  "maxDocumentId": "buyma-112493561",
+  "topDocumentSizes": [
+    {
+      "id": "buyma-112493561",
+      "bytes": 56320
+    },
+    {
+      "id": "buyma-132688610",
+      "bytes": 49002
+    },
+    {
+      "id": "buyma-132688638",
+      "bytes": 48839
+    },
+    {
+      "id": "buyma-118633276",
+      "bytes": 46635
+    },
+    {
+      "id": "buyma-110453600",
+      "bytes": 44457
+    },
+    {
+      "id": "buyma-132687160",
+      "bytes": 43145
+    },
+    {
+      "id": "buyma-116130299",
+      "bytes": 42561
+    },
+    {
+      "id": "buyma-119469781",
+      "bytes": 42376
+    },
+    {
+      "id": "buyma-119469993",
+      "bytes": 41682
+    },
+    {
+      "id": "buyma-111815466",
+      "bytes": 41558
+    },
+    {
+      "id": "buyma-111922328",
+      "bytes": 40480
+    },
+    {
+      "id": "buyma-132967474",
+      "bytes": 39721
+    },
+    {
+      "id": "buyma-116401615",
+      "bytes": 38756
+    },
+    {
+      "id": "buyma-132688744",
+      "bytes": 38382
+    },
+    {
+      "id": "buyma-110289119",
+      "bytes": 38354
+    },
+    {
+      "id": "buyma-118633240",
+      "bytes": 36666
+    },
+    {
+      "id": "buyma-112432251",
+      "bytes": 36600
+    },
+    {
+      "id": "buyma-132688727",
+      "bytes": 34858
+    },
+    {
+      "id": "buyma-119469633",
+      "bytes": 34178
+    },
+    {
+      "id": "buyma-120228893",
+      "bytes": 34105
+    }
+  ]
+}

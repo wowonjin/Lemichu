@@ -1,0 +1,85 @@
+# 전처리 검증 리포트
+
+- 입력: `2_중간산출물_전체편입` — 상품 1342건 / 옵션 4279행
+- 출력: `staging_products.json` — 상품 1342건 / 옵션 4279건
+- 환산: 100엔=920원 고정 — 판매가는 10,000원 단위 **내림**, 소비자가·사이즈 가산금은 100원 단위 반올림
+- 조인 고아 옵션(상품 없음): 0건
+- 이관 제외(바이마 4472 등): 0건
+- 카테고리 경로 매핑: 1342/1342건 — 몰 분류는 등록 시 (브랜드 × depth1) 조회로 결정(전처리 §9.3)
+- 상품명 재작성 적용: 1342/1342건 / 규칙 위반·미재작성(등록 금지): 0건
+- 키워드 후보 보유: 1342건 — **검색광고 API 검색량 검증 전(태그 확정 금지)**
+- 사이즈 가산금 있는 옵션: 333건 (JPY 동일 환율 환산)
+- 재고상태 코드 의미(0=품절/1=재고있음/2=수량관리)는 실측 추정 — ST2 등록 시 재확인
+
+## 상품별 이슈
+
+- `buyma-110946848`: 미등록 색상명 'Charcol & grey , SAND' — 원문 유지 / 미등록 색상명 'Charcol & grey , SAND' — 원문 유지 / 미등록 색상명 'Charcol & grey , SAND' — 원문 유지 / 미등록 색상명 'Charcol & grey , SAND' — 원문 유지 / 미등록 색상명 'Charcol & grey , SAND' — 원문 유지
+- `buyma-111395046`: 미등록 색상명 'Raintree' — 원문 유지 / 미등록 색상명 'Noce' — 원문 유지 / 미등록 색상명 'Frassino' — 원문 유지
+- `buyma-112221133`: 미등록 색상명 'French' — 원문 유지 / 미등록 색상명 'French' — 원문 유지 / 미등록 색상명 'French' — 원문 유지 / 미등록 색상명 'French' — 원문 유지 / 미등록 색상명 'French' — 원문 유지 / 미등록 색상명 'French' — 원문 유지 / 미등록 색상명 'French' — 원문 유지
+- `buyma-113555600`: 미등록 색상명 'puple' — 원문 유지
+- `buyma-113721076`: 미등록 색상명 'Jaffa Orange' — 원문 유지 / 미등록 색상명 'Jaffa Orange' — 원문 유지 / 미등록 색상명 'Jaffa Orange' — 원문 유지 / 미등록 색상명 'Jaffa Orange' — 원문 유지 / 미등록 색상명 'Jaffa Orange' — 원문 유지
+- `buyma-113768923`: 미등록 색상명 'pinkbeige' — 원문 유지
+- `buyma-113891154`: 미등록 색상명 'Orchidea PINK' — 원문 유지
+- `buyma-113891324`: 미등록 색상명 'Orchidea PINK' — 원문 유지
+- `buyma-113965062`: 미등록 색상명 'orange beige' — 원문 유지 / 미등록 색상명 'orange beige' — 원문 유지 / 미등록 색상명 'orange beige' — 원문 유지 / 미등록 색상명 'orange beige' — 원문 유지 / 미등록 색상명 'orange beige' — 원문 유지 / 미등록 색상명 'orange beige' — 원문 유지
+- `buyma-114934437`: 미등록 색상명 'Hazelnut Brown' — 원문 유지 / 미등록 색상명 'Hazelnut Brown' — 원문 유지 / 미등록 색상명 'Hazelnut Brown' — 원문 유지 / 미등록 색상명 'Hazelnut Brown' — 원문 유지 / 미등록 색상명 'Hazelnut Brown' — 원문 유지
+- `buyma-114934588`: 미등록 색상명 'white & black' — 원문 유지 / 미등록 색상명 'white & black' — 원문 유지 / 미등록 색상명 'white & black' — 원문 유지 / 미등록 색상명 'white & black' — 원문 유지 / 미등록 색상명 'white & black' — 원문 유지
+- `buyma-115055562`: 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지
+- `buyma-115102008`: 미등록 색상명 'Lilac color' — 원문 유지 / 미등록 색상명 'Lilac color' — 원문 유지 / 미등록 색상명 'Lilac color' — 원문 유지 / 미등록 색상명 'Lilac color' — 원문 유지 / 미등록 색상명 'Lilac color' — 원문 유지 / 미등록 색상명 'Lilac color' — 원문 유지
+- `buyma-115103430`: 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지
+- `buyma-115103486`: 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지 / 미등록 색상명 'charcol' — 원문 유지
+- `buyma-115258624`: 미등록 색상명 'NAVY WHITE' — 원문 유지 / 미등록 색상명 'NAVY WHITE' — 원문 유지 / 미등록 색상명 'NAVY WHITE' — 원문 유지 / 미등록 색상명 'NAVY WHITE' — 원문 유지
+- `buyma-115271460`: 미등록 색상명 'white & blue' — 원문 유지 / 미등록 색상명 'white & blue' — 원문 유지 / 미등록 색상명 'white & blue' — 원문 유지 / 미등록 색상명 'white & blue' — 원문 유지
+- `buyma-115276098`: 미등록 색상명 'Camel Brown' — 원문 유지 / 미등록 색상명 'Camel Brown' — 원문 유지 / 미등록 색상명 'Camel Brown' — 원문 유지 / 미등록 색상명 'Camel Brown' — 원문 유지 / 미등록 색상명 'Camel Brown' — 원문 유지 / 미등록 색상명 'Camel Brown' — 원문 유지
+- `buyma-116682079`: 미등록 색상명 'LIGHT YELLOW' — 원문 유지 / 미등록 색상명 'LIGHT YELLOW' — 원문 유지 / 미등록 색상명 'LIGHT YELLOW' — 원문 유지 / 미등록 색상명 'LIGHT YELLOW' — 원문 유지
+- `buyma-116682263`: 미등록 색상명 'LIGHT YELLOW' — 원문 유지 / 미등록 색상명 'LIGHT YELLOW' — 원문 유지 / 미등록 색상명 'LIGHT YELLOW' — 원문 유지 / 미등록 색상명 'LIGHT YELLOW' — 원문 유지 / 미등록 색상명 'LIGHT YELLOW' — 원문 유지
+- `buyma-116742922`: 미등록 색상명 'Olive Green' — 원문 유지
+- `buyma-117070975`: 미등록 색상명 'WHITE & BLACK' — 원문 유지 / 미등록 색상명 'WHITE & BLACK' — 원문 유지 / 미등록 색상명 'WHITE & BLACK' — 원문 유지 / 미등록 색상명 'WHITE & BLACK' — 원문 유지 / 미등록 색상명 'WHITE & BLACK' — 원문 유지
+- `buyma-118432749`: 미등록 색상명 'NAVY & WHITE' — 원문 유지 / 미등록 색상명 'NAVY & WHITE' — 원문 유지 / 미등록 색상명 'NAVY & WHITE' — 원문 유지
+- `buyma-118855838`: 미등록 색상명 'WOOD' — 원문 유지
+- `buyma-119155148`: 미등록 색상명 'braun' — 원문 유지
+- `buyma-119735239`: 미등록 색상명 'Wine red' — 원문 유지 / 미등록 색상명 'Wine red' — 원문 유지 / 미등록 색상명 'Wine red' — 원문 유지 / 미등록 색상명 'Wine red' — 원문 유지
+- `buyma-119735320`: 미등록 색상명 'Wine red' — 원문 유지 / 미등록 색상명 'Wine red' — 원문 유지 / 미등록 색상명 'Wine red' — 원문 유지 / 미등록 색상명 'Wine red' — 원문 유지
+- `buyma-122721336`: 미등록 색상명 'gary' — 원문 유지 / 미등록 색상명 'gary' — 원문 유지 / 미등록 색상명 'gary' — 원문 유지 / 미등록 색상명 'gary' — 원문 유지 / 미등록 색상명 'gary' — 원문 유지 / 미등록 색상명 'gary' — 원문 유지
+- `buyma-123581271`: 미등록 색상명 'black&GOLD' — 원문 유지
+- `buyma-124656184`: 미등록 색상명 'Deep Brown' — 원문 유지
+- `buyma-124816610`: 미등록 색상명 'White & Beige' — 원문 유지
+- `buyma-124816619`: 미등록 색상명 'brown&YellowA&Green' — 원문 유지
+- `buyma-124816667`: 미등록 색상명 'BLUE & WHITE' — 원문 유지
+- `buyma-124816674`: 미등록 색상명 'BLUE & WHITE' — 원문 유지
+- `buyma-127126370`: 미등록 색상명 'balck&white' — 원문 유지 / 미등록 색상명 'balck&white' — 원문 유지 / 미등록 색상명 'balck&white' — 원문 유지
+- `buyma-127126412`: 미등록 색상명 'black&white' — 원문 유지
+- `buyma-127126520`: 미등록 색상명 'black&white' — 원문 유지 / 미등록 색상명 'black&white' — 원문 유지 / 미등록 색상명 'black&white' — 원문 유지 / 미등록 색상명 'black&white' — 원문 유지
+- `buyma-127126526`: 미등록 색상명 'red&black' — 원문 유지
+- `buyma-127126695`: 미등록 색상명 'dark gray' — 원문 유지 / 미등록 색상명 'dark gray' — 원문 유지 / 미등록 색상명 'dark gray' — 원문 유지 / 미등록 색상명 'dark gray' — 원문 유지
+- `buyma-127126778`: 미등록 색상명 'gary' — 원문 유지 / 미등록 색상명 'gary' — 원문 유지
+- `buyma-127984706`: 미등록 색상명 'Deep navy' — 원문 유지 / 미등록 색상명 'Deep navy' — 원문 유지 / 미등록 색상명 'Deep navy' — 원문 유지 / 미등록 색상명 'Deep navy' — 원문 유지 / 미등록 색상명 'Deep navy' — 원문 유지
+- `buyma-127984783`: 미등록 색상명 'Dark Blue' — 원문 유지 / 미등록 색상명 'Dark Blue' — 원문 유지 / 미등록 색상명 'Dark Blue' — 원문 유지 / 미등록 색상명 'Dark Blue' — 원문 유지 / 미등록 색상명 'Dark Blue' — 원문 유지
+- `buyma-127984835`: 미등록 색상명 'Deep navy' — 원문 유지 / 미등록 색상명 'Deep navy' — 원문 유지 / 미등록 색상명 'Deep navy' — 원문 유지 / 미등록 색상명 'Deep navy' — 원문 유지 / 미등록 색상명 'Deep navy' — 원문 유지
+- `buyma-128585757`: 미등록 색상명 'White & Black' — 원문 유지 / 미등록 색상명 'White & Black' — 원문 유지 / 미등록 색상명 'White & Black' — 원문 유지 / 미등록 색상명 'White & Black' — 원문 유지 / 미등록 색상명 'White & Black' — 원문 유지
+- `buyma-128908808`: 미등록 색상명 'White & Black' — 원문 유지
+- `buyma-128909206`: 미등록 색상명 'burgundy' — 원문 유지 / 미등록 색상명 'burgundy' — 원문 유지 / 미등록 색상명 'burgundy' — 원문 유지 / 미등록 색상명 'burgundy' — 원문 유지 / 미등록 색상명 'burgundy' — 원문 유지
+- `buyma-128910202`: 미등록 색상명 'SKYBLUE' — 원문 유지 / 미등록 색상명 'SKYBLUE' — 원문 유지 / 미등록 색상명 'SKYBLUE' — 원문 유지
+- `buyma-128910451`: 미등록 색상명 'skyblue' — 원문 유지 / 미등록 색상명 'skyblue' — 원문 유지
+- `buyma-128910618`: 미등록 색상명 'gary' — 원문 유지 / 미등록 색상명 'gary' — 원문 유지 / 미등록 색상명 'gary' — 원문 유지
+- `buyma-128910663`: 미등록 색상명 'gary' — 원문 유지 / 미등록 색상명 'gary' — 원문 유지 / 미등록 색상명 'gary' — 원문 유지 / 미등록 색상명 'gary' — 원문 유지
+- `buyma-130021739`: 미등록 색상명 '004' — 원문 유지
+- `buyma-131175530`: 미등록 색상명 'Beige o Tan Beige o Tan' — 원문 유지 / 미등록 색상명 'Beige o Tan Beige o Tan' — 원문 유지 / 미등록 색상명 'Beige o Tan Beige o Tan' — 원문 유지 / 미등록 색상명 'Beige o Tan Beige o Tan' — 원문 유지
+- `buyma-131178398`: 미등록 색상명 'CEMENT PINK' — 원문 유지
+- `buyma-131178573`: 미등록 색상명 'CEMENT PINK' — 원문 유지
+- `buyma-131178772`: 미등록 색상명 'WHITE / BLUE' — 원문 유지
+- `buyma-131179304`: 미등록 색상명 'WHITE / BLUE' — 원문 유지
+- `buyma-131179652`: 미등록 색상명 '101/White' — 원문 유지
+- `buyma-131179936`: 미등록 색상명 '101/White' — 원문 유지
+- `buyma-131180404`: 미등록 색상명 'White-Brown' — 원문 유지
+- `buyma-131180634`: 미등록 색상명 'White-Brown' — 원문 유지
+- `buyma-131181034`: 미등록 색상명 'ベージュ/ライトピンク' — 원문 유지
+- `buyma-131181122`: 미등록 색상명 'ベージュ/ライトピンク' — 원문 유지
+- `buyma-131181577`: 미등록 색상명 'Blue/821' — 원문 유지
+- `buyma-131181687`: 미등록 색상명 'Blue/821' — 원문 유지
+- `buyma-131184345`: 미등록 색상명 'blue&white' — 원문 유지 / 미등록 색상명 'blue&white' — 원문 유지 / 미등록 색상명 'blue&white' — 원문 유지 / 미등록 색상명 'blue&white' — 원문 유지 / 미등록 색상명 'blue&white' — 원문 유지
+- `buyma-131184374`: 미등록 색상명 'red&white' — 원문 유지 / 미등록 색상명 'red&white' — 원문 유지 / 미등록 색상명 'red&white' — 원문 유지 / 미등록 색상명 'red&white' — 원문 유지 / 미등록 색상명 'red&white' — 원문 유지
+- `buyma-131942866`: 미등록 색상명 'Warm Chestnut' — 원문 유지
+- `buyma-134782307`: 미등록 색상명 'SKY BULE' — 원문 유지
+- `buyma-135312815`: 미등록 색상명 'Light green' — 원문 유지
+- `buyma-135343580`: 미등록 색상명 'LIGHT PURPLE' — 원문 유지

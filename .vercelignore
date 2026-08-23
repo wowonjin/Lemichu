@@ -14,3 +14,12 @@ build
 .vercel
 *.tsbuildinfo
 next-env.d.ts
+
+# BUYMA raw dumps and generated translation artifacts
+__MACOSX
+items.sjis.csv
+items.utf8.csv
+colorsizes.sjis.csv
+colorsizes.utf8.csv
+lemichu_전처리공유_2026_08_23
+scripts/generated-products

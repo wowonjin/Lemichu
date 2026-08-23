@@ -38,3 +38,21 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+__pycache__/
+*.pyc
+
+# BUYMA raw dumps and generated translation artifacts (kept local / Firebase)
+__MACOSX/
+/items.sjis.csv
+/items.utf8.csv
+/colorsizes.sjis.csv
+/colorsizes.utf8.csv
+/lemichu_전처리공유_2026_08_23/5_전체번역/inputs/
+/lemichu_전처리공유_2026_08_23/5_전체번역/outputs/
+/lemichu_전처리공유_2026_08_23/5_전체번역/translated_products.jsonl
+/lemichu_전처리공유_2026_08_23/5_전체번역/items.translated.ko.csv
+/lemichu_전처리공유_2026_08_23/5_전체번역/colorsizes.translated.ko.csv
+/lemichu_전처리공유_2026_08_23/2_중간산출물_전체편입/staging_products.json
+/lemichu_전처리공유_2026_08_23/2_중간산출물_전체편입/products.csv
+/lemichu_전처리공유_2026_08_23/2_중간산출물_전체편입/color_size_options.csv
