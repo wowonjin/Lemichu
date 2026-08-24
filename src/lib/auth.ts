@@ -6,10 +6,11 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
+  updateEmail,
   updateProfile,
   type User,
 } from "firebase/auth";
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { firebaseAuth, firestoreDb, googleProvider, isFirebaseConfigured } from "@/lib/firebase";
 import { normalizeRedirectPath } from "@/lib/redirect";
 
@@ -95,8 +96,76 @@ function toAuthUser(user: User): AuthUser {
   };
 }
 
+async function loadStoredProfile(uid: string): Promise<Partial<AuthUser> | null> {
+  if (!firestoreDb) return null;
+
+  const snapshot = await getDoc(doc(firestoreDb, "users", uid));
+  if (!snapshot.exists()) return null;
+
+  const data = snapshot.data();
+  return {
+    name: typeof data.name === "string" ? data.name : undefined,
+    phone: typeof data.phone === "string" ? data.phone : undefined,
+    role: data.role === "admin" || data.role === "member" ? data.role : undefined,
+  };
+}
+
+function hydrateUserFields(
+  user: User,
+  base: AuthUser,
+  stored?: Partial<AuthUser> | null
+): AuthUser {
+  return {
+    ...base,
+    name: user.displayName?.trim() || stored?.name?.trim() || base.name,
+    phone: typeof stored?.phone === "string" ? stored.phone.trim() || undefined : base.phone,
+    role: stored?.role ?? base.role,
+  };
+}
+
+async function hydrateFirebaseUser(user: User) {
+  const base = toAuthUser(user);
+  const cached = readAuthUser();
+  const storedCache = cached?.uid === base.uid ? cached : null;
+  const seeded = hydrateUserFields(user, base, storedCache);
+  persistAuthUser(seeded);
+
+  try {
+    const stored = await loadStoredProfile(user.uid);
+    const next = hydrateUserFields(user, seeded, stored);
+    persistAuthUser(next);
+    await syncUserProfile(next);
+  } catch {
+    syncUserProfile(seeded).catch(() => undefined);
+  }
+}
+
 export function isAdminUser(user: AuthUser | null | undefined): user is AuthUser {
   return user?.role === "admin" || user?.email?.toLowerCase() === ADMIN_EMAIL;
+}
+
+export function formatAuthProvider(provider?: AuthProvider) {
+  if (provider === "google") return "Google";
+  if (provider === "naver") return "네이버";
+  return "이메일";
+}
+
+export function canEditAuthEmail(user: AuthUser | null | undefined) {
+  return Boolean(user) && (user?.provider ?? "email") === "email";
+}
+
+export function normalizePhoneNumber(value: string) {
+  const digits = value.replace(/\D/g, "");
+
+  if (digits.length === 10) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+
+  if (digits.length === 11) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  }
+
+  return null;
 }
 
 async function syncUserProfile(user: AuthUser) {
@@ -142,13 +211,12 @@ export async function getFirebaseIdToken(): Promise<string | null> {
 }
 
 export function observeAuthUser(onChange: (user: AuthUser | null) => void) {
+  const handleAuthChange = (event: Event) => {
+    onChange((event as CustomEvent<AuthUser | null>).detail);
+  };
+
   if (!isFirebaseConfigured || !firebaseAuth) {
     onChange(readAuthUser());
-
-    const handleAuthChange = (event: Event) => {
-      onChange((event as CustomEvent<AuthUser | null>).detail);
-    };
-
     window.addEventListener(AUTH_STATE_CHANGE, handleAuthChange);
 
     return () => {
@@ -156,14 +224,100 @@ export function observeAuthUser(onChange: (user: AuthUser | null) => void) {
     };
   }
 
-  return onAuthStateChanged(firebaseAuth, (user) => {
-    const nextUser = user ? toAuthUser(user) : null;
-    persistAuthUser(nextUser);
-    if (nextUser) {
-      syncUserProfile(nextUser).catch(() => undefined);
+  window.addEventListener(AUTH_STATE_CHANGE, handleAuthChange);
+
+  const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+    if (!user) {
+      persistAuthUser(null);
+      return;
     }
-    onChange(nextUser);
+
+    void hydrateFirebaseUser(user);
   });
+
+  return () => {
+    unsubscribe();
+    window.removeEventListener(AUTH_STATE_CHANGE, handleAuthChange);
+  };
+}
+
+export async function updateAccountProfile(patch: {
+  name?: string;
+  email?: string;
+  phone?: string;
+}) {
+  const current =
+    readAuthUser() ??
+    (firebaseAuth?.currentUser ? toAuthUser(firebaseAuth.currentUser) : null);
+
+  if (!current) {
+    throw new Error("로그인이 필요해요.");
+  }
+
+  const next: AuthUser = {
+    ...current,
+    ...(patch.name !== undefined ? { name: patch.name } : {}),
+    ...(patch.email !== undefined ? { email: patch.email } : {}),
+    ...(patch.phone !== undefined ? { phone: patch.phone || undefined } : {}),
+  };
+
+  persistAuthUser(next);
+
+  try {
+    if (isFirebaseConfigured && firebaseAuth?.currentUser) {
+      const firebaseUser = firebaseAuth.currentUser;
+
+      if (patch.email && patch.email !== current.email) {
+        if (!canEditAuthEmail(current)) {
+          throw new Error("소셜 로그인 이메일은 여기에서 바꿀 수 없어요.");
+        }
+
+        await withAuthTimeout(updateEmail(firebaseUser, patch.email), "updateEmail");
+      }
+
+      if (firestoreDb && next.uid) {
+        await setDoc(
+          doc(firestoreDb, "users", next.uid),
+          {
+            uid: next.uid,
+            name: next.name,
+            email: next.email,
+            phone: next.phone ?? "",
+            provider: next.provider ?? "email",
+            photoURL: next.photoURL ?? null,
+            role: isAdminUser(next) ? "admin" : "member",
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+      }
+
+      if (patch.name && patch.name !== current.name) {
+        await withAuthTimeout(
+          updateProfile(firebaseUser, { displayName: patch.name }),
+          "updateProfile"
+        );
+      }
+
+      if (patch.name !== undefined || patch.phone !== undefined) {
+        try {
+          const { saveMyProfile } = await import("@/lib/member-account-client");
+          await saveMyProfile({
+            ...(patch.name !== undefined ? { name: next.name } : {}),
+            ...(patch.phone !== undefined ? { phone: next.phone ?? "" } : {}),
+          });
+        } catch {
+          // Client Firestore write already persisted the same fields.
+        }
+      }
+    }
+  } catch (error) {
+    persistAuthUser(current);
+    throw error;
+  }
+
+  persistAuthUser(next);
+  return next;
 }
 
 export async function signInWithEmail(email: string, password: string) {

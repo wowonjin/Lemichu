@@ -2,16 +2,31 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Trophy, Heart, User } from "lucide-react";
+import { Home, Search, ShoppingBag, Heart, User } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const items = [
-  { label: "홈", href: "/", icon: Home },
-  { label: "검색", href: "/search", icon: Search },
-  { label: "랭킹", href: "/ranking", icon: Trophy },
-  { label: "찜", href: "/wishlist", icon: Heart },
-  { label: "마이", href: "/my", icon: User },
+  { id: "home", label: "홈", href: "/", icon: Home },
+  { id: "search", label: "검색", href: "/search", icon: Search },
+  { id: "products", label: "상품", href: "/products", icon: ShoppingBag },
+  { id: "wishlist", label: "찜", href: "/my/wishlist", icon: Heart },
+  { id: "my", label: "마이", href: "/my", icon: User },
 ];
+
+function matchesHref(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function isNavActive(pathname: string, href: string) {
+  if (!matchesHref(pathname, href)) return false;
+  return !items.some(
+    (item) =>
+      item.href !== href &&
+      item.href.length > href.length &&
+      matchesHref(pathname, item.href)
+  );
+}
 
 export function MobileBottomNav() {
   const pathname = usePathname();
@@ -20,12 +35,9 @@ export function MobileBottomNav() {
     <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 backdrop-blur md:hidden">
       <ul className="grid grid-cols-5">
         {items.map((item) => {
-          const active =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+          const active = isNavActive(pathname, item.href);
           return (
-            <li key={item.href}>
+            <li key={item.id}>
               <Link
                 href={item.href}
                 className={cn(

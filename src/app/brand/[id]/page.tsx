@@ -21,7 +21,7 @@ export async function generateMetadata({
   const { id } = await params;
   const brand = brands.find((b) => b.id === id);
   return {
-    title: brand ? `${brand.name} — LEMICHU` : "브랜드 — LEMICHU",
+    title: brand?.name ?? "브랜드",
   };
 }
 

@@ -78,7 +78,7 @@ const SUB_FIELD_LABELS = new Set([
 const FEATURE_SECTIONS = new Set(["상세 정보", "상세 사양", "구성 및 사양", "사양"]);
 const OPEN_SPEC_LABELS = new Set(["사이즈", "소재"]);
 const IGNORED_SECTIONS = new Set(["옵션 상세", "상세 설명", "참고"]);
-const HIDDEN_SPEC_LABELS = new Set(["상품명", "카테고리"]);
+const HIDDEN_SPEC_LABELS = new Set(["상품명", "카테고리", "상품번호"]);
 const PLACEHOLDER_VALUES = new Set([
   "f",
   "free",
@@ -136,7 +136,6 @@ const SPEC_ORDER = [
   "구성",
   "상품 구분",
   "상태 등급",
-  "상품번호",
   "배송",
   "관부가세",
 ];
@@ -284,7 +283,6 @@ export function getProductDetailSpecRows(
   const rows = new Map<string, string>();
   const fallbacks: ProductSpecRow[] = [
     { label: "브랜드", value: product.brand },
-    { label: "상품번호", value: product.id.toUpperCase() },
     { label: "상품 구분", value: product.isPreOwned ? "중고명품" : "신상품" },
     ...(product.isPreOwned
       ? [{ label: "상태 등급", value: product.condition ?? "A" }]

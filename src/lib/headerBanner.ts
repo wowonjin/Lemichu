@@ -197,7 +197,7 @@ export const DEFAULT_HEADER_BANNER: HeaderBannerSettings = {
       id: "ss-new",
       badge: "신상",
       text: "27SS 신상 할인 상품 구경하기",
-      href: "/new-arrivals",
+      href: "/products?filter=new",
       enabled: true,
       theme: "violet",
     },

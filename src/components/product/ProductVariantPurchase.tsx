@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { PriceDisplay } from "@/components/product/PriceDisplay";
+import { useMemberPoints } from "@/hooks/useMemberPoints";
 import { cn } from "@/lib/cn";
 import { getDiscountRate } from "@/lib/formatPrice";
 import { formatProductOptions } from "@/lib/productOptions";
@@ -22,15 +23,24 @@ import {
   getVariantSizeLabel,
   isVariantAvailable,
 } from "@/lib/product-variants";
+import { resolvePurchasePoints, type TossCheckoutMethod } from "@/lib/points";
 import type { Product, ProductVariant } from "@/types/product";
 
 type ProductVariantPurchaseValue = {
   product: Product;
   selectedVariant?: ProductVariant;
   selectedPrice: number;
+  availablePoints: number;
+  usePoints: boolean;
+  pointsToUse: number;
+  payablePrice: number;
+  expectedEarn: number;
   canPurchase: boolean;
   requiresVariantSelection: boolean;
+  paymentMethod: TossCheckoutMethod;
   selectVariant: (variantId: string) => void;
+  selectPaymentMethod: (method: TossCheckoutMethod) => void;
+  toggleUsePoints: () => void;
 };
 
 const ProductVariantPurchaseContext =
@@ -47,9 +57,21 @@ export function ProductVariantPurchaseProvider({
   const [selectedVariantId, setSelectedVariantId] = useState(
     purchasableVariants.length === 1 ? purchasableVariants[0]?.id ?? "" : ""
   );
+  const [paymentMethod, setPaymentMethod] = useState<TossCheckoutMethod>("TRANSFER");
+  const [usePoints, setUsePoints] = useState(false);
+  const availablePoints = useMemberPoints();
   const selectedVariant = product.variants?.find(
     (variant) => variant.id === selectedVariantId
   );
+  const selectedPrice = selectedVariant
+    ? getVariantPrice(product, selectedVariant)
+    : product.price;
+  const { pointsToUse, payablePrice, expectedEarn } = resolvePurchasePoints({
+    productTotal: selectedPrice,
+    availablePoints,
+    usePoints,
+    method: paymentMethod,
+  });
   const requiresVariantSelection = Boolean(product.variants?.length);
   const canPurchase = requiresVariantSelection
     ? Boolean(selectedVariant && isVariantAvailable(selectedVariant))
@@ -60,12 +82,18 @@ export function ProductVariantPurchaseProvider({
       value={{
         product,
         selectedVariant,
-        selectedPrice: selectedVariant
-          ? getVariantPrice(product, selectedVariant)
-          : product.price,
+        selectedPrice,
+        availablePoints,
+        usePoints,
+        pointsToUse,
+        payablePrice,
+        expectedEarn,
         canPurchase,
         requiresVariantSelection,
+        paymentMethod,
         selectVariant: setSelectedVariantId,
+        selectPaymentMethod: setPaymentMethod,
+        toggleUsePoints: () => setUsePoints((current) => !current),
       }}
     >
       {children}

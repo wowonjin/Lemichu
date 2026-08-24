@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { termsDoc } from "@/data/pageContent";
 
 export const metadata: Metadata = {
-  title: "이용약관 — LEMICHU",
+  title: "이용약관",
 };
 
 export default function TermsPage() {

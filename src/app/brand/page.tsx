@@ -4,7 +4,7 @@ import { CustomerPageShell } from "@/components/layout/CustomerPage";
 import { brands } from "@/data/brands";
 
 export const metadata: Metadata = {
-  title: "브랜드 — LEMICHU",
+  title: "브랜드",
 };
 
 export default function BrandPage() {

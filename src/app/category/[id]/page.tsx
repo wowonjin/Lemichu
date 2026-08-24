@@ -30,7 +30,7 @@ export async function generateMetadata({
   ]);
   const title = content?.label ?? category?.label;
   return {
-    title: title ? `${title} — LEMICHU` : "카테고리 — LEMICHU",
+    title: title ?? "카테고리",
   };
 }
 

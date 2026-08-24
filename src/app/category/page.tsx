@@ -5,7 +5,7 @@ import { CustomerPageHero, CustomerPageShell, CustomerSection, GoldPill } from "
 import { categories } from "@/data/categories";
 
 export const metadata: Metadata = {
-  title: "카테고리 — LEMICHU",
+  title: "카테고리",
 };
 
 export default function CategoryIndexPage() {

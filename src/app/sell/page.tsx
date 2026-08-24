@@ -6,7 +6,7 @@ import { authSteps, sellSteps } from "@/data/campaigns";
 import { sellGuides } from "@/data/pageContent";
 
 export const metadata: Metadata = {
-  title: "내 명품 판매하기 — LEMICHU",
+  title: "내 명품 판매하기",
 };
 
 const saleMethods = [

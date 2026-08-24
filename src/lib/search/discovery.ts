@@ -25,7 +25,7 @@ const DISCOVERY_CATEGORY_SHORTCUTS: SearchCategoryShortcut[] = [
   { label: "지갑", href: "/category/wallets" },
   { label: "시계", href: "/category/watches" },
   { label: "주얼리", href: "/category/jewelry" },
-  { label: "중고명품", href: "/pre-owned" },
+  { label: "중고명품", href: "/products" },
 ];
 
 const RECOMMENDED_CATEGORY_TERMS = [
@@ -183,7 +183,7 @@ function buildCategories(products: Product[]) {
   if (products.length === 0) return searchCategoryShortcuts;
 
   return DISCOVERY_CATEGORY_SHORTCUTS.filter((item) => {
-    if (item.href === "/pre-owned") return products.some((product) => product.isPreOwned);
+    if (item.href === "/products") return products.some((product) => product.isPreOwned);
     const categoryId = item.href.replace("/category/", "");
     return hasCategory(products, categoryId);
   });

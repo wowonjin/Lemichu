@@ -8,8 +8,15 @@ import { FloatingQuickButtons } from "@/components/layout/FloatingQuickButtons";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { ToastProvider } from "@/components/ui/toast";
 import { WishlistProvider } from "@/components/wishlist/WishlistProvider";
+import type { CategoryMenuTab } from "@/data/categoryMenu";
 
-export function SiteChrome({ children }: { children: React.ReactNode }) {
+export function SiteChrome({
+  children,
+  categoryMenu = [],
+}: {
+  children: React.ReactNode;
+  categoryMenu?: CategoryMenuTab[];
+}) {
   const pathname = usePathname();
   // 관리자 페이지(/admin)는 자체 레이아웃(AdminShell)을 사용하므로
   // 사이트 공통 헤더/이벤트 배너/오른쪽 플로팅 영역/하단 내비를 숨긴다.
@@ -42,7 +49,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
     <ToastProvider>
       <WishlistProvider>
         <div className={isAuthPage ? "flex h-svh flex-col overflow-hidden" : undefined}>
-          <Header />
+          <Header categoryMenu={categoryMenu} />
           <main
             className={
               isAuthPage ? "min-h-0 flex-1 overflow-hidden" : "min-h-screen pb-16 md:pb-0"

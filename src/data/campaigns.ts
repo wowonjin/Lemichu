@@ -33,10 +33,10 @@ export type QuickAction = {
 };
 
 export const quickActions: QuickAction[] = [
-  { id: "ranking", label: "랭킹", description: "지금 가장 인기", href: "/ranking", icon: Trophy },
-  { id: "new", label: "신규입고", description: "방금 들어온 명품", href: "/new-arrivals", icon: Sparkles },
-  { id: "promotions", label: "기획전", description: "이번 주 큐레이션", href: "/promotions", icon: Tag },
-  { id: "pre-owned", label: "중고명품", description: "검수 완료 중고", href: "/pre-owned", icon: RotateCcw },
+  { id: "ranking", label: "전체 상품", description: "지금 가장 인기", href: "/products", icon: Trophy },
+  { id: "new", label: "신규입고", description: "방금 들어온 명품", href: "/products?filter=new", icon: Sparkles },
+  { id: "promotions", label: "명품가방", description: "검수 완료 가방", href: "/products?filter=bags", icon: Tag },
+  { id: "pre-owned", label: "지갑·카드지갑", description: "지갑 모아보기", href: "/products?filter=wallets", icon: RotateCcw },
   { id: "brand", label: "브랜드", description: "브랜드별 모아보기", href: "/brand", icon: Crown },
   { id: "sell", label: "판매하기", description: "내 명품 시세 확인", href: "/sell", icon: HandCoins },
 ];
@@ -101,7 +101,7 @@ export const heroSlides: HeroSlide[] = [
     title: "이번 주 검수 완료",
     subtitle: "신상부터 클래식까지, 출고 전 검수를 마친 명품만 올렸습니다.",
     ctaLabel: "신상품 보기",
-    ctaHref: "/new-arrivals",
+    ctaHref: "/products?filter=new",
     image: "/hero/hero-new-v2.jpg",
   },
   {
@@ -110,7 +110,7 @@ export const heroSlides: HeroSlide[] = [
     title: "중고명품, 등급까지 공개",
     subtitle: "S/A/B 등급과 검수 리포트를 먼저 보고 고르세요.",
     ctaLabel: "중고명품 보기",
-    ctaHref: "/pre-owned",
+    ctaHref: "/products",
     image: "/hero/hero-preowned-v2.jpg",
   },
   {
@@ -119,7 +119,7 @@ export const heroSlides: HeroSlide[] = [
     title: "오늘 결제하면 오늘 출고",
     subtitle: "국내 재고는 검수 후 바로 발송됩니다. 배송 가능일을 먼저 확인하세요.",
     ctaLabel: "오늘출고 상품",
-    ctaHref: "/new-arrivals",
+    ctaHref: "/products?filter=new",
     image: "/hero/hero-ship-v2.jpg",
   },
   {
@@ -128,7 +128,7 @@ export const heroSlides: HeroSlide[] = [
     title: "오늘 자정까지 타임세일",
     subtitle: "한정 수량으로 열린 검수 완료 특가입니다.",
     ctaLabel: "세일 보러가기",
-    ctaHref: "/sale",
+    ctaHref: "/products",
     image: "/hero/hero-sale-v2.jpg",
     dark: true,
   },

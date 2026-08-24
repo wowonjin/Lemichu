@@ -24,7 +24,7 @@ export async function generateMetadata({
   const { section } = await params;
   const meta = isMySection(section) ? mySections[section] : undefined;
   return {
-    title: meta ? `${meta.title} — LEMICHU` : "마이페이지 — LEMICHU",
+    title: meta?.title ?? "마이페이지",
   };
 }
 

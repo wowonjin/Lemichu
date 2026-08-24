@@ -26,6 +26,7 @@ import {
   type WishlistAlertPrefs,
   type WishlistRecord,
 } from "@/lib/wishlist";
+import { recordProductWishDelta } from "@/lib/product-signals";
 import type { Product } from "@/types/product";
 
 type WishlistStatus = "loading" | "ready" | "error";
@@ -140,6 +141,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         writeWishlistRecords(ownerId, next);
         try {
           await deleteWishlistRecord(ownerId, product.id);
+          recordProductWishDelta(product.id, -1);
           return existing;
         } catch (toggleError) {
           setRecords(records);
@@ -154,6 +156,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       writeWishlistRecords(ownerId, next);
       try {
         await persistWishlistRecord(ownerId, record);
+        recordProductWishDelta(product.id, 1);
         return null;
       } catch (toggleError) {
         setRecords(records);
@@ -175,6 +178,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
       try {
         await deleteWishlistRecord(ownerId, productId);
+        recordProductWishDelta(productId, -1);
         return existing;
       } catch (removeError) {
         setRecords(records);
@@ -191,6 +195,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       setRecords(next);
       writeWishlistRecords(ownerId, next);
       await persistWishlistRecord(ownerId, record);
+      recordProductWishDelta(record.productId, 1);
     },
     [ownerId, records]
   );
@@ -205,6 +210,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
       try {
         await Promise.all(removed.map((item) => deleteWishlistRecord(ownerId, item.productId)));
+        removed.forEach((item) => recordProductWishDelta(item.productId, -1));
         return removed;
       } catch (removeError) {
         setRecords(records);

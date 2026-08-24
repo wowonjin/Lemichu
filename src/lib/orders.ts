@@ -25,6 +25,15 @@ export type OrderStatus =
   | "delivered"
   | "cancelled";
 
+export type PaymentMethod = "BANK_TRANSFER" | "TOSS_CARD" | "TOSS_TRANSFER" | "POINTS";
+
+export type PaymentStatus =
+  | "WAITING_FOR_DEPOSIT"
+  | "PENDING"
+  | "PAID"
+  | "FAILED"
+  | "CANCELLED";
+
 export type CreateOrderInput = {
   user: AuthUser;
   items: ResolvedCheckoutItem[];
@@ -34,6 +43,7 @@ export type CreateOrderInput = {
     instantDiscount: number;
     couponDiscount: number;
     shippingFee: number;
+    pointsUsed?: number;
     finalTotal: number;
   };
 };
@@ -47,6 +57,17 @@ export type OrderDeliveryInfo = {
   message?: string;
   courier?: string;
   invoiceNo?: string;
+  logii?: {
+    reservationNo?: string;
+    bookedAt?: string;
+    service?: string;
+    parcelSize?: string;
+    itemName?: string;
+    recipientName?: string;
+    recipientPhone?: string;
+    recipientAddress?: string;
+    sourceFileName?: string;
+  };
 };
 
 export type PurchaseOrder = {
@@ -55,22 +76,51 @@ export type PurchaseOrder = {
   userEmail: string;
   userName: string;
   status: OrderStatus;
+  paymentMethod?: PaymentMethod;
+  paymentStatus?: PaymentStatus;
+  expectedAmount?: number;
+  depositorName?: string;
+  depositorNameNormalized?: string;
+  depositDueAt?: Timestamp;
+  paidAt?: Timestamp;
+  paymentReference?: string;
   itemCount: number;
   items: OrderItemSnapshot[];
   amounts: CheckoutAmounts;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
-  source: "web-cart" | "web-toss";
+  source: "web-cart" | "web-toss" | "web-bank-transfer";
   orderNo?: string;
   delivery?: OrderDeliveryInfo;
   payment?: {
-    provider?: "toss";
+    provider?: "toss" | "bank-transfer" | "points";
     orderId?: string;
     orderName?: string;
     amount?: number;
     paymentKey?: string;
     method?: string;
+    requestedMethod?: string;
+    requestedAt?: Timestamp;
+    approvedAt?: Timestamp;
+    failedAt?: Timestamp;
+    toss?: unknown;
     failure?: unknown;
+  };
+  inventory?: {
+    processed?: boolean;
+    processedAt?: Timestamp;
+    paymentReference?: string;
+  };
+  reward?: {
+    points: number;
+    rate: number;
+    granted: boolean;
+    reversed?: boolean;
+    method?: string;
+  };
+  points?: {
+    spent?: boolean;
+    restored?: boolean;
   };
 };
 

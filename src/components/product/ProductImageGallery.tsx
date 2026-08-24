@@ -12,10 +12,7 @@ import {
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { getPlaceholderGradient, isRealImage } from "@/lib/placeholder";
-import {
-  AuthenticationBadge,
-  ConditionBadge,
-} from "@/components/product/ProductBadge";
+import { ConditionBadge } from "@/components/product/ProductBadge";
 import type { Product } from "@/types/product";
 
 function uniqueImages(images: string[]) {
@@ -76,7 +73,7 @@ export function ProductImageGallery({
 
       <div>
         <div
-          className="relative -mx-4 aspect-square overflow-hidden bg-[#F7F7F7] dark:bg-muted md:mx-0"
+          className="group relative -mx-4 aspect-square overflow-hidden bg-[#F7F7F7] dark:bg-muted md:mx-0"
           onKeyDown={(event) => {
             if (!canNavigate) return;
             if (event.key === "ArrowLeft") {
@@ -90,12 +87,11 @@ export function ProductImageGallery({
           }}
           tabIndex={canNavigate ? 0 : undefined}
         >
-          <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-1.5">
-            <AuthenticationBadge status={product.authenticationStatus} />
-            {product.isPreOwned && product.condition ? (
+          {product.isPreOwned && product.condition ? (
+            <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-1.5">
               <ConditionBadge condition={product.condition} />
-            ) : null}
-          </div>
+            </div>
+          ) : null}
 
           {isRealImage(activeImage) ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -379,7 +375,11 @@ function NavButton({
       onClick={onClick}
       aria-label={direction === "prev" ? "이전 사진" : "다음 사진"}
       className={cn(
-        "absolute top-1/2 z-10 flex size-9 -translate-y-1/2 items-center justify-center rounded-md bg-background/90 text-foreground shadow-sm backdrop-blur transition-colors hover:bg-background",
+        "absolute top-1/2 z-10 flex size-9 -translate-y-1/2 items-center justify-center rounded-md bg-background/90 text-foreground shadow-sm backdrop-blur transition-[opacity,background-color] hover:bg-background",
+        "pointer-events-none opacity-0 duration-200",
+        "group-hover:pointer-events-auto group-hover:opacity-100",
+        "group-focus-within:pointer-events-auto group-focus-within:opacity-100",
+        "[@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100",
         direction === "prev" ? "left-3" : "right-3"
       )}
     >

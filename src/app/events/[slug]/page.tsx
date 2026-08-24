@@ -19,7 +19,7 @@ export async function generateMetadata({
   const event = getEventPost(slug);
 
   return {
-    title: event ? `${event.title} — LEMICHU` : "이벤트 — LEMICHU",
+    title: event?.title ?? "이벤트",
   };
 }
 

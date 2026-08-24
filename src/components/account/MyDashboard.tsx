@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import Link from "next/link";
-import { Bell, ChevronRight, Heart, Truck } from "lucide-react";
+import { Bell, ChevronDown, ChevronRight, Heart, Truck } from "lucide-react";
+import { cn } from "@/lib/cn";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { useWishlist } from "@/components/wishlist/WishlistProvider";
-import { getAccountBenefits } from "@/lib/accountBenefits";
-import { formatPrice, formatPriceWithUnit } from "@/lib/formatPrice";
+import { useAccountBenefits } from "@/hooks/useAccountBenefits";
+import { formatPrice } from "@/lib/formatPrice";
 import {
   countOrdersByStatus,
   getActiveOrders,
@@ -23,18 +24,79 @@ import {
   AccountCtaLink,
   AccountEmptyState,
   AccountErrorState,
+  AccountMoreLink,
   AccountSection,
   AccountSkeleton,
+  AccountStatRow,
 } from "./AccountPageShell";
 import { OrderCard } from "./OrderCard";
+import { useMyNotificationInbox, useSellDashboardStats } from "./AccountLinkedViews";
+import { SELL_DASHBOARD_STEPS, countSellByStatus, formatMemberDate } from "@/lib/member-account";
+import { markMyNotificationsRead } from "@/lib/member-account-client";
+import { KakaoCsLink } from "./KakaoCsLink";
 
 const supportLinks = [
-  { label: "주문 및 배송 문의", href: "/my/inquiries" },
+  { label: "카카오톡 고객센터", href: "kakao" },
   { label: "취소·교환·반품", href: "/my/returns" },
   { label: "정품 검수 안내", href: "/authentication" },
-  { label: "1:1 문의", href: "/my/inquiries" },
   { label: "자주 묻는 질문", href: "/my/faq" },
 ];
+
+function SupportSection() {
+  const panelId = useId();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <section className="rounded-md bg-secondary px-5 py-5 md:px-6 md:py-6">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((value) => !value)}
+        className="flex w-full items-center justify-between gap-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+      >
+        <h2 className="text-[17px] font-bold tracking-tight text-foreground">고객지원</h2>
+        <ChevronDown
+          className={cn(
+            "size-4 shrink-0 text-muted-foreground transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            open && "rotate-180"
+          )}
+          strokeWidth={1.8}
+        />
+      </button>
+      <div
+        id={panelId}
+        className={cn(
+          "grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        )}
+      >
+        <div className="overflow-hidden">
+          <ul className="-mb-1 mt-5 divide-y divide-border border-t border-border">
+            {supportLinks.map((item) => (
+              <li key={`${item.label}-${item.href}`}>
+                {item.href === "kakao" ? (
+                  <KakaoCsLink className="flex min-h-12 items-center justify-between text-[15px] font-medium text-foreground transition-opacity hover:opacity-70">
+                    {item.label}
+                    <ChevronRight className="size-4 text-muted-foreground" strokeWidth={1.8} />
+                  </KakaoCsLink>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className="flex min-h-12 items-center justify-between text-[15px] font-medium text-foreground transition-opacity hover:opacity-70"
+                  >
+                    {item.label}
+                    <ChevronRight className="size-4 text-muted-foreground" strokeWidth={1.8} />
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export function MyDashboard({ products }: { products: Product[] }) {
   return (
@@ -48,7 +110,10 @@ function DashboardBody({ products }: { products: Product[] }) {
   const { user } = useAuthUser();
   const { orders, status, error, retry } = usePurchaseOrders();
   const { records, count: wishCount } = useWishlist();
-  const benefits = getAccountBenefits();
+  const { benefits } = useAccountBenefits();
+  const sellRequests = useSellDashboardStats();
+  const inbox = useMyNotificationInbox();
+  const sellCounts = countSellByStatus(sellRequests.data.filter((item) => item.kind !== "estimate"));
   const [considerTab, setConsiderTab] = useState<"wishlist" | "recent">("wishlist");
   const [readIds, setReadIds] = useState<string[]>([]);
   const [recent, setRecent] = useState<Product[]>([]);
@@ -115,8 +180,6 @@ function DashboardBody({ products }: { products: Product[] }) {
     }
   }, [previewWish.length, recent.length]);
 
-  const displayName = user?.name?.trim() || "회원";
-
   const markRead = (id: string) => {
     if (!user) return;
     const next = Array.from(new Set([...readIds, id]));
@@ -125,134 +188,114 @@ function DashboardBody({ products }: { products: Product[] }) {
   };
 
   const benefitItems = [
-    { label: "적립금", value: formatPrice(benefits.points), unit: "원", href: "/my/points" },
-    { label: "쿠폰", value: String(benefits.couponCount), unit: "장", href: "/my/coupons" },
-    { label: "찜", value: String(wishCount), unit: "개", href: "/my/wishlist" },
+    { key: "points", label: "적립금", value: formatPrice(benefits.points), unit: "원", href: "/my/points", emphasize: true },
+    { key: "coupons", label: "쿠폰", value: String(benefits.couponCount), unit: "장", href: "/my/coupons", emphasize: true },
+    { key: "wishlist", label: "찜", value: String(wishCount), unit: "개", href: "/my/wishlist", emphasize: true },
   ];
 
   return (
-    <div className="space-y-4">
-      <section className="rounded-md bg-secondary px-5 py-6 md:px-6">
-        <p className="text-[13px] font-medium text-muted-foreground">마이페이지</p>
-        <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <h1 className="text-[26px] font-bold tracking-tight text-foreground">
-            {displayName}님, 안녕하세요
-          </h1>
-          <Link
-            href="/my/settings"
-            className="inline-flex h-10 items-center gap-0.5 text-[14px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
-          >
-            계정 설정
-            <ChevronRight className="size-4" strokeWidth={1.8} />
-          </Link>
-        </div>
-      </section>
+    <div className="space-y-3">
+      <AccountSection
+        title="마이페이지"
+        titleSize="lg"
+        action={<AccountMoreLink href="/my/settings">계정 설정</AccountMoreLink>}
+      >
+        <AccountStatRow items={benefitItems} />
+      </AccountSection>
 
-      <section className="grid grid-cols-3 gap-2">
-        {benefitItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="rounded-md bg-secondary px-3 py-5 text-center transition-colors hover:bg-secondary/80"
-          >
-            <p className="text-[20px] font-bold tabular-nums leading-none tracking-tight text-foreground md:text-[22px]">
-              {item.value}
-              <span className="ml-0.5 text-[12px] font-semibold text-muted-foreground">{item.unit}</span>
-            </p>
-            <p className="mt-2 text-[12px] font-medium text-muted-foreground">{item.label}</p>
-          </Link>
-        ))}
-      </section>
-
-      <AccountSection title="진행 중인 주문">
+      <AccountSection title="진행 중인 주문" action={<AccountMoreLink href="/my/orders" />}>
         {status === "loading" ? <AccountSkeleton rows={2} /> : null}
         {status === "error" ? <AccountErrorState message={error} onRetry={retry} /> : null}
         {status === "ready" && activeOrders.length === 0 ? (
           <AccountEmptyState
+            compact
             title="진행 중인 주문이 없어요"
-            action={<AccountCtaLink href="/ranking">이번 주 인기 상품 보기</AccountCtaLink>}
+            action={
+              <AccountCtaLink href="/products" variant="ghost">
+                이번 주 인기 상품 보기
+                <ChevronRight className="size-4" strokeWidth={1.8} />
+              </AccountCtaLink>
+            }
           />
         ) : null}
-        {status === "ready"
-          ? activeOrders.slice(0, 2).map((order) => (
-              <OrderCard key={order.id} order={order} emphasizeArrival />
-            ))
-          : null}
+        {status === "ready" && activeOrders.length > 0 ? (
+          <div className="divide-y divide-border">
+            {activeOrders.slice(0, 2).map((order) => (
+              <OrderCard key={order.id} order={order} emphasizeArrival className="first:pt-0 last:pb-0" />
+            ))}
+          </div>
+        ) : null}
       </AccountSection>
 
-      <AccountSection
-        title="주문 현황"
-        action={
-          <Link
-            href="/my/orders"
-            className="inline-flex items-center gap-0.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
-          >
-            전체보기
-            <ChevronRight className="size-4" strokeWidth={1.8} />
-          </Link>
-        }
-      >
-        <div className="grid grid-cols-4">
-          {ORDER_SUMMARY_ITEMS.map((item) => {
-            const count = statusCounts[item.key];
-            return (
-              <Link
-                key={item.key}
-                href={item.href}
-                className="rounded-2xl py-4 text-center transition-colors hover:bg-background/70"
-              >
-                <p
-                  className={`text-[22px] font-bold tabular-nums ${
-                    count > 0 ? "text-foreground" : "text-muted-foreground"
-                  }`}
-                >
-                  {count}
-                </p>
-                <p className="mt-1 text-[12px] text-muted-foreground">{item.label}</p>
-              </Link>
-            );
-          })}
-        </div>
-      </AccountSection>
-
-      <AccountSection title="내 명품 판매 현황">
-        <div className="grid grid-cols-5 text-center">
-          {["접수", "수거 중", "검수 중", "판매 중", "정산 완료"].map((label) => (
-            <div key={label} className="rounded-2xl py-4">
-              <p className="text-[22px] font-bold tabular-nums text-muted-foreground">0</p>
-              <p className="mt-1 text-[12px] text-muted-foreground">{label}</p>
-            </div>
-          ))}
-        </div>
-        <AccountEmptyState
-          title="판매할 명품이 있으신가요?"
-          description="사진만 올리면 예상 시세를 확인할 수 있어요."
-          action={<AccountCtaLink href="/my/estimate">내 명품 시세 확인하기</AccountCtaLink>}
+      <AccountSection title="주문 현황" action={<AccountMoreLink href="/my/orders" />}>
+        <AccountStatRow
+          items={ORDER_SUMMARY_ITEMS.map((item) => ({
+            key: item.key,
+            label: item.label,
+            value: statusCounts[item.key],
+            href: item.href,
+            emphasize: statusCounts[item.key] > 0,
+          }))}
         />
       </AccountSection>
 
-      <AccountSection
-        title="맞춤 알림"
-        action={
-          <Link
-            href="/my/notifications"
-            className="inline-flex items-center gap-0.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
-          >
-            전체보기
-            <ChevronRight className="size-4" strokeWidth={1.8} />
-          </Link>
-        }
-      >
-        {alerts.length === 0 ? (
+      <AccountSection title="내 명품 판매 현황" action={<AccountMoreLink href="/my/sell" />}>
+        <AccountStatRow
+          items={SELL_DASHBOARD_STEPS.map((step) => ({
+            key: step.key,
+            label: step.label,
+            value: sellCounts[step.key],
+            emphasize: sellCounts[step.key] > 0,
+            href: step.key === "settled" ? "/my/settlement" : step.key === "inspecting" ? "/my/inspection" : "/my/sell",
+          }))}
+        />
+        <div className="mt-5 border-t border-border">
+          {sellRequests.data.length === 0 ? (
+            <AccountEmptyState
+              compact
+              title="판매할 명품이 있으신가요?"
+              description="접수하면 관리자가 검수와 정산 상태를 업데이트해요."
+              action={
+                <AccountCtaLink href="/my/estimate" variant="ghost">
+                  내 명품 시세 확인하기
+                  <ChevronRight className="size-4" strokeWidth={1.8} />
+                </AccountCtaLink>
+              }
+            />
+          ) : (
+            <p className="pt-4 text-[14px] text-muted-foreground">
+              최근 접수 {sellRequests.data[0].brand} {sellRequests.data[0].itemName}
+            </p>
+          )}
+        </div>
+      </AccountSection>
+
+      <AccountSection title="맞춤 알림" action={<AccountMoreLink href="/my/notifications" />}>
+        {inbox.data.length > 0 ? (
+          <ul className="-my-1 mb-4 divide-y divide-border">
+            {inbox.data.slice(0, 3).map((item) => (
+              <li key={item.id} className="py-4 first:pt-0">
+                <Link href={item.href || "/my/notifications"} onClick={() => markMyNotificationsRead([item.id])} className="block">
+                  <p className="text-[14px] leading-6 text-foreground">
+                    {!item.read ? <span className="mr-2 text-[11px] font-bold text-gold">NEW</span> : null}
+                    {item.title}
+                  </p>
+                  <p className="mt-1 text-[12px] text-muted-foreground">{item.body} · {formatMemberDate(item.createdAt)}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {alerts.length === 0 && inbox.data.length === 0 ? (
           <p className="py-6 text-center text-[14px] text-muted-foreground">아직 확인할 알림이 없어요.</p>
-        ) : (
-          <ul className="divide-y divide-border">
+        ) : alerts.length === 0 ? null : (
+          <ul className="-my-1 divide-y divide-border">
             {alerts.map((alert) => {
               const unread = !readIds.includes(alert.id);
               return (
                 <li key={alert.id}>
-                  <div className="flex items-start gap-3 py-4">
-                    <span className="mt-0.5 grid size-11 place-items-center rounded-md bg-secondary text-foreground">
+                  <div className="flex items-start gap-3 py-4 first:pt-0 last:pb-0">
+                    <span className="mt-0.5 grid size-10 place-items-center rounded-md bg-background text-foreground">
                       {alert.kind === "price-drop" ? (
                         <Heart className="size-4" />
                       ) : alert.kind === "today-ship" ? (
@@ -262,7 +305,7 @@ function DashboardBody({ products }: { products: Product[] }) {
                       )}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[14px] text-foreground">
+                      <p className="text-[14px] leading-6 text-foreground">
                         {unread ? <span className="mr-2 text-[11px] font-bold text-gold">NEW</span> : null}
                         {alert.message}
                       </p>
@@ -289,26 +332,30 @@ function DashboardBody({ products }: { products: Product[] }) {
       </AccountSection>
 
       <AccountSection title="구매를 고민 중인 상품">
-        <div className="flex gap-2 rounded-md bg-secondary p-1" role="tablist" aria-label="고민 중인 상품">
+        <div className="flex gap-6" role="tablist" aria-label="고민 중인 상품">
           {[
             { key: "wishlist" as const, label: "찜한 상품", count: wishEntries.length },
             { key: "recent" as const, label: "최근 본 상품", count: recent.length },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              role="tab"
-              aria-selected={considerTab === tab.key}
-              onClick={() => setConsiderTab(tab.key)}
-              className={`min-h-10 flex-1 rounded-md border text-[13px] transition-colors ${
-                considerTab === tab.key
-                  ? "border-border bg-background font-semibold text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {tab.label} {tab.count}
-            </button>
-          ))}
+          ].map((tab) => {
+            const selected = considerTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                role="tab"
+                aria-selected={selected}
+                onClick={() => setConsiderTab(tab.key)}
+                className={`text-[13px] transition-colors ${
+                  selected
+                    ? "font-semibold text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab.label}
+                <span className="ml-1 tabular-nums">{tab.count}</span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="mt-5">
@@ -321,8 +368,14 @@ function DashboardBody({ products }: { products: Product[] }) {
               </div>
             ) : (
               <AccountEmptyState
+                compact
                 title="아직 찜한 상품이 없어요"
-                action={<AccountCtaLink href="/ranking">인기 상품 둘러보기</AccountCtaLink>}
+                action={
+                  <AccountCtaLink href="/products" variant="ghost">
+                    인기 상품 둘러보기
+                    <ChevronRight className="size-4" strokeWidth={1.8} />
+                  </AccountCtaLink>
+                }
               />
             )
           ) : recent.length > 0 ? (
@@ -333,28 +386,20 @@ function DashboardBody({ products }: { products: Product[] }) {
             </div>
           ) : (
             <AccountEmptyState
+              compact
               title="최근 본 상품이 없어요"
-              action={<AccountCtaLink href="/new-arrivals">상품 둘러보기</AccountCtaLink>}
+              action={
+                <AccountCtaLink href="/products" variant="ghost">
+                  상품 둘러보기
+                  <ChevronRight className="size-4" strokeWidth={1.8} />
+                </AccountCtaLink>
+              }
             />
           )}
         </div>
       </AccountSection>
 
-      <AccountSection title="고객지원">
-        <ul>
-          {supportLinks.map((item) => (
-            <li key={`${item.label}-${item.href}`}>
-              <Link
-                href={item.href}
-                className="flex min-h-12 items-center justify-between rounded-2xl px-1 text-[15px] font-medium text-foreground transition-colors hover:bg-background/70"
-              >
-                {item.label}
-                <ChevronRight className="size-4 text-muted-foreground" strokeWidth={1.8} />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </AccountSection>
+      <SupportSection />
     </div>
   );
 }

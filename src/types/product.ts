@@ -48,6 +48,7 @@ export type Product = {
   availability?: ProductAvailability;
   stockQuantity?: number;
   variants?: ProductVariant[];
+  createdAt?: number;
 };
 
 export type RankedProduct = Product & {

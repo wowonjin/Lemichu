@@ -1,4 +1,5 @@
 import type { Product } from "@/types/product";
+import { getUsablePoints } from "@/lib/points";
 import {
   getVariantLabel,
   getVariantPrice,
@@ -32,6 +33,7 @@ export type CheckoutAmounts = {
   instantDiscount: number;
   couponDiscount: number;
   shippingFee: number;
+  pointsUsed: number;
   finalTotal: number;
 };
 
@@ -148,7 +150,10 @@ export function resolveCheckoutItems(
   });
 }
 
-export function calculateCheckoutAmounts(items: ResolvedCheckoutItem[]): CheckoutAmounts {
+export function calculateCheckoutAmounts(
+  items: ResolvedCheckoutItem[],
+  options?: { pointsToUse?: number; includeShipping?: boolean }
+): CheckoutAmounts {
   const productTotal = items.reduce(
     (total, item) => total + item.unitPrice * item.quantity,
     0
@@ -160,7 +165,14 @@ export function calculateCheckoutAmounts(items: ResolvedCheckoutItem[]): Checkou
   );
   const instantDiscount = Math.max(retailTotal - productTotal, 0);
   const couponDiscount = 0;
-  const shippingFee = productTotal >= 500_000 || productTotal === 0 ? 0 : 3_000;
+  const shippingFee =
+    options?.includeShipping === false
+      ? 0
+      : productTotal >= 500_000 || productTotal === 0
+        ? 0
+        : 3_000;
+  const subtotal = Math.max(0, productTotal - couponDiscount + shippingFee);
+  const pointsUsed = getUsablePoints(subtotal, options?.pointsToUse ?? 0);
 
   return {
     retailTotal,
@@ -168,7 +180,8 @@ export function calculateCheckoutAmounts(items: ResolvedCheckoutItem[]): Checkou
     instantDiscount,
     couponDiscount,
     shippingFee,
-    finalTotal: productTotal - couponDiscount + shippingFee,
+    pointsUsed,
+    finalTotal: subtotal - pointsUsed,
   };
 }
 

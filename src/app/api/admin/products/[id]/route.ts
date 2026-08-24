@@ -1,35 +1,10 @@
 import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { FieldValue } from "firebase-admin/firestore";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
+import { verifyAdminRequest } from "@/lib/admin-auth";
+import { getAdminDb } from "@/lib/firebase-admin";
 
 export const runtime = "nodejs";
-
-const ADMIN_EMAIL = "admin@gmail.com";
-
-function isAdminEmail(email: string | undefined | null) {
-  if (!email) return false;
-  const normalized = email.trim().toLowerCase();
-  const tempAdminEmail = process.env.LEMICHU_ADMIN_EMAIL?.trim().toLowerCase();
-  return normalized === ADMIN_EMAIL || (tempAdminEmail ? normalized === tempAdminEmail : false);
-}
-
-async function verifyAdmin(request: Request): Promise<boolean> {
-  const authorization = request.headers.get("authorization") || "";
-  const token = authorization.match(/^Bearer\s+(.+)$/i)?.[1];
-
-  if (token) {
-    try {
-      const decoded = await getAdminAuth().verifyIdToken(token);
-      return isAdminEmail(decoded.email);
-    } catch {
-      return false;
-    }
-  }
-
-  // Fallback for the temp-admin session which has no Firebase ID token.
-  return isAdminEmail(request.headers.get("x-admin-email"));
-}
 
 type UpdatePayload = {
   name?: string;
@@ -47,7 +22,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!(await verifyAdmin(request))) {
+  if (!(await verifyAdminRequest(request))) {
     return NextResponse.json(
       { ok: false, message: "관리자 권한이 필요합니다." },
       { status: 403 }

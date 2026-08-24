@@ -18,6 +18,7 @@ import {
   fetchAdminUsers,
   type AdminUserProfile,
 } from "@/lib/admin";
+import { fetchAdminMemberOverview } from "@/lib/member-account-client";
 import { buildDailySales, buildStatusBreakdown, buildTrend } from "@/lib/adminStats";
 import { formatOrderDate, type OrderStatus, type PurchaseOrder } from "@/lib/orders";
 import { formatPriceWithUnit } from "@/lib/formatPrice";
@@ -50,6 +51,11 @@ export function AdminDashboard() {
   const [products, setProducts] = useState<StoreProduct[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [memberOverview, setMemberOverview] = useState({
+    pendingSell: 0,
+    pendingReturns: 0,
+    unreadNotifications: 0,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -59,15 +65,17 @@ export function AdminDashboard() {
       setError("");
 
       try {
-        const [nextUsers, nextOrders, nextProducts] = await Promise.all([
+        const [nextUsers, nextOrders, nextProducts, nextOverview] = await Promise.all([
           fetchAdminUsers(),
           fetchAdminOrders(),
           fetchAdminProducts(),
+          fetchAdminMemberOverview().catch(() => null),
         ]);
         if (!cancelled) {
           setUsers(nextUsers);
           setOrders(nextOrders);
           setProducts(nextProducts);
+          if (nextOverview) setMemberOverview(nextOverview);
         }
       } catch (adminError) {
         if (!cancelled) {
@@ -222,6 +230,26 @@ export function AdminDashboard() {
           </div>
         </div>
       </section>
+
+      <section className="mt-10 border-t border-border pt-10">
+        <h3 className="text-base font-semibold text-foreground">마이페이지 연동</h3>
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          {[
+            { href: "/admin/sell", label: "진행 중 판매", value: memberOverview.pendingSell },
+            { href: "/admin/returns", label: "취소·교환·반품 대기", value: memberOverview.pendingReturns },
+            { href: "/admin/notifications", label: "미확인 알림", value: memberOverview.unreadNotifications },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="rounded-xl border border-border px-4 py-4 transition-colors hover:bg-secondary"
+            >
+              <p className="text-sm text-muted-foreground">{item.label}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{isLoading ? "-" : item.value}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
     </AdminShell>
   );
 }
@@ -276,7 +304,7 @@ function RecentOrder({ order }: { order: PurchaseOrder }) {
 
 function RecentUser({ user }: { user: AdminUserProfile }) {
   return (
-    <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+    <Link href={`/admin/users/${user.uid}`} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
       <span className="grid size-10 shrink-0 place-items-center rounded-md bg-foreground text-sm font-bold text-background">
         {user.name?.slice(0, 1) || "U"}
       </span>
@@ -285,6 +313,6 @@ function RecentUser({ user }: { user: AdminUserProfile }) {
         <p className="truncate text-xs text-muted-foreground">{user.email}</p>
       </div>
       <span className="ml-auto text-xs font-semibold text-muted-foreground">{user.role}</span>
-    </div>
+    </Link>
   );
 }

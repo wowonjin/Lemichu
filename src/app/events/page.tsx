@@ -4,7 +4,7 @@ import { CustomerPageShell } from "@/components/layout/CustomerPage";
 import { eventPosts } from "@/data/events";
 
 export const metadata: Metadata = {
-  title: "이벤트 — LEMICHU",
+  title: "이벤트",
 };
 
 export default function EventsPage() {

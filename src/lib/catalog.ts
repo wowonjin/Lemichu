@@ -4,14 +4,11 @@ import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { getDiscountRate } from "@/lib/formatPrice";
-import {
-  getAudiencePickTabs,
-  getHomeCategoryItems,
-  getPriceBandTabs,
-  getTrendStories,
-  pickTimeSaleProducts,
-} from "@/lib/homeCatalog";
+import { getHomeCategoryItems } from "@/lib/homeCatalog";
 import { getPublishedHomeCategories } from "@/lib/home-categories-server";
+import { buildHomeMerchandising } from "@/lib/home-merchandising";
+import { getHomeSectionSlotMap } from "@/lib/home-sections-server";
+import { getProductSignalMap } from "@/lib/product-signals-server";
 import type { StoreProduct } from "@/lib/products";
 import {
   getProductAvailabilityFromVariants,
@@ -19,6 +16,7 @@ import {
   isVariantAvailable,
 } from "@/lib/product-variants";
 import { getTodaySaleEndIso } from "@/lib/saleWindow";
+import { buildAvailableCategoryMenu } from "@/lib/categoryMenu";
 import { isConditionGrade, type Product, type RankedProduct } from "@/types/product";
 
 type ProductDoc = StoreProduct & {
@@ -29,6 +27,7 @@ type ProductDoc = StoreProduct & {
   todayShip?: boolean;
   overseasShipping?: boolean;
   storeCategoryId?: string;
+  createdAt?: unknown;
 };
 
 function conditionFor(product: ProductDoc, isPreOwned: boolean) {
@@ -126,6 +125,7 @@ export function storeProductToProduct(product: ProductDoc): Product {
     stockQuantity,
     variants,
     availability: getProductAvailabilityFromVariants(variants, product.stockQuantity),
+    createdAt: toMillis(product.createdAt) || undefined,
   };
 }
 
@@ -151,85 +151,94 @@ async function loadRegisteredProducts(): Promise<Product[]> {
 
 const getCachedRegisteredProducts = unstable_cache(
   loadRegisteredProducts,
-  ["catalog-registered-products-v4"],
+  ["catalog-registered-products-v5"],
   { revalidate: 30, tags: ["products"] }
 );
 
 const fetchRegisteredProducts = cache(() => getCachedRegisteredProducts());
 
+function preOwnedOnly(products: Product[]) {
+  return products.filter((product) => product.isPreOwned);
+}
+
+/** All registered products, including hidden new arrivals. Used for PDP and checkout. */
+export const getRegisteredProducts = cache(async () => {
+  return fetchRegisteredProducts();
+});
+
+/** Storefront listings. Temporarily used-only so 전체 shows pre-owned products. */
 export const getCatalogProducts = cache(async () => {
-  const registered = await fetchRegisteredProducts();
-  return registered;
+  return preOwnedOnly(await fetchRegisteredProducts());
+});
+
+export const getHeaderCategoryMenu = cache(async () => {
+  return buildAvailableCategoryMenu(await getCatalogProducts());
 });
 
 export const getCatalogProductById = cache(async (id: string) => {
-  const products = await getCatalogProducts();
+  const products = await fetchRegisteredProducts();
   return products.find((product) => product.id === id);
 });
 
 export const getHomeProductSets = cache(async () => {
-  const registered = await fetchRegisteredProducts();
+  const catalog = await getCatalogProducts();
   return {
-    todaysDeals: registered.slice(0, 12),
-    preOwnedVerified: registered.filter((product) => product.isPreOwned).slice(0, 12),
-    readyToShip: registered
+    todaysDeals: catalog.slice(0, 12),
+    preOwnedVerified: catalog.slice(0, 12),
+    readyToShip: catalog
       .filter((product) => product.deliveryBadge !== "예약배송")
       .slice(0, 12),
-    priceDrops: registered
+    priceDrops: catalog
       .filter((product) => product.discountRate !== undefined)
       .slice(0, 12),
   };
 });
 
-export const getHomePageData = cache(async () => {
-  const [products, categories] = await Promise.all([
+const getHomeMerchandising = cache(async () => {
+  const [products, signals, slots] = await Promise.all([
     getCatalogProducts(),
+    getProductSignalMap(),
+    getHomeSectionSlotMap(),
+  ]);
+  return buildHomeMerchandising(products, signals, slots);
+});
+
+export const getHomePageData = cache(async () => {
+  const [merch, categories] = await Promise.all([
+    getHomeMerchandising(),
     getPublishedHomeCategories(),
   ]);
 
   return {
     categoryItems: getHomeCategoryItems(categories),
-    timeSaleProducts: pickTimeSaleProducts(products, 6),
+    timeSaleProducts: merch.timeSaleProducts,
     timeSaleEndsAt: getTodaySaleEndIso(),
-    rankedProducts: await getRankedProducts(18),
-    audienceTabs: getAudiencePickTabs(products),
-    priceBandTabs: getPriceBandTabs(products),
-    trendStories: getTrendStories(products),
+    rankedProducts: merch.rankedAll,
+    rankedTabs: merch.rankedTabs,
+    audienceTabs: merch.audienceTabs,
+    priceBandTabs: merch.priceBandTabs,
+    trendStories: merch.trendStories,
   };
 });
 
+export const getHomeMerchandisingPreview = cache(async () => {
+  return getHomeMerchandising();
+});
+
 export const getNewArrivalProducts = cache(async () => {
-  return fetchRegisteredProducts();
+  return getCatalogProducts();
 });
 
 export const getSaleProducts = cache(async () => {
-  const registered = await fetchRegisteredProducts();
-  return registered.filter((product) => product.discountRate !== undefined);
+  const catalog = await getCatalogProducts();
+  return catalog.filter((product) => product.discountRate !== undefined);
 });
 
 export const getPreOwnedProducts = cache(async () => {
-  const registered = await fetchRegisteredProducts();
-  return registered.filter((product) => product.isPreOwned);
+  return getCatalogProducts();
 });
 
 export const getRankedProducts = cache(async (limit = 24): Promise<RankedProduct[]> => {
-  const products = await getCatalogProducts();
-  const used = products.filter((product) => product.isPreOwned);
-  const selected: Product[] = [];
-  const seen = new Set<string>();
-
-  for (const product of [...products.slice(0, limit), ...used.slice(0, 8)]) {
-    if (seen.has(product.id)) continue;
-    seen.add(product.id);
-    selected.push(product);
-    if (selected.length >= Math.max(limit, 12)) break;
-  }
-
-  const trends: Array<number | "new"> = [3, "new", 2, 0, 1, "new", 2, 0];
-
-  return selected.map((product, index) => ({
-    ...product,
-    rank: index + 1,
-    trend: trends[index % trends.length],
-  }));
+  const merch = await getHomeMerchandising();
+  return merch.rankedAll.slice(0, limit);
 });

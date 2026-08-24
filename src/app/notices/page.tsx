@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CustomerPageShell } from "@/components/layout/CustomerPage";
 
 export const metadata: Metadata = {
-  title: "공지사항 — LEMICHU",
+  title: "공지사항",
 };
 
 const notices = [

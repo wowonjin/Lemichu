@@ -4,14 +4,14 @@ import { MyDashboard } from "@/components/account/MyDashboard";
 import { getCatalogProducts } from "@/lib/catalog";
 
 export const metadata: Metadata = {
-  title: "마이페이지 — LEMICHU",
+  title: "마이페이지",
 };
 
 export default async function MyPage() {
   const products = await getCatalogProducts();
 
   return (
-    <AccountPageShell currentLabel="홈">
+    <AccountPageShell currentLabel="마이페이지">
       <MyDashboard products={products} />
     </AccountPageShell>
   );

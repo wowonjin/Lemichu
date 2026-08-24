@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ADMIN_EMAIL, isAdminUser, type AuthUser, observeAuthUser, signOut } from "@/lib/auth";
@@ -11,158 +11,24 @@ import { HoverTooltip } from "@/components/ui/hover-tooltip";
 import { HeaderSearchPanel } from "@/components/search/HeaderSearchPanel";
 import { rememberCustomerSearch } from "@/lib/search/client";
 import { buildSearchHref } from "@/lib/search/url";
+import type { CategoryMenuTab } from "@/data/categoryMenu";
 import { AccountMenu } from "./AccountMenu";
 import { HeaderEventBanner } from "./HeaderEventBanner";
 import { ModeToggle } from "./ModeToggle";
+import { catalogFilterHref, parseCatalogFilter, type CatalogFilterId } from "@/lib/catalogFilters";
+import { buildSellInquiryMessage, copyTextToClipboard, getKakaoChatUrl } from "@/lib/kakao-inquiry";
+import { useToast } from "@/components/ui/toast";
 
-const gnb = [
-  { label: "NEW", href: "/new-arrivals" },
-  { label: "BEST", href: "/ranking" },
-  { label: "브랜드", href: "/brand" },
-  { label: "Threads 인기", href: "/threads" },
-  { label: "중고명품", href: "/pre-owned" },
-  { label: "여름 특가!", href: "/promotions", highlight: true },
-  { label: "SALE", href: "/sale" },
-  { label: "이벤트", href: "/events" },
-];
-
-const menuTabs = [
-  {
-    label: "여성",
-    columns: [
-      {
-        title: "의류",
-        items: [
-          "티셔츠/맨투맨",
-          "원피스/점프수트",
-          "블라우스/셔츠",
-          "스커트",
-          "바지/데님",
-          "비치웨어",
-          "니트웨어",
-          "아우터",
-          "패딩",
-          "코트",
-          "자켓",
-          "블레이저/수트",
-          "언더웨어/파자마",
-          "스포츠/아웃도어",
-          "기타의류",
-        ],
-      },
-      {
-        title: "가방",
-        items: [
-          "숄더백/크로스백",
-          "토트백/핸드백",
-          "클러치/미니백",
-          "백팩",
-          "파우치",
-          "벨트백",
-          "여행가방",
-          "기타가방",
-          "이너백",
-        ],
-      },
-      {
-        title: "액세서리",
-        items: [
-          "지갑/카드홀더",
-          "주얼리",
-          "모자/장갑",
-          "스카프/숄",
-          "선글라스",
-          "벨트",
-          "시계",
-          "키링/참/가죽소품",
-          "디지털 액세서리",
-          "양말",
-          "우산",
-          "기타액세서리",
-        ],
-      },
-      {
-        title: "신발",
-        items: [
-          "스니커즈/운동화",
-          "샌들/슬리퍼",
-          "플랫/발레리나슈즈",
-          "로퍼/레이스업",
-          "펌프스/힐",
-          "부츠",
-          "에스파드류/웨지",
-          "기타신발",
-        ],
-      },
-    ],
-  },
-  {
-    label: "남성",
-    columns: [
-      {
-        title: "의류",
-        items: [
-          "티셔츠/맨투맨",
-          "셔츠",
-          "바지/데님",
-          "비치웨어",
-          "니트웨어",
-          "아우터",
-          "패딩",
-          "코트",
-          "자켓",
-          "블레이저/수트",
-          "언더웨어/파자마",
-          "스포츠/아웃도어",
-          "기타의류",
-        ],
-      },
-      {
-        title: "가방",
-        items: [
-          "숄더백/크로스백",
-          "파우치",
-          "토트백/탑핸들백",
-          "백팩",
-          "벨트백",
-          "서류/비즈니스백",
-          "여행가방",
-          "기타가방",
-          "이너백",
-        ],
-      },
-      {
-        title: "액세서리",
-        items: [
-          "지갑/카드홀더",
-          "시계",
-          "벨트",
-          "모자/장갑",
-          "타이/보타이",
-          "주얼리",
-          "선글라스",
-          "키링/참/가죽소품",
-          "스카프/숄",
-          "디지털 액세서리",
-          "양말",
-          "우산",
-          "기타액세서리",
-        ],
-      },
-      {
-        title: "신발",
-        items: [
-          "스니커즈/운동화",
-          "샌들/슬리퍼",
-          "로퍼/드라이빙",
-          "구두/레이스업",
-          "부츠",
-          "에스파드류/웨지",
-          "기타신발",
-        ],
-      },
-    ],
-  },
+const gnb: {
+  label: string;
+  href: string;
+  filter?: CatalogFilterId;
+  kakao?: boolean;
+}[] = [
+  { label: "신규입고", href: catalogFilterHref("new"), filter: "new" },
+  { label: "명품가방", href: catalogFilterHref("bags"), filter: "bags" },
+  { label: "지갑·카드지갑", href: catalogFilterHref("wallets"), filter: "wallets" },
+  { label: "내 명품 판매하기", href: getKakaoChatUrl(), kakao: true },
 ];
 
 const headerIconClassName =
@@ -185,28 +51,107 @@ function HeaderIconLink({
   );
 }
 
+function isGnbActive(
+  item: (typeof gnb)[number],
+  pathname: string,
+  filter: ReturnType<typeof parseCatalogFilter>
+) {
+  if (item.filter) {
+    return pathname === "/products" && filter === item.filter;
+  }
+  return pathname === item.href || pathname.startsWith(`${item.href}/`);
+}
+
+function HeaderGnbLinks({
+  pathname,
+  filter = "all",
+}: {
+  pathname: string;
+  filter?: ReturnType<typeof parseCatalogFilter>;
+}) {
+  const { toast } = useToast();
+
+  const openSellKakao = () => {
+    const copied = copyTextToClipboard(buildSellInquiryMessage());
+    toast(
+      copied
+        ? "판매 문의 문구가 복사되었습니다. 카카오톡에 붙여넣어 보내주세요."
+        : "카카오톡에서 명품 판매하기로 문의드린다고 남겨주세요."
+    );
+  };
+
+  return (
+    <>
+      {gnb.map((item) => {
+        const active = isGnbActive(item, pathname, filter);
+        const className = cn(
+          "inline-flex shrink-0 items-center text-sm transition-colors",
+          item.kakao
+            ? "h-7 rounded-md bg-[#FEE500] px-2.5 font-semibold text-[#191919] hover:opacity-90"
+            : active
+              ? "font-semibold text-foreground hover:text-foreground"
+              : "font-medium text-foreground/80 hover:text-foreground"
+        );
+
+        if (item.kakao) {
+          return (
+            <a
+              key={item.href}
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={openSellKakao}
+              className={className}
+            >
+              {item.label}
+            </a>
+          );
+        }
+
+        return (
+          <Link key={item.href} href={item.href} className={className}>
+            {item.label}
+          </Link>
+        );
+      })}
+    </>
+  );
+}
+
+function HeaderGnb() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  return (
+    <HeaderGnbLinks
+      pathname={pathname}
+      filter={parseCatalogFilter(searchParams.get("filter"))}
+    />
+  );
+}
+
 function categoryHref(tab: string, title?: string, item?: string) {
   const params = new URLSearchParams();
+  params.set("used", "1");
   params.set("tab", tab);
   if (title) params.set("category", title);
   if (item) params.set("item", item);
   return `/search?${params.toString()}`;
 }
 
-export function Header() {
+export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState(menuTabs[0].label);
+  const [activeTab, setActiveTab] = useState(categoryMenu[0]?.label ?? "여성");
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const headerRef = useRef<HTMLElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const activeMenu = menuTabs.find((tab) => tab.label === activeTab) ?? menuTabs[0];
+  const activeMenu = categoryMenu.find((tab) => tab.label === activeTab) ?? categoryMenu[0];
   const canAccessAdmin = isAdminUser(authUser) && authUser.email.toLowerCase() === ADMIN_EMAIL;
   const loginHref = getLoginHref(pathname);
   const closeMenu = () => setIsMenuOpen(false);
@@ -223,6 +168,7 @@ export function Header() {
     event.preventDefault();
     const query = searchQuery.trim();
     const usedOnly =
+      pathname.startsWith("/products") ||
       pathname.startsWith("/pre-owned") ||
       (pathname === "/search" && new URLSearchParams(window.location.search).get("used") === "1");
     if (query) {
@@ -250,6 +196,12 @@ export function Header() {
     setIsSearchOpen(false);
     setIsAccountOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!categoryMenu.some((tab) => tab.label === activeTab)) {
+      setActiveTab(categoryMenu[0]?.label ?? "여성");
+    }
+  }, [categoryMenu, activeTab]);
 
   useEffect(() => {
     if (!isSearchOpen) return;
@@ -339,9 +291,9 @@ export function Header() {
               <Suspense
                 fallback={
                   <div className="relative grid grid-cols-2 items-center rounded-md bg-secondary p-0.5 text-xs font-semibold">
-                    <span className="absolute inset-y-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-foreground" />
-                    <span className="relative z-10 rounded-md px-2.5 py-1 text-center text-background">전체</span>
-                    <span className="relative z-10 rounded-md px-2.5 py-1 text-center text-muted-foreground">중고</span>
+                    <span className="absolute inset-y-0.5 right-0.5 w-[calc(50%-2px)] rounded-md bg-foreground" />
+                    <span className="relative z-10 rounded-md px-2.5 py-1 text-center text-muted-foreground">전체</span>
+                    <span className="relative z-10 rounded-md px-2.5 py-1 text-center text-background">중고</span>
                   </div>
                 }
               >
@@ -368,10 +320,10 @@ export function Header() {
               </button>
               {authUser ? (
                 <>
-                  <HeaderIconLink href="/wishlist" label="찜">
+                  <HeaderIconLink href="/my" label="찜">
                     <Heart className="size-5" strokeWidth={1.8} />
                   </HeaderIconLink>
-                  <HeaderIconLink href="/cart" label="담기">
+                  <HeaderIconLink href="/my" label="담기">
                     <ShoppingBag className="size-5" strokeWidth={1.8} />
                   </HeaderIconLink>
                   <AccountMenu
@@ -447,20 +399,9 @@ export function Header() {
                     <Menu className="size-5" strokeWidth={1.8} />
                   )}
                 </button>
-                {gnb.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "shrink-0 text-sm transition-colors hover:text-foreground",
-                      item.highlight
-                        ? "font-semibold text-gold hover:text-gold"
-                        : "font-medium text-foreground/80"
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                <Suspense fallback={<HeaderGnbLinks pathname={pathname} />}>
+                  <HeaderGnb />
+                </Suspense>
               </nav>
             </div>
           </div>
@@ -487,78 +428,86 @@ export function Header() {
             )}
           >
             <div className="container">
-              <nav className="flex h-11 items-center gap-2.5 overflow-x-auto border-b border-border/60 no-scrollbar">
-                {menuTabs.map((tab) => {
-                  const isActive = tab.label === activeTab;
+              {categoryMenu.length === 0 || !activeMenu ? (
+                <div className="py-10 text-sm text-muted-foreground">
+                  현재 판매 중인 중고 상품이 없습니다.
+                </div>
+              ) : (
+                <>
+                  <nav className="flex h-11 items-center gap-2.5 overflow-x-auto border-b border-border/60 no-scrollbar">
+                    {categoryMenu.map((tab) => {
+                      const isActive = tab.label === activeTab;
 
-                  return (
-                    <button
-                      key={tab.label}
-                      type="button"
-                      aria-pressed={isActive}
-                      onClick={() => setActiveTab(tab.label)}
+                      return (
+                        <button
+                          key={tab.label}
+                          type="button"
+                          aria-pressed={isActive}
+                          onClick={() => setActiveTab(tab.label)}
+                          className={cn(
+                            "relative h-full shrink-0 text-sm font-medium transition-colors",
+                            isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {tab.label}
+                          <span
+                            className={cn(
+                              "absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-foreground transition-opacity",
+                              isActive ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                        </button>
+                      );
+                    })}
+                  </nav>
+
+                  <div className="py-5 md:py-6">
+                    <Link
+                      href={categoryHref(activeMenu.label)}
+                      onClick={closeMenu}
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-foreground transition-colors hover:text-gold"
+                    >
+                      {activeMenu.label} 전체보기
+                      <ChevronRight className="size-4" strokeWidth={2.2} />
+                    </Link>
+
+                    <div
                       className={cn(
-                        "relative h-full shrink-0 text-sm font-medium transition-colors",
-                        isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                        "mt-5 grid gap-x-6 gap-y-8 pb-7 sm:grid-cols-2 lg:gap-x-8",
+                        activeMenu.columns.length >= 6
+                          ? "lg:grid-cols-4 xl:grid-cols-7"
+                          : "lg:grid-cols-4"
                       )}
                     >
-                      {tab.label}
-                      <span
-                        className={cn(
-                          "absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-foreground transition-opacity",
-                          isActive ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                    </button>
-                  );
-                })}
-              </nav>
-
-              <div className="py-5 md:py-6">
-                <Link
-                  href={categoryHref(activeMenu.label)}
-                  onClick={closeMenu}
-                  className="inline-flex items-center gap-1 text-sm font-semibold text-foreground transition-colors hover:text-gold"
-                >
-                  {activeMenu.label} 전체보기
-                  <ChevronRight className="size-4" strokeWidth={2.2} />
-                </Link>
-
-                <div
-                  className={cn(
-                    "mt-5 grid gap-x-6 gap-y-8 pb-7 sm:grid-cols-2 lg:gap-x-8",
-                    activeMenu.columns.length >= 6
-                      ? "lg:grid-cols-4 xl:grid-cols-7"
-                      : "lg:grid-cols-4"
-                  )}
-                >
-                  {activeMenu.columns.map((column) => (
-                    <section key={column.title} className="min-w-0">
-                      <Link
-                        href={categoryHref(activeMenu.label, column.title)}
-                        onClick={closeMenu}
-                        className="inline-flex items-center gap-1 text-sm font-semibold text-foreground transition-colors hover:text-gold"
-                      >
-                        {column.title}
-                        <ChevronRight className="size-4" strokeWidth={2.2} />
-                      </Link>
-                      <ul className="mt-3 space-y-2.5">
-                        {column.items.map((item) => (
-                          <li key={item}>
-                            <Link
-                              href={categoryHref(activeMenu.label, column.title, item)}
-                              onClick={closeMenu}
-                              className="block text-xs font-medium leading-none text-muted-foreground transition-colors hover:text-foreground"
-                            >
-                              {item}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
-                  ))}
-                </div>
-              </div>
+                      {activeMenu.columns.map((column) => (
+                        <section key={column.title} className="min-w-0">
+                          <Link
+                            href={categoryHref(activeMenu.label, column.title)}
+                            onClick={closeMenu}
+                            className="inline-flex items-center gap-1 text-sm font-semibold text-foreground transition-colors hover:text-gold"
+                          >
+                            {column.title}
+                            <ChevronRight className="size-4" strokeWidth={2.2} />
+                          </Link>
+                          <ul className="mt-3 space-y-2.5">
+                            {column.items.map((item) => (
+                              <li key={item}>
+                                <Link
+                                  href={categoryHref(activeMenu.label, column.title, item)}
+                                  onClick={closeMenu}
+                                  className="block text-xs font-medium leading-none text-muted-foreground transition-colors hover:text-foreground"
+                                >
+                                  {item}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

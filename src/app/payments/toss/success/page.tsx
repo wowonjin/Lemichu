@@ -82,7 +82,7 @@ function TossSuccessContent() {
           {hasError ? (
             <div className="mt-6 flex justify-center gap-2">
               <Button asChild variant="outline">
-                <Link href="/cart">장바구니</Link>
+                <Link href="/my">마이페이지</Link>
               </Button>
               <Button asChild>
                 <Link href="/my/orders">주문 내역</Link>

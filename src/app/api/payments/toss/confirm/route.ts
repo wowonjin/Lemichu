@@ -1,6 +1,8 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { FirebaseAuthError, getAdminDb, requireFirebaseUser } from "@/lib/firebase-admin";
+import { restoreOrderPoints } from "@/lib/points-admin";
+import { completePayment } from "@/lib/payment-completion";
 import { basicAuthHeader, getTossSecretKey } from "@/lib/toss";
 
 export const runtime = "nodejs";
@@ -48,8 +50,10 @@ export async function POST(req: Request) {
     const order = orderSnapshot.data() as {
       userId?: string;
       status?: string;
+      paymentStatus?: string;
+      paymentReference?: string;
       amounts?: { finalTotal?: number };
-      payment?: { paymentKey?: string };
+      payment?: { paymentKey?: string; method?: string };
     };
 
     if (order.userId !== user.uid) {
@@ -66,7 +70,20 @@ export async function POST(req: Request) {
       );
     }
 
-    if (order.status === "paid") {
+    if (
+      order.paymentStatus === "PAID" ||
+      ["paid", "preparing", "shipping", "delivered"].includes(String(order.status))
+    ) {
+      if (
+        order.paymentReference &&
+        order.paymentReference !== paymentKey &&
+        order.payment?.paymentKey !== paymentKey
+      ) {
+        return NextResponse.json(
+          { ok: false, error: "ORDER_ALREADY_PAID", message: "이미 다른 결제로 처리된 주문입니다." },
+          { status: 409 }
+        );
+      }
       return NextResponse.json({
         ok: true,
         alreadyConfirmed: true,
@@ -79,6 +96,7 @@ export async function POST(req: Request) {
       headers: {
         Authorization: basicAuthHeader(getTossSecretKey()),
         "Content-Type": "application/json",
+        "Idempotency-Key": orderId,
       },
       body: JSON.stringify({ paymentKey, orderId, amount }),
     });
@@ -92,6 +110,7 @@ export async function POST(req: Request) {
         "payment.failedAt": FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       });
+      await restoreOrderPoints(orderId).catch(() => undefined);
 
       return NextResponse.json(
         {
@@ -104,13 +123,16 @@ export async function POST(req: Request) {
       );
     }
 
-    await orderRef.update({
-      status: "paid",
-      "payment.paymentKey": paymentKey,
-      "payment.method": tossJson?.method || "toss",
-      "payment.toss": tossJson,
-      "payment.approvedAt": FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
+    const paymentMethod = String(tossJson?.method || "toss");
+
+    await completePayment({
+      orderId,
+      paymentReference: paymentKey,
+      paymentMethod,
+      paymentDetails: {
+        paymentKey,
+        toss: tossJson,
+      },
     });
 
     return NextResponse.json({

@@ -1,12 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Download, Search } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { Download, FileSpreadsheet, Search } from "lucide-react";
 import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
 import { Button } from "@/components/ui/button";
 import { fetchAdminOrders, updateAdminOrderStatus } from "@/lib/admin";
+import {
+  importAdminLogiiWorkbook,
+  updateAdminOrderDelivery,
+} from "@/lib/member-account-client";
 import { downloadDeliveryExcel } from "@/lib/deliveryExport";
+import type {
+  LogiiImportReport,
+  LogiiImportRowStatus,
+} from "@/lib/logii-delivery";
 import {
   formatOrderDate,
   type OrderStatus,
@@ -57,19 +66,35 @@ const statusDotClass: Record<OrderStatus, string> = {
 };
 
 export function AdminOrdersPage() {
+  const logiiFileInputRef = useRef<HTMLInputElement>(null);
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"all" | OrderStatus>("all");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isImportingLogii, setIsImportingLogii] = useState(false);
+  const [logiiReport, setLogiiReport] = useState<LogiiImportReport | null>(null);
   const [updatingId, setUpdatingId] = useState("");
+  const [deliveryDrafts, setDeliveryDrafts] = useState<Record<string, { courier: string; invoiceNo: string }>>({});
 
   const loadOrders = async () => {
     setIsLoading(true);
     setError("");
 
     try {
-      setOrders(await fetchAdminOrders());
+      const nextOrders = await fetchAdminOrders();
+      setOrders(nextOrders);
+      setDeliveryDrafts(
+        Object.fromEntries(
+          nextOrders.map((order) => [
+            order.id,
+            {
+              courier: order.delivery?.courier ?? "",
+              invoiceNo: order.delivery?.invoiceNo ?? "",
+            },
+          ])
+        )
+      );
     } catch (adminError) {
       setError(
         adminError instanceof Error
@@ -119,10 +144,10 @@ export function AdminOrdersPage() {
     setError("");
 
     try {
-      await updateAdminOrderStatus(orderId, nextStatus);
+      const savedStatus = await updateAdminOrderStatus(orderId, nextStatus);
       setOrders((current) =>
         current.map((order) =>
-          order.id === orderId ? { ...order, status: nextStatus } : order
+          order.id === orderId ? { ...order, status: savedStatus } : order
         )
       );
     } catch (adminError) {
@@ -146,26 +171,75 @@ export function AdminOrdersPage() {
     downloadDeliveryExcel(deliveryExportOrders);
   };
 
+  const handleLogiiUpload = async (file?: File) => {
+    if (!file) return;
+    setIsImportingLogii(true);
+    setError("");
+
+    try {
+      const report = await importAdminLogiiWorkbook(file);
+      setLogiiReport(report);
+      await loadOrders();
+    } catch (adminError) {
+      setError(
+        adminError instanceof Error
+          ? adminError.message
+          : "로지아이 배송 엑셀을 처리하지 못했어요."
+      );
+    } finally {
+      setIsImportingLogii(false);
+      if (logiiFileInputRef.current) {
+        logiiFileInputRef.current.value = "";
+      }
+    }
+  };
+
   return (
     <AdminShell>
       <AdminPageHeader
         title="주문 관리"
         actions={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={isLoading || deliveryExportOrders.length === 0}
-            onClick={handleDeliveryExport}
-            className="rounded-md"
-          >
-            <Download className="size-4" />
-            택배 엑셀 다운로드
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <input
+              ref={logiiFileInputRef}
+              type="file"
+              accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              className="hidden"
+              onChange={(event) => handleLogiiUpload(event.target.files?.[0])}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isImportingLogii}
+              onClick={() => logiiFileInputRef.current?.click()}
+              className="rounded-md"
+            >
+              <FileSpreadsheet className="size-4" />
+              {isImportingLogii ? "주문 찾는 중..." : "로지아이 엑셀 연동"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isLoading || deliveryExportOrders.length === 0}
+              onClick={handleDeliveryExport}
+              className="rounded-md"
+            >
+              <Download className="size-4" />
+              택배 엑셀 다운로드
+            </Button>
+          </div>
         }
       />
 
       {error ? <AdminNotice message={error} /> : null}
+      {logiiReport ? (
+        <LogiiImportReportPanel
+          report={logiiReport}
+          onClose={() => setLogiiReport(null)}
+        />
+      ) : null}
 
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex h-11 items-center gap-2 rounded-md border border-border bg-secondary px-4 xl:min-w-96">
@@ -197,7 +271,7 @@ export function AdminOrdersPage() {
       </div>
 
       <div className="mt-5 overflow-x-auto">
-        <table className="w-full min-w-[980px] text-left text-sm">
+        <table className="w-full min-w-[1180px] text-left text-sm">
           <thead>
             <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
               <th className="py-3 pr-4 font-semibold first:pl-0">주문</th>
@@ -205,6 +279,7 @@ export function AdminOrdersPage() {
               <th className="px-4 py-3 font-semibold">상품</th>
               <th className="px-4 py-3 font-semibold">금액</th>
               <th className="px-4 py-3 font-semibold">상태</th>
+              <th className="px-4 py-3 font-semibold">배송</th>
               <th className="px-4 py-3 font-semibold last:pr-0">관리</th>
             </tr>
           </thead>
@@ -212,7 +287,7 @@ export function AdminOrdersPage() {
             {filteredOrders.map((order) => {
               const firstItem = order.items[0];
               const extraCount = Math.max(order.items.length - 1, 0);
-              const canManageFulfillment = !["pending", "failed"].includes(order.status);
+              const canManageFulfillment = !["failed", "cancelled"].includes(order.status);
 
               return (
                 <tr key={order.id} className="transition-colors hover:bg-secondary/50">
@@ -223,7 +298,9 @@ export function AdminOrdersPage() {
                     </p>
                   </td>
                   <td className="px-4 py-4">
-                    <p className="font-semibold text-foreground">{order.userName}</p>
+                    <Link href={`/admin/users/${order.userId}`} className="font-semibold text-foreground hover:underline">
+                      {order.userName}
+                    </Link>
                     <p className="mt-1 text-xs text-muted-foreground">{order.userEmail}</p>
                   </td>
                   <td className="px-4 py-4">
@@ -259,6 +336,61 @@ export function AdminOrdersPage() {
                       {statusLabels[order.status] ?? order.status}
                     </span>
                   </td>
+                  <td className="px-4 py-4">
+                    <div className="grid gap-2">
+                      <input
+                        value={deliveryDrafts[order.id]?.courier ?? ""}
+                        onChange={(event) =>
+                          setDeliveryDrafts((current) => ({
+                            ...current,
+                            [order.id]: {
+                              courier: event.target.value,
+                              invoiceNo: current[order.id]?.invoiceNo ?? "",
+                            },
+                          }))
+                        }
+                        placeholder="택배사"
+                        className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none"
+                      />
+                      <input
+                        value={deliveryDrafts[order.id]?.invoiceNo ?? ""}
+                        onChange={(event) =>
+                          setDeliveryDrafts((current) => ({
+                            ...current,
+                            [order.id]: {
+                              courier: current[order.id]?.courier ?? "",
+                              invoiceNo: event.target.value,
+                            },
+                          }))
+                        }
+                        placeholder="송장번호"
+                        className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none"
+                      />
+                      <button
+                        type="button"
+                        disabled={updatingId === order.id}
+                        onClick={async () => {
+                          setUpdatingId(order.id);
+                          setError("");
+                          try {
+                            await updateAdminOrderDelivery(order.id, deliveryDrafts[order.id] ?? {});
+                            await loadOrders();
+                          } catch (adminError) {
+                            setError(
+                              adminError instanceof Error
+                                ? adminError.message
+                                : "배송 정보를 저장하지 못했어요."
+                            );
+                          } finally {
+                            setUpdatingId("");
+                          }
+                        }}
+                        className="text-left text-xs font-semibold text-foreground underline-offset-4 hover:underline"
+                      >
+                        배송 정보 저장
+                      </button>
+                    </div>
+                  </td>
                   <td className="px-4 py-4 last:pr-0">
                     <select
                       value={order.status}
@@ -275,8 +407,11 @@ export function AdminOrdersPage() {
                             key={option.value}
                             value={option.value}
                             disabled={
-                              ["pending", "paid", "failed"].includes(option.value) &&
-                              option.value !== order.status
+                              option.value === order.status
+                                ? false
+                                : order.status === "pending"
+                                  ? !["paid", "cancelled"].includes(option.value)
+                                  : ["pending", "paid", "failed"].includes(option.value)
                             }
                           >
                             {option.label}
@@ -297,5 +432,121 @@ export function AdminOrdersPage() {
         {isLoading ? <EmptyAdminState text="주문 목록을 불러오는 중입니다." /> : null}
       </div>
     </AdminShell>
+  );
+}
+
+const importStatusLabels: Record<LogiiImportRowStatus, string> = {
+  linked: "연동 완료",
+  unchanged: "이미 연동됨",
+  ambiguous: "확인 필요",
+  unmatched: "외부 고객 저장",
+};
+
+const importStatusClasses: Record<LogiiImportRowStatus, string> = {
+  linked: "text-emerald-700",
+  unchanged: "text-sky-700",
+  ambiguous: "text-amber-700",
+  unmatched: "text-rose-700",
+};
+
+function LogiiImportReportPanel({
+  report,
+  onClose,
+}: {
+  report: LogiiImportReport;
+  onClose: () => void;
+}) {
+  const summaryItems = [
+    ["전체", report.summary.total],
+    ["연동 완료", report.summary.linked],
+    ["이미 연동", report.summary.unchanged],
+    ["확인 필요", report.summary.ambiguous],
+    ["외부 고객 저장", report.summary.unmatched],
+  ] as const;
+
+  return (
+    <section className="rounded-lg border border-border bg-secondary/40">
+      <div className="flex flex-col gap-4 border-b border-border px-5 py-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-foreground">
+            로지아이 배송 연동 결과
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{report.fileName}</p>
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+            {summaryItems.map(([label, value]) => (
+              <span key={label} className="text-xs text-muted-foreground">
+                {label} <strong className="text-foreground">{value}</strong>
+              </span>
+            ))}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+        >
+          결과 닫기
+        </button>
+      </div>
+
+      <div className="max-h-[420px] overflow-auto">
+        <table className="w-full min-w-[980px] text-left text-xs">
+          <thead className="sticky top-0 bg-secondary">
+            <tr className="border-b border-border text-muted-foreground">
+              <th className="px-5 py-3 font-semibold">행</th>
+              <th className="px-4 py-3 font-semibold">받는 분 / 물품</th>
+              <th className="px-4 py-3 font-semibold">로지아이 정보</th>
+              <th className="px-4 py-3 font-semibold">연동 주문</th>
+              <th className="px-4 py-3 font-semibold">결과</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {report.rows.map((row) => (
+              <tr key={`${row.rowNumber}-${row.reservationNo}`}>
+                <td className="px-5 py-3 tabular-nums text-muted-foreground">
+                  {row.rowNumber}
+                </td>
+                <td className="px-4 py-3">
+                  <p className="font-semibold text-foreground">{row.recipientName}</p>
+                  <p className="mt-1 text-muted-foreground">{row.itemName}</p>
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  <p>{row.service}</p>
+                  <p className="mt-1 tabular-nums">
+                    예약 {row.reservationNo}
+                    {row.invoiceNo ? ` · 송장 ${row.invoiceNo}` : " · 송장 미발급"}
+                  </p>
+                </td>
+                <td className="px-4 py-3">
+                  {row.orderId ? (
+                    <>
+                      <Link
+                        href={row.userId ? `/admin/users/${row.userId}` : "/admin/users"}
+                        className="font-semibold text-foreground hover:underline"
+                      >
+                        {row.customerName || "고객"}
+                      </Link>
+                      <p className="mt-1 tabular-nums text-muted-foreground">
+                        {row.orderNo}
+                      </p>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <p className={`font-semibold ${importStatusClasses[row.status]}`}>
+                    {importStatusLabels[row.status]}
+                  </p>
+                  <p className="mt-1 max-w-sm leading-5 text-muted-foreground">
+                    {row.message}
+                  </p>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }

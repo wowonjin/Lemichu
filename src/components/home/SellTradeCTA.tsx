@@ -70,11 +70,13 @@ function QuoteProcessStep({
   index,
   activeStep,
   reduceMotion,
+  onHoverChange,
 }: {
   item: (typeof STEPS)[number];
   index: number;
   activeStep: number;
   reduceMotion: boolean;
+  onHoverChange: (step: number | null) => void;
 }) {
   const step = index + 1;
   const complete = step < activeStep;
@@ -85,6 +87,10 @@ function QuoteProcessStep({
     <motion.li
       className="flex flex-1 flex-col items-center"
       aria-current={current ? "step" : undefined}
+      onMouseEnter={() => onHoverChange(step)}
+      onMouseLeave={() => onHoverChange(null)}
+      onFocus={() => onHoverChange(step)}
+      onBlur={() => onHoverChange(null)}
       variants={{
         hidden: reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 },
         show: {
@@ -160,26 +166,15 @@ function QuoteProcessStep({
         />
       </div>
       <span className="mt-2.5 flex flex-col items-center gap-0.5 text-center tracking-tight">
-        <motion.span
+        <span
           className={cn(
             "inline-block text-[10px] tabular-nums transition-colors duration-300 md:text-[11px]",
             current ? "font-semibold text-[#3182F6]" : "font-medium",
             !current && !complete && "text-[#B0B0B0] dark:text-muted-foreground"
           )}
-          animate={reduceMotion ? { rotate: 0 } : { rotate: 360 }}
-          transition={
-            reduceMotion
-              ? { duration: 0 }
-              : {
-                  duration: 2.8,
-                  repeat: Infinity,
-                  ease: "linear",
-                  delay: index * 0.18,
-                }
-          }
         >
           {String(step).padStart(2, "0")}
-        </motion.span>
+        </span>
         <span
           className={cn(
             "text-[11px] leading-4 transition-colors duration-300 md:text-[13px] md:leading-5",
@@ -203,7 +198,19 @@ export function SellTradeCTA() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [quoted, setQuoted] = useState(false);
+  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
+  const [cycleStep, setCycleStep] = useState(1);
   const reduceMotion = useReducedMotion() ?? false;
+  const progressStep = quoted ? 3 : photoUrl ? 2 : 1;
+  const userStarted = Boolean(photoUrl);
+
+  useEffect(() => {
+    if (reduceMotion || userStarted || hoveredStep != null) return;
+    const id = window.setInterval(() => {
+      setCycleStep((current) => (current % STEPS.length) + 1);
+    }, 1600);
+    return () => window.clearInterval(id);
+  }, [reduceMotion, userStarted, hoveredStep]);
 
   useEffect(() => {
     return () => {
@@ -236,7 +243,7 @@ export function SellTradeCTA() {
     router.push("/sell/estimate");
   }
 
-  const activeStep = quoted ? 3 : photoUrl ? 2 : 1;
+  const activeStep = hoveredStep ?? (userStarted ? progressStep : cycleStep);
 
   return (
     <section id="sell-quote" className="bg-[#F7F7F7] dark:bg-muted">
@@ -435,6 +442,7 @@ export function SellTradeCTA() {
                 index={index}
                 activeStep={activeStep}
                 reduceMotion={reduceMotion}
+                onHoverChange={setHoveredStep}
               />
             ))}
           </motion.ol>

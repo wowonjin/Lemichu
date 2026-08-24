@@ -42,7 +42,7 @@ export function HeroCampaign() {
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg">
-              <Link href="/new-arrivals">
+              <Link href="/products">
                 지금 쇼핑하기
                 <ArrowRight />
               </Link>

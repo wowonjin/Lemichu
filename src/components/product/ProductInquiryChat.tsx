@@ -1,24 +1,54 @@
 ﻿"use client";
 
-import { useEffect, useRef, useState } from "react";
-import { MessageCircle, X, Send, Headset } from "lucide-react";
+import { useState } from "react";
+import { X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { cn } from "@/lib/cn";
+import { useToast } from "@/components/ui/toast";
+import { useProductVariantPurchase } from "@/components/product/ProductVariantPurchase";
 import {
   productActionIconClassName,
   productActionStackClassName,
 } from "@/components/product/productActionStyles";
-import type { Product } from "@/types/product";
+import {
+  buildProductInquiryMessage,
+  copyTextToClipboard,
+  getKakaoChatUrl,
+  getPublicProductUrl,
+  type ProductInquiryContext,
+} from "@/lib/kakao-inquiry";
+import {
+  formatSizeDisplayLabel,
+  getVariantColorLabel,
+  getVariantSizeLabel,
+} from "@/lib/product-variants";
+import type { Product, ProductVariant } from "@/types/product";
 
-type ChatMessage = {
-  id: string;
-  role: "agent" | "user";
-  text: string;
-};
+function KakaoTalkIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden className={className}>
+      <path
+        fill="currentColor"
+        d="M12 4C6.76 4 2.5 7.35 2.5 11.49c0 2.67 1.78 5.02 4.45 6.35l-.9 3.31a.43.43 0 0 0 .65.47l3.95-2.63c.44.05.9.08 1.35.08 5.24 0 9.5-3.35 9.5-7.58C21.5 7.35 17.24 4 12 4z"
+      />
+    </svg>
+  );
+}
 
-function buildGreeting(product: Product): string {
-  const colorPart = product.color ? ` ${product.color}` : "";
-  return `안녕하세요.\n\n${product.brand} ${product.name}${colorPart} 상품 문의드립니다.`;
+function inquiryContextFor(
+  product: Product,
+  selectedVariant?: ProductVariant
+): ProductInquiryContext {
+  return {
+    productId: product.id,
+    brand: product.brand,
+    name: product.name,
+    color: selectedVariant ? getVariantColorLabel(selectedVariant) : product.color,
+    size: selectedVariant
+      ? getVariantSizeLabel(selectedVariant)
+      : product.size
+        ? formatSizeDisplayLabel(product.size)
+        : undefined,
+  };
 }
 
 export function ProductInquiryChat({
@@ -28,37 +58,23 @@ export function ProductInquiryChat({
   product: Product;
   appearance?: "stack" | "boxed";
 }) {
+  const { toast } = useToast();
+  const { selectedVariant } = useProductVariantPurchase();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: "welcome", role: "agent", text: "안녕하세요, 레미츄 상담팀입니다. 문의 남겨주시면 순차적으로 답변드릴게요." },
-  ]);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const contextRows = [
-    { label: "상품명", value: `${product.brand} ${product.name}` },
-    { label: "상품번호", value: product.id.toUpperCase() },
-    { label: "사이즈", value: product.size ?? "단일 사이즈" },
-    { label: "색상", value: product.color ?? "옵션 선택" },
-  ];
+  const context = inquiryContextFor(product, selectedVariant);
+  const productUrl = getPublicProductUrl(product.id);
+  const kakaoChatUrl = getKakaoChatUrl();
 
-  useEffect(() => {
-    if (open) setInput(buildGreeting(product));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, open]);
-
-  const send = () => {
-    const text = input.trim();
-    if (!text) return;
-    setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: "user", text }]);
-    setInput("");
-    setTimeout(() => {
-      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "agent", text: "문의 감사합니다. 담당 상담원이 확인 후 영업시간 내 빠르게 답변드리겠습니다. (평일 10:00-18:00)" }]);
-    }, 700);
+  const handleSendToKakao = () => {
+    const copied = copyTextToClipboard(buildProductInquiryMessage(context, input));
+    toast(
+      copied
+        ? "상품 페이지가 복사되었습니다. 카카오톡에 붙여넣어 보내주세요."
+        : "카카오톡에서 상품 페이지 주소를 함께 보내주세요."
+    );
+    setOpen(false);
   };
 
   return (
@@ -69,51 +85,87 @@ export function ProductInquiryChat({
         aria-label="상품문의"
         className={appearance === "boxed" ? productActionIconClassName : productActionStackClassName}
       >
-        <MessageCircle className="size-5" strokeWidth={1.75} />
+        <KakaoTalkIcon className="size-5" />
         {appearance === "stack" ? <span>상품문의</span> : null}
       </button>
 
       <AnimatePresence>
         {open ? (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)} className="fixed inset-0 z-[60] bg-foreground/30 md:bg-transparent" />
-            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 24 }} transition={{ type: "spring", stiffness: 320, damping: 30 }} role="dialog" aria-label="상품 문의 채팅" className="fixed inset-x-0 bottom-0 z-[61] mx-auto flex h-[78vh] max-h-[640px] w-full flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-xl md:inset-x-auto md:bottom-6 md:right-6 md:h-[560px] md:w-[380px] md:rounded-2xl">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setOpen(false)}
+              className="fixed inset-0 z-[60] bg-foreground/30 md:bg-transparent"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 24 }}
+              transition={{ type: "spring", stiffness: 320, damping: 30 }}
+              role="dialog"
+              aria-label="상품 문의"
+              className="fixed inset-x-0 bottom-0 z-[61] mx-auto flex w-full flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-xl md:inset-x-auto md:bottom-6 md:right-6 md:w-[380px] md:rounded-2xl"
+            >
               <div className="flex items-center justify-between border-b border-border bg-foreground px-4 py-3 text-background">
-                <div className="flex items-center gap-2">
-                  <span className="grid size-8 place-items-center rounded-md bg-background/15"><Headset className="size-4" /></span>
-                  <div>
-                    <p className="text-sm font-semibold">레미츄 상품 문의</p>
-                    <p className="text-[11px] text-background/70">평일 10:00-18:00 운영</p>
-                  </div>
+                <div>
+                  <p className="text-sm font-semibold">레미츄 상품 문의</p>
+                  <p className="text-[11px] text-background/70">카카오톡으로 상품 페이지와 함께 전달됩니다</p>
                 </div>
-                <button type="button" onClick={() => setOpen(false)} aria-label="닫기" className="grid size-8 place-items-center rounded-md transition-colors hover:bg-background/15"><X className="size-4" /></button>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label="닫기"
+                  className="grid size-8 place-items-center rounded-md transition-colors hover:bg-background/15"
+                >
+                  <X className="size-4" />
+                </button>
               </div>
 
-              <div className="border-b border-border bg-sand px-4 py-3">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-gold">문의 상품 자동 첨부</p>
-                <dl className="mt-2 space-y-1">
-                  {contextRows.map((row) => (
-                    <div key={row.label} className="flex gap-2 text-xs">
-                      <dt className="w-12 shrink-0 text-muted-foreground">{row.label}</dt>
-                      <dd className="font-medium text-foreground">{row.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-
-              <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-                {messages.map((message) => (
-                  <div key={message.id} className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}>
-                    <p className={cn("max-w-[80%] whitespace-pre-line rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed", message.role === "user" ? "rounded-br-sm bg-foreground text-background" : "rounded-bl-sm bg-secondary text-foreground")}>{message.text}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-border p-3">
-                <div className="flex items-end gap-2">
-                  <textarea value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); send(); } }} rows={2} placeholder="문의 내용을 입력하세요" className="max-h-28 min-h-[44px] flex-1 resize-none rounded-xl border border-border bg-background p-2.5 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground/30" />
-                  <button type="button" onClick={send} disabled={!input.trim()} aria-label="전송" className="grid size-11 shrink-0 place-items-center rounded-md bg-foreground text-background transition-opacity hover:opacity-90 disabled:opacity-40"><Send className="size-4" /></button>
+              <div className="space-y-3 px-4 py-4">
+                <div className="rounded-xl bg-sand px-4 py-3">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-gold">
+                    문의 상품 자동 첨부
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">
+                    {product.brand} {product.name}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    상품번호 {product.id.toUpperCase()}
+                    {context.color ? ` · ${context.color}` : ""}
+                    {context.size ? ` · ${context.size}` : ""}
+                  </p>
+                  <a
+                    href={productUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 block break-all text-xs font-medium text-foreground underline-offset-4 hover:underline"
+                  >
+                    {productUrl}
+                  </a>
                 </div>
+
+                <textarea
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  rows={3}
+                  placeholder="문의 내용을 입력하세요 (선택)"
+                  className="min-h-[88px] w-full resize-none rounded-xl border border-border bg-background p-2.5 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground/30"
+                />
+
+                <a
+                  href={kakaoChatUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={handleSendToKakao}
+                  className="flex h-12 items-center justify-center rounded-md bg-[#FEE500] text-sm font-semibold text-[#191919] transition-opacity hover:opacity-90"
+                >
+                  카카오톡으로 문의하기
+                </a>
+                <p className="text-center text-[11px] leading-5 text-muted-foreground">
+                  상품 페이지가 복사됩니다. 카카오톡 입력창에 붙여넣으면 어떤 상품 문의인지 확인할 수 있어요.
+                </p>
               </div>
             </motion.div>
           </>

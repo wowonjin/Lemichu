@@ -20,7 +20,7 @@ const menuItems = [
   { href: "/my", label: "마이페이지", icon: User },
   { href: "/my/orders", label: "주문 내역", icon: Receipt },
   { href: "/my/coupons", label: "쿠폰", icon: Ticket },
-  { href: "/wishlist", label: "찜", icon: Heart },
+  { href: "/my/wishlist", label: "찜", icon: Heart },
 ] as const;
 
 export function AccountMenu({

@@ -18,7 +18,7 @@ function getPageStep(track: HTMLDivElement): number {
 
 export function RelatedProductRail({
   products,
-  moreHref = "/new-arrivals",
+  moreHref = "/products",
 }: {
   products: Product[];
   moreHref?: string;

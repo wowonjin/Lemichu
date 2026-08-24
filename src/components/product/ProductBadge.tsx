@@ -84,23 +84,19 @@ export function AuthenticationBadge({
 const gradeMeta: Record<ConditionGrade, { label: string; className: string }> = {
   NEW: {
     label: "새상품",
-    className:
-      "bg-[#FFF4E5] text-[#C05621] ring-[#F0C48A] dark:bg-amber-400/10 dark:text-amber-200 dark:ring-amber-400/25",
+    className: "bg-[#C05621] text-white ring-transparent dark:bg-[#D97706]",
   },
   S: {
     label: "S급",
-    className:
-      "bg-[#F4F0FF] text-[#5B3A9E] ring-[#D8CCF0] dark:bg-violet-400/10 dark:text-violet-200 dark:ring-violet-400/25",
+    className: "bg-[#5B3A9E] text-white ring-transparent dark:bg-[#7C3AED]",
   },
   A: {
     label: "A급",
-    className:
-      "bg-[#EEF5FF] text-[#1D4F91] ring-[#C5D8F2] dark:bg-indigo-400/10 dark:text-indigo-200 dark:ring-indigo-400/25",
+    className: "bg-[#1D4F91] text-white ring-transparent dark:bg-[#2563EB]",
   },
   B: {
     label: "B급",
-    className:
-      "bg-[#F4F4F5] text-[#5C5C5C] ring-[#E4E4E7] dark:bg-white/8 dark:text-zinc-300 dark:ring-white/15",
+    className: "bg-[#5C5C5C] text-white ring-transparent dark:bg-[#71717A]",
   },
 };
 

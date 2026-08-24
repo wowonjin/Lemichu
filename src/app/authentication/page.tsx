@@ -6,7 +6,7 @@ import { AuthenticationGuide } from "@/components/home/AuthenticationGuide";
 import { authenticationDoc } from "@/data/pageContent";
 
 export const metadata: Metadata = {
-  title: "정품 검수 안내 — LEMICHU",
+  title: "정품 검수 안내",
 };
 
 const highlights = [

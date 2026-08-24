@@ -5,7 +5,7 @@ import { magazineItems } from "@/data/campaigns";
 import { getTemporaryImageUrl } from "@/lib/placeholder";
 
 export const metadata: Metadata = {
-  title: "레미츄 매거진 — LEMICHU",
+  title: "매거진",
 };
 
 export default function MagazinePage() {

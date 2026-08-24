@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">KB Deposit Relay</string>
+    <string name="notification_listener_name">KB 입금 알림 릴레이</string>
+</resources>

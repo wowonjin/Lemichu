@@ -23,7 +23,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const guide = getGuide(slug);
   return {
-    title: guide ? `${guide.title} — LEMICHU` : "판매 — LEMICHU",
+    title: guide?.title ?? "판매",
   };
 }
 

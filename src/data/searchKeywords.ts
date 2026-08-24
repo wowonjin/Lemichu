@@ -30,7 +30,7 @@ export const searchCategoryShortcuts = [
   { label: "지갑", href: "/category/wallets" },
   { label: "시계", href: "/category/watches" },
   { label: "주얼리", href: "/category/jewelry" },
-  { label: "중고명품", href: "/pre-owned" },
+  { label: "중고명품", href: "/products" },
 ];
 
 export function formatPopularUpdatedAt(date: Date | string = new Date()) {

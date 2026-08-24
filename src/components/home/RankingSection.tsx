@@ -19,6 +19,12 @@ const HOME_RANKING_TABS = [
 
 type HomeRankingTabId = (typeof HOME_RANKING_TABS)[number]["id"];
 
+export type HomeRankingTab = {
+  id: HomeRankingTabId;
+  label: string;
+  products: RankedProduct[];
+};
+
 type ShowcaseBadge = "NEW" | "급상승" | "인기";
 
 function padRank(rank: number) {
@@ -89,13 +95,25 @@ function RankingCard({ product, rank }: { product: RankedProduct; rank: number }
   );
 }
 
-export function RankingSection({ rankedProducts }: { rankedProducts: RankedProduct[] }) {
+export function RankingSection({
+  rankedProducts,
+  rankedTabs,
+}: {
+  rankedProducts?: RankedProduct[];
+  rankedTabs?: HomeRankingTab[];
+}) {
   const [tab, setTab] = useState<HomeRankingTabId>("all");
   const tabPrefix = useId();
   const reduceMotion = useReducedMotion();
-  const products = rankedProducts
-    .filter((product) => matchesRankingTab(product, tab))
-    .slice(0, VISIBLE_LIMIT);
+  const tabs = rankedTabs?.length
+    ? rankedTabs
+    : HOME_RANKING_TABS.map((item) => ({
+        id: item.id,
+        label: item.label,
+        products: (rankedProducts ?? []).filter((product) => matchesRankingTab(product, item.id)),
+      }));
+  const active = tabs.find((item) => item.id === tab) ?? tabs[0];
+  const products = (active?.products ?? []).slice(0, VISIBLE_LIMIT);
 
   return (
     <section className="bg-background" aria-labelledby="ranking-heading">
@@ -115,10 +133,10 @@ export function RankingSection({ rankedProducts }: { rankedProducts: RankedProdu
 
           <div className="flex shrink-0 flex-col items-end gap-1 pt-1.5">
             <p className="text-[13px] font-medium tabular-nums tracking-tight text-[#8B8B8B] dark:text-muted-foreground">
-              10분 전 업데이트
+              실시간 관심 집계
             </p>
             <Link
-              href="/ranking"
+              href="/products"
               className="inline-flex items-center text-[13px] font-medium text-[#8B8B8B] transition-colors hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground md:text-[14px]"
             >
               전체보기
@@ -133,7 +151,7 @@ export function RankingSection({ rankedProducts }: { rankedProducts: RankedProdu
             aria-label="랭킹 카테고리"
             className="mt-7 flex items-end gap-6 md:mt-8"
           >
-            {HOME_RANKING_TABS.map((item) => {
+            {tabs.map((item) => {
               const selected = tab === item.id;
               return (
                 <button

@@ -21,7 +21,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const article = magazineArticles[slug];
   return {
-    title: article ? `${article.title} — LEMICHU` : "매거진 — LEMICHU",
+    title: article?.title ?? "매거진",
   };
 }
 

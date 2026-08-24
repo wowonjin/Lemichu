@@ -2,9 +2,10 @@
 
 import { getFirebaseIdToken } from "@/lib/auth";
 import type { CheckoutItemInput } from "@/lib/checkout";
+import type { TossCheckoutMethod } from "@/lib/points";
 
 type TossPaymentRequest = {
-  method: "CARD";
+  method: TossCheckoutMethod;
   amount: {
     currency: "KRW";
     value: number;
@@ -15,6 +16,12 @@ type TossPaymentRequest = {
   failUrl: string;
   customerEmail?: string;
   customerName?: string;
+  transfer?: {
+    cashReceipt: {
+      type: "소득공제" | "지출증빙";
+    };
+    useEscrow: boolean;
+  };
 };
 
 type TossPayment = {
@@ -73,7 +80,11 @@ function loadTossPaymentsV2(): Promise<TossPaymentsFactory> {
   });
 }
 
-export async function requestTossPayment(items: CheckoutItemInput[]) {
+export async function requestTossPayment(
+  items: CheckoutItemInput[],
+  method: TossCheckoutMethod = "CARD",
+  options?: { usePoints?: boolean }
+) {
   const token = await getFirebaseIdToken();
   if (!token) {
     throw new Error("토스 결제는 Firebase 로그인 후 이용할 수 있어요.");
@@ -85,7 +96,7 @@ export async function requestTossPayment(items: CheckoutItemInput[]) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ items }),
+    body: JSON.stringify({ items, method, usePoints: Boolean(options?.usePoints) }),
   });
   const json = await response.json().catch(() => ({}));
 
@@ -93,12 +104,18 @@ export async function requestTossPayment(items: CheckoutItemInput[]) {
     throw new Error(json?.message || "결제 주문을 생성하지 못했어요.");
   }
 
+  if (json.alreadyPaid) {
+    window.location.assign("/my/orders");
+    return;
+  }
+
   const TossPayments = await loadTossPaymentsV2();
   const tossPayments = TossPayments(String(json.paymentClientKey));
   const payment = tossPayments.payment({ customerKey: String(json.customerKey) });
+  const checkoutMethod: TossCheckoutMethod = method === "TRANSFER" ? "TRANSFER" : "CARD";
 
   await payment.requestPayment({
-    method: "CARD",
+    method: checkoutMethod,
     amount: {
       currency: "KRW",
       value: Number(json.order.amount),
@@ -109,5 +126,13 @@ export async function requestTossPayment(items: CheckoutItemInput[]) {
     failUrl: String(json.order.failUrl),
     customerEmail: json.customerEmail,
     customerName: json.customerName,
+    ...(checkoutMethod === "TRANSFER"
+      ? {
+          transfer: {
+            cashReceipt: { type: "소득공제" },
+            useEscrow: false,
+          },
+        }
+      : {}),
   });
 }

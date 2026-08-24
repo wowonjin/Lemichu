@@ -1,11 +1,9 @@
 import {
   collection,
-  doc,
   getDocs,
-  serverTimestamp,
-  updateDoc,
   type Timestamp,
 } from "firebase/firestore";
+import { adminRequestHeaders, assertApiOk } from "@/lib/admin-client";
 import { firestoreDb, isFirebaseConfigured } from "@/lib/firebase";
 import type { OrderStatus, PurchaseOrder } from "@/lib/orders";
 import type { StoreProduct } from "@/lib/products";
@@ -18,6 +16,8 @@ export type AdminUserProfile = {
   provider: "email" | "google" | "naver";
   role: "admin" | "member";
   photoURL?: string | null;
+  points?: number;
+  grade?: string;
   createdAt?: Timestamp;
   lastLoginAt?: Timestamp;
   updatedAt?: Timestamp;
@@ -82,11 +82,18 @@ export async function fetchAdminProducts() {
     });
 }
 
-export async function updateAdminOrderStatus(orderId: string, status: OrderStatus) {
-  const db = requireFirestore();
-
-  await updateDoc(doc(db, "orders", orderId), {
-    status,
-    updatedAt: serverTimestamp(),
-  });
+export async function updateAdminOrderStatus(
+  orderId: string,
+  status: OrderStatus,
+  delivery?: { courier?: string; invoiceNo?: string }
+) {
+  const json = await assertApiOk(
+    await fetch(`/api/admin/orders/${orderId}`, {
+      method: "PATCH",
+      headers: await adminRequestHeaders(),
+      body: JSON.stringify({ status, delivery }),
+    }),
+    "주문 상태를 변경하지 못했어요."
+  );
+  return (typeof json.status === "string" ? json.status : status) as OrderStatus;
 }

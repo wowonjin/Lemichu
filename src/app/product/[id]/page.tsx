@@ -1,13 +1,15 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, Star } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { KoboyoIcon, type KoboyoIconName } from "@/components/icons/KoboyoIcon";
 import { ProductFaq } from "@/components/product/ProductFaq";
 import { RelatedProductRail } from "@/components/product/RelatedProductRail";
+import { ProductReviewHeaderStats } from "@/components/product/ProductReviewHeaderStats";
 import { ProductReviews } from "@/components/product/ProductReviews";
 import { ProductPurchaseBar } from "@/components/product/ProductPurchaseBar";
 import { ProductCheckoutActions } from "@/components/product/ProductCheckoutActions";
+import { ProductPointsRedeem } from "@/components/product/ProductPointsRedeem";
 import {
   ProductVariantPrice,
   ProductVariantPurchaseProvider,
@@ -19,9 +21,13 @@ import { ProductDetailInfo } from "@/components/product/ProductDetailInfo";
 import { ProductPurchaseInfo } from "@/components/product/ProductPurchaseInfo";
 import { ProductImageGallery } from "@/components/product/ProductImageGallery";
 import { getCatalogProductById, getCatalogProducts } from "@/lib/catalog";
+import { BANK_TRANSFER_ACCOUNT } from "@/lib/bank-transfer";
+import { getPublicProductUrl, getPublicSiteUrl, toAbsolutePublicUrl } from "@/lib/kakao-inquiry";
+import { SITE_NAME, productDocumentTitle, siteTitle } from "@/lib/site";
 import { AUTHENTICITY_GUARANTEE } from "@/lib/guarantee";
 import { formatProductOptions } from "@/lib/productOptions";
-import { defaultProductReviews, getReviewSummary } from "@/data/productReviews";
+import { getReviewSummary } from "@/data/productReviews";
+import { listPublishedProductReviews } from "@/lib/reviews-admin";
 import type { Product } from "@/types/product";
 
 type Params = Promise<{ id: string }>;
@@ -51,10 +57,31 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const product = await getCatalogProductById(id);
+  const pageTitle = product
+    ? productDocumentTitle(product.brand, product.name)
+    : "상품";
+  const description = product
+    ? `${pageTitle} 정품 검수 명품. 상품번호 ${product.id.toUpperCase()}`
+    : "정품 검수 완료 명품을 확인하세요.";
+  const productUrl = getPublicProductUrl(id);
+  const images = product?.imageUrl
+    ? [{ url: toAbsolutePublicUrl(product.imageUrl), alt: pageTitle }]
+    : undefined;
+
   return {
-    title: product
-      ? `${product.brand} ${product.name} — LEMICHU`
-      : "상품 — LEMICHU",
+    metadataBase: new URL(getPublicSiteUrl()),
+    title: pageTitle,
+    description,
+    alternates: { canonical: productUrl },
+    openGraph: {
+      type: "website",
+      locale: "ko_KR",
+      siteName: SITE_NAME,
+      title: siteTitle(pageTitle),
+      description,
+      url: productUrl,
+      images,
+    },
   };
 }
 
@@ -74,7 +101,8 @@ export default async function ProductDetailPage({
   const recommendedProducts = getRecommendedProducts(catalogProducts, product.id, product.brand);
   const deliveryCopy = getDeliveryCopy(product.deliveryBadge);
   const options = formatProductOptions(product);
-  const reviewSummary = getReviewSummary(defaultProductReviews);
+  const productReviews = await listPublishedProductReviews(product.id);
+  const reviewSummary = getReviewSummary(productReviews);
   const galleryImages = product.imageUrls?.length ? product.imageUrls : [product.imageUrl];
   const packageItems = product.isPreOwned
     ? ["본품", "검수 카드", "안심 포장"]
@@ -99,7 +127,12 @@ export default async function ProductDetailPage({
 
         <ProductVariantPurchaseProvider key={product.id} product={product}>
         <section className="grid gap-10 py-6 md:py-8 lg:grid-cols-[minmax(0,58%)_minmax(380px,1fr)] lg:items-start lg:gap-14">
-          <ProductImageGallery product={product} images={galleryImages} />
+          <div
+            id="product-images"
+            className="scroll-mt-[calc(var(--header-height)+1rem)]"
+          >
+            <ProductImageGallery product={product} images={galleryImages} />
+          </div>
 
           <div className="lg:sticky lg:top-[calc(var(--header-height)+1.5rem)] lg:row-span-2 lg:self-start">
             <aside>
@@ -116,31 +149,26 @@ export default async function ProductDetailPage({
                   {product.name}
                 </h1>
 
-                <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px]">
-                  <span className="inline-flex items-center gap-1 text-foreground">
-                    <Star className="size-3.5 fill-gold text-gold" />
-                    <span className="font-semibold">{reviewSummary.averageLabel}</span>
-                  </span>
-                  <Link
-                    href="#reviews"
-                    className="text-[#8B8B8B] underline-offset-4 transition-colors hover:text-foreground hover:underline dark:text-muted-foreground"
-                  >
-                    리뷰 {reviewSummary.count}개
-                  </Link>
-                  <span className="text-[#B0B0B0] dark:text-muted-foreground">
-                    상품번호 {product.id.toUpperCase()}
-                  </span>
+                <div className="mt-3 text-[13px]">
+                  <ProductReviewHeaderStats
+                    productId={product.id}
+                    initialSummary={reviewSummary}
+                  />
                 </div>
               </div>
 
               <div className="rounded-md bg-[#F7F7F7] px-5 py-5 dark:bg-muted md:px-6 md:py-6">
                 <ProductVariantPrice />
+                <ProductPointsRedeem />
                 <div className="mt-5 border-t border-[#E8E8E8] pt-5 dark:border-border">
                   <ProductVariantSelector />
                 </div>
                 <ProductPurchaseInfo
                   rows={[
-                    ["카드혜택", "무이자 할부 및 카드사 혜택 적용 가능"],
+                    [
+                      "결제방법",
+                      `${BANK_TRANSFER_ACCOUNT.methodLabel} · ${BANK_TRANSFER_ACCOUNT.bankName} ${BANK_TRANSFER_ACCOUNT.accountHolder}`,
+                    ],
                     ["배송정보", deliveryCopy],
                     ["관부가세", "상품가 포함, 추가 비용 없음"],
                     ["정품보장", AUTHENTICITY_GUARANTEE],
@@ -157,6 +185,7 @@ export default async function ProductDetailPage({
             <nav className="sticky top-[var(--header-height)] z-30 -mx-4 border-b border-[#EEEEEE] bg-background px-4 dark:border-border lg:mx-0 lg:px-0">
               <div className="flex h-14 gap-7 overflow-x-auto text-[14px] font-semibold no-scrollbar">
                 {[
+                  ["#product-images", "상품 이미지"],
                   ["#detail", "상품정보"],
                   ["#delivery", "배송/반품"],
                   ["#reviews", "리뷰"],
@@ -220,7 +249,7 @@ export default async function ProductDetailPage({
               id="reviews"
               className="scroll-mt-[calc(var(--header-height)+3.5rem)] pb-10 md:pb-12"
             >
-              <ProductReviews initialReviews={defaultProductReviews} />
+              <ProductReviews productId={product.id} initialReviews={productReviews} />
             </section>
 
             <section

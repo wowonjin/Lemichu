@@ -1,13 +1,14 @@
 import Link from "next/link";
+import { getKakaoChatUrl } from "@/lib/kakao-inquiry";
 
 const columns = [
   {
     title: "쇼핑",
     links: [
-      { label: "랭킹", href: "/ranking" },
-      { label: "신규입고", href: "/new-arrivals" },
-      { label: "기획전", href: "/promotions" },
-      { label: "중고명품", href: "/pre-owned" },
+      { label: "전체 상품", href: "/products" },
+      { label: "신규입고", href: "/products?filter=new" },
+      { label: "명품가방", href: "/products?filter=bags" },
+      { label: "지갑·카드지갑", href: "/products?filter=wallets" },
       { label: "브랜드관", href: "/brand" },
     ],
   },
@@ -23,6 +24,7 @@ const columns = [
   {
     title: "고객지원",
     links: [
+      { label: "카카오톡 상담", href: "kakao" },
       { label: "정품 검수 안내", href: "/authentication" },
       { label: "가품 보상 정책", href: "/policy/guarantee" },
       { label: "배송/교환/반품", href: "/policy/delivery" },
@@ -60,14 +62,8 @@ export function Footer() {
             <div className="mt-8">
               <p className="text-sm font-semibold text-foreground">고객센터</p>
               <a
-                href="tel:01021780091"
-                className="mt-3 inline-block text-[22px] font-semibold leading-none tracking-tight text-foreground transition-colors hover:text-gold"
-              >
-                010-2178-0091
-              </a>
-              <a
                 href="mailto:lemichu@naver.com"
-                className="mt-2.5 block text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="mt-3 block text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 lemichu@naver.com
               </a>
@@ -92,12 +88,23 @@ export function Footer() {
                 <ul className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
                     <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link.label}
-                      </Link>
+                      {link.href === "kakao" ? (
+                        <a
+                          href={getKakaoChatUrl()}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          {link.label}
+                        </a>
+                      ) : (
+                        <Link
+                          href={link.href}
+                          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          {link.label}
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>

@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { CustomerPageShell } from "@/components/layout/CustomerPage";
 import { SearchTab } from "@/components/search/SearchTab";
 import { getCatalogProducts } from "@/lib/catalog";
+import { filterProductsByCategoryMenu } from "@/lib/categoryMenu";
 import { searchProducts } from "@/lib/productFilter";
 import { getSearchDiscovery } from "@/lib/search/discovery";
 
 export const metadata: Metadata = {
-  title: "검색 — LEMICHU",
+  title: "검색",
 };
 
 type SearchParams = Promise<{
@@ -30,7 +31,9 @@ export default async function SearchPage({
     hasQuery ? Promise.resolve(undefined) : getSearchDiscovery(),
   ]);
   const results = hasQuery
-    ? searchProducts([q, item, category], catalogProducts, { usedOnly })
+    ? tab || category || item
+      ? filterProductsByCategoryMenu(catalogProducts, { tab, category, item })
+      : searchProducts([q], catalogProducts, { usedOnly })
     : [];
 
   const breadcrumb = [tab, category, item].filter(Boolean).join(" › ");

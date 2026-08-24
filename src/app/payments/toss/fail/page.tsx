@@ -29,10 +29,10 @@ function TossFailContent() {
           </div>
           <div className="mt-6 flex justify-center gap-2">
             <Button asChild variant="outline">
-              <Link href="/cart">장바구니</Link>
+              <Link href="/my">마이페이지</Link>
             </Button>
             <Button asChild>
-              <Link href="/new-arrivals">쇼핑 계속하기</Link>
+              <Link href="/products">쇼핑 계속하기</Link>
             </Button>
           </div>
         </div>

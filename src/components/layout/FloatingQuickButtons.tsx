@@ -5,12 +5,16 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ArrowUp } from "lucide-react";
 import { HoverTooltip } from "@/components/ui/hover-tooltip";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
+import {
+  buildProductInquiryMessage,
+  copyTextToClipboard,
+  getKakaoChatUrl,
+  getProductIdFromPathname,
+} from "@/lib/kakao-inquiry";
 
 const ICON_VERSION = "20260822c";
-
-const KAKAO_INQUIRY_URL =
-  process.env.NEXT_PUBLIC_KAKAO_CHAT_URL?.trim() || "https://pf.kakao.com/_xfmkgn";
 
 const quickButtons = [
   { label: "상품판매하기", href: "/sell", src: `/floating/sell.png?v=${ICON_VERSION}` },
@@ -57,12 +61,25 @@ function KakaoInquiryButton({
   sizeClassName: string;
   buttonClassName: string;
 }) {
+  const pathname = usePathname();
+  const { toast } = useToast();
+  const productId = getProductIdFromPathname(pathname ?? "");
+
   return (
     <a
-      href={KAKAO_INQUIRY_URL}
+      href={getKakaoChatUrl()}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="카카오톡 문의"
+      onClick={() => {
+        if (!productId) return;
+        const copied = copyTextToClipboard(buildProductInquiryMessage({ productId }));
+        toast(
+          copied
+            ? "상품 페이지가 복사되었습니다. 카카오톡에 붙여넣어 보내주세요."
+            : "카카오톡에서 상품 페이지 주소를 함께 보내주세요."
+        );
+      }}
       className={cn("group", buttonClassName, "bg-[#FEE500]", sizeClassName)}
     >
       <Image

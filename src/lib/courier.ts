@@ -3,6 +3,11 @@ const COURIER_TRACKING_URLS: Array<{
   build: (invoiceNo: string) => string;
 }> = [
   {
+    keywords: ["cu", "씨유"],
+    build: (invoiceNo) =>
+      `https://www.cupost.co.kr/postbox/delivery/localResult.cupost?invoice_no=${encodeURIComponent(invoiceNo)}`,
+  },
+  {
     keywords: ["cj", "대한통운"],
     build: (invoiceNo) =>
       `https://www.cjlogistics.com/ko/tool/parcel/tracking?gnbInvcNo=${encodeURIComponent(invoiceNo)}`,
@@ -13,7 +18,7 @@ const COURIER_TRACKING_URLS: Array<{
       `https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=${encodeURIComponent(invoiceNo)}`,
   },
   {
-    keywords: ["롯데"],
+    keywords: ["롯데", "세븐일레븐"],
     build: (invoiceNo) =>
       `https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo=${encodeURIComponent(invoiceNo)}`,
   },

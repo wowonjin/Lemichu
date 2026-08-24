@@ -1,12 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { RotateCcw, SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ProductGrid } from "@/components/product/ProductGrid";
+import {
+  CATALOG_FILTERS,
+  catalogFilterHref,
+  catalogFilterTitle,
+  filterCatalogProducts,
+  type CatalogFilterId,
+} from "@/lib/catalogFilters";
 import type { Product } from "@/types/product";
-
-const categoryTabs = ["전체", "오늘출고", "백", "워치", "슈즈", "액세서리"] as const;
 
 const priceRanges = [
   { id: "all", label: "전체" },
@@ -15,68 +21,8 @@ const priceRanges = [
   { id: "over-500", label: "500만원 이상", min: 5_000_000 },
 ] as const;
 
-type CategoryTab = (typeof categoryTabs)[number];
 type PriceRangeId = (typeof priceRanges)[number]["id"];
 type DeliveryFilter = Product["deliveryBadge"] | "전체";
-
-const productCategoryById: Record<string, Exclude<CategoryTab, "전체" | "오늘출고">> = {
-  "d-001": "백",
-  "d-002": "백",
-  "d-003": "백",
-  "d-004": "백",
-  "d-005": "워치",
-  "d-006": "백",
-  "r-001": "백",
-  "r-002": "백",
-  "r-003": "백",
-  "r-004": "백",
-  "r-005": "액세서리",
-  "r-006": "백",
-  "p-001": "백",
-  "p-002": "백",
-  "p-003": "백",
-  "p-004": "백",
-  "p-005": "백",
-  "p-006": "백",
-  "x-001": "액세서리",
-  "x-002": "백",
-  "x-003": "백",
-  "x-004": "백",
-  "x-005": "백",
-  "x-006": "액세서리",
-};
-
-function matchesCategory(product: Product, category: CategoryTab) {
-  if (category === "전체") return true;
-  if (category === "오늘출고") return product.deliveryBadge === "오늘출고";
-  if (productCategoryById[product.id] === category) return true;
-
-  const text = `${product.brand} ${product.name} ${product.color ?? ""} ${
-    product.size ?? ""
-  } ${product.badges.join(" ")}`;
-
-  if (category === "백") {
-    return ["백", "토트", "숄더", "체인", "플랩", "호보"].some((keyword) =>
-      text.includes(keyword)
-    );
-  }
-
-  if (category === "워치") {
-    return ["워치", "시계", "롤렉스", "데이저스트", "오이스터"].some((keyword) =>
-      text.includes(keyword)
-    );
-  }
-
-  if (category === "슈즈") {
-    return ["슈즈", "스니커즈", "로퍼", "부츠", "샌들", "슬리퍼"].some((keyword) =>
-      text.includes(keyword)
-    );
-  }
-
-  return ["액세서리", "지갑", "주얼리", "목걸이", "반지", "팔찌"].some((keyword) =>
-    text.includes(keyword)
-  );
-}
 
 function matchesPrice(product: Product, rangeId: PriceRangeId) {
   const range = priceRanges.find((item) => item.id === rangeId);
@@ -88,42 +34,54 @@ function matchesPrice(product: Product, rangeId: PriceRangeId) {
 
 export function NewArrivalsCatalog({
   products,
-  title = "신규입고 상품",
+  filter = "all",
+  title,
 }: {
   products: Product[];
+  filter?: CatalogFilterId;
   title?: string;
 }) {
-  const [activeCategory, setActiveCategory] = useState<CategoryTab>("전체");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [brandFilter, setBrandFilter] = useState("전체");
   const [deliveryFilter, setDeliveryFilter] = useState<DeliveryFilter>("전체");
   const [priceRangeId, setPriceRangeId] = useState<PriceRangeId>("all");
 
+  useEffect(() => {
+    setBrandFilter("전체");
+    setDeliveryFilter("전체");
+    setPriceRangeId("all");
+    setIsFilterOpen(false);
+  }, [filter]);
+
+  const collectionProducts = useMemo(
+    () => filterCatalogProducts(products, filter),
+    [filter, products]
+  );
+
   const brandOptions = useMemo(
-    () => ["전체", ...Array.from(new Set(products.map((product) => product.brand)))],
-    [products]
+    () => ["전체", ...Array.from(new Set(collectionProducts.map((product) => product.brand)))],
+    [collectionProducts]
   );
 
   const deliveryOptions = useMemo<DeliveryFilter[]>(
-    () => ["전체", ...Array.from(new Set(products.map((product) => product.deliveryBadge)))],
-    [products]
+    () => ["전체", ...Array.from(new Set(collectionProducts.map((product) => product.deliveryBadge)))],
+    [collectionProducts]
   );
 
-  const categoryCounts = useMemo(() => {
-    return categoryTabs.reduce<Record<CategoryTab, number>>((counts, category) => {
-      counts[category] = products.filter((product) => matchesCategory(product, category)).length;
+  const collectionCounts = useMemo(() => {
+    return CATALOG_FILTERS.reduce<Record<CatalogFilterId, number>>((counts, item) => {
+      counts[item.id] = filterCatalogProducts(products, item.id).length;
       return counts;
-    }, {} as Record<CategoryTab, number>);
+    }, {} as Record<CatalogFilterId, number>);
   }, [products]);
 
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      if (!matchesCategory(product, activeCategory)) return false;
+    return collectionProducts.filter((product) => {
       if (brandFilter !== "전체" && product.brand !== brandFilter) return false;
       if (deliveryFilter !== "전체" && product.deliveryBadge !== deliveryFilter) return false;
       return matchesPrice(product, priceRangeId);
     });
-  }, [activeCategory, brandFilter, deliveryFilter, priceRangeId, products]);
+  }, [brandFilter, collectionProducts, deliveryFilter, priceRangeId]);
 
   const activeFilterCount = [
     brandFilter !== "전체",
@@ -150,36 +108,34 @@ export function NewArrivalsCatalog({
       : null,
   ].filter((item): item is { key: string; label: string; clear: () => void } => Boolean(item));
 
+  const heading = title ?? catalogFilterTitle(filter);
+
   return (
     <section>
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h2>
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">{heading}</h2>
         <div className="flex gap-1 overflow-x-auto no-scrollbar md:flex-wrap md:justify-end">
-          {categoryTabs.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => {
-                setActiveCategory(tab);
-                resetFilters();
-              }}
+          {CATALOG_FILTERS.map((item) => (
+            <Link
+              key={item.id}
+              href={catalogFilterHref(item.id)}
               className={cn(
                 "shrink-0 px-2.5 py-1.5 text-[13px] transition-colors",
-                activeCategory === tab
+                filter === item.id
                   ? "border-b-2 border-foreground font-semibold text-foreground"
                   : "text-[#8B8B8B] hover:text-foreground dark:text-muted-foreground"
               )}
             >
-              {tab}
+              {item.label}
               <span
                 className={cn(
                   "ml-1 text-[11px] tabular-nums",
-                  activeCategory === tab ? "text-foreground/55" : "text-[#B0B0B0] dark:text-muted-foreground"
+                  filter === item.id ? "text-foreground/55" : "text-[#B0B0B0] dark:text-muted-foreground"
                 )}
               >
-                {categoryCounts[tab]}
+                {collectionCounts[item.id]}
               </span>
-            </button>
+            </Link>
           ))}
         </div>
       </div>
@@ -267,14 +223,14 @@ export function NewArrivalsCatalog({
 
       {appliedFilters.length > 0 ? (
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          {appliedFilters.map((filter) => (
+          {appliedFilters.map((item) => (
             <button
-              key={filter.key}
+              key={item.key}
               type="button"
-              onClick={filter.clear}
+              onClick={item.clear}
               className="inline-flex h-8 items-center gap-1 rounded-md bg-[#F3F3F3] px-2.5 text-[12px] font-medium text-foreground transition-colors hover:bg-[#E8E8E8] dark:bg-secondary"
             >
-              {filter.label}
+              {item.label}
               <X className="size-3 text-[#8B8B8B]" />
               <span className="sr-only"> 조건 해제</span>
             </button>

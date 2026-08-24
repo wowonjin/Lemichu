@@ -36,7 +36,7 @@ export const guaranteePolicy: InfoDoc = {
       paragraphs: ["아래 절차에 따라 보상을 신청하실 수 있습니다."],
       bullets: [
         "공인 감정 기관의 가품 판정서 확보",
-        "고객센터 또는 1:1 문의로 판정서 제출",
+        "고객센터 카카오톡으로 판정서 제출",
         "검토 후 보상금 지급 및 상품 회수 안내",
       ],
     },
@@ -102,7 +102,6 @@ export const termsDoc: InfoDoc = {
         "통신판매업: 2024-서울중랑-1242",
         "사업장 소재지: 서울시 상봉로 23길 11, 804호",
         "이메일: lemichu@naver.com",
-        "연락처: 010-2178-0091",
       ],
     },
     {
@@ -359,7 +358,6 @@ export const privacyDoc: InfoDoc = {
         "레미츄 개인정보 보호책임자",
         "대표: 배살렘",
         "이메일: lemichu@naver.com",
-        "연락처: 010-2178-0091",
         "사업장 소재지: 서울시 상봉로 23길 11, 804호",
         "사업자등록번호: 142-17-02111",
         "통신판매업: 2024-서울중랑-1242",
@@ -559,7 +557,6 @@ export type MySectionKind =
   | "payments"
   | "addresses"
   | "authentication"
-  | "inquiries"
   | "returns"
   | "notifications"
   | "grade"
@@ -582,13 +579,12 @@ export const mySections: Record<MySectionKind, MySection> = {
   orders: { slug: "orders", title: "주문 내역", description: "최근 6개월간의 주문을 확인하세요." },
   delivery: { slug: "delivery", title: "배송 조회", description: "진행 중인 배송의 실시간 위치를 확인하세요." },
   settings: { slug: "settings", title: "계정 설정", description: "프로필과 로그인 정보를 관리하세요." },
-  points: { slug: "points", title: "적립금", description: "보유 적립금과 적립 내역을 확인하세요." },
+  points: { slug: "points", title: "적립금", description: "계좌이체 결제 적립, 적립금 사용, 구매 확정 리뷰 적립을 확인하세요." },
   coupons: { slug: "coupons", title: "쿠폰함", description: "사용 가능한 쿠폰을 확인하세요." },
   brands: { slug: "brands", title: "관심 브랜드", description: "팔로우한 브랜드의 새 소식을 모아보세요." },
   payments: { slug: "payments", title: "결제 수단", description: "등록된 결제 수단을 관리하세요." },
   addresses: { slug: "addresses", title: "배송지 관리", description: "기본 배송지와 추가 배송지를 관리하세요." },
   authentication: { slug: "authentication", title: "정품 보장 케어", description: "구매 상품의 검수 보증 내역을 확인하세요." },
-  inquiries: { slug: "inquiries", title: "1:1 문의", description: "문의 내역과 답변을 확인하세요." },
   returns: { slug: "returns", title: "취소/교환/반품", description: "취소 및 반품 신청 내역을 확인하세요." },
   notifications: { slug: "notifications", title: "알림 설정", description: "받고 싶은 알림을 직접 설정하세요." },
   grade: { slug: "grade", title: "회원 등급", description: "현재 등급과 등급별 혜택을 확인하세요." },

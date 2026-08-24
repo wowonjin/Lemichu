@@ -7,6 +7,7 @@ export function useUsedCatalogMode() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const usedOnly =
+    pathname.startsWith("/products") ||
     pathname.startsWith("/pre-owned") ||
     (pathname === "/search" && searchParams.get("used") === "1");
 

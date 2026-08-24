@@ -133,7 +133,7 @@ export function AdminHeroSlidesPage() {
         title: "새 슬라이드 제목",
         subtitle: "메인에서 보여줄 설명을 입력하세요.",
         ctaLabel: "자세히 보기",
-        ctaHref: "/new-arrivals",
+        ctaHref: "/products",
         image: "/hero/hero-new.jpg",
         dark: false,
         visible: true,
@@ -147,7 +147,7 @@ export function AdminHeroSlidesPage() {
           title: "새 슬라이드 제목",
           subtitle: "메인에서 보여줄 설명을 입력하세요.",
           ctaLabel: "자세히 보기",
-          ctaHref: "/new-arrivals",
+          ctaHref: "/products",
           image: "/hero/hero-new.jpg",
           dark: false,
           visible: true,
@@ -387,7 +387,7 @@ function SlideEditor({
             <Input
               value={slide.ctaHref}
               onChange={(value) => onChange({ ctaHref: value })}
-              placeholder="/new-arrivals"
+              placeholder="/products"
             />
           </Field>
           <Field label="이미지 경로" className="sm:col-span-2">

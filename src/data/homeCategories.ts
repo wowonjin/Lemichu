@@ -115,7 +115,7 @@ export const defaultHomeCategories: HomeCategoryContent[] = [
   {
     id: "pre-owned",
     label: "중고명품",
-    href: "/pre-owned",
+    href: "/products",
     hint: "Pre-owned",
     description: "",
     imageSrc: "/category-images/cat-pre-owned-cut.png",
@@ -126,7 +126,7 @@ export const defaultHomeCategories: HomeCategoryContent[] = [
   {
     id: "today-ship",
     label: "오늘출고",
-    href: "/new-arrivals",
+    href: "/products?filter=new",
     hint: "Ship today",
     description: "",
     imageSrc: "/category-images/cat-today-ship-cut.png",

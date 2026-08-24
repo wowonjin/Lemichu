@@ -24,13 +24,13 @@ export function HomeHero({ products }: { products: Product[] }) {
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg">
-              <Link href="/ranking">
+              <Link href="/products">
                 이번 주 베스트 보기
                 <ArrowRight />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link href="/new-arrivals">오늘 출고 상품 보기</Link>
+              <Link href="/products?filter=new">오늘 출고 상품 보기</Link>
             </Button>
           </div>
         </div>

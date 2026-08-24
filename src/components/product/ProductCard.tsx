@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import { ProductPreviewMedia } from "@/components/product/ProductPreviewMedia";
 import { cn } from "@/lib/cn";
@@ -9,7 +9,6 @@ import { formatPrice } from "@/lib/formatPrice";
 import type { Product } from "@/types/product";
 import { PriceDisplay } from "./PriceDisplay";
 import {
-  AuthenticationBadge,
   ConditionBadge,
   DeliveryBadgeChip,
   OfferBadge,
@@ -49,13 +48,15 @@ export function ProductCard({
   const unavailable = availability !== "available";
 
   const imageBadges = [
-    hideAuthenticationBadge ? null : (
-      <AuthenticationBadge key="auth" status={product.authenticationStatus} />
-    ),
     product.isPreOwned && product.condition ? (
       <ConditionBadge key="grade" condition={product.condition} />
     ) : null,
-  ].filter(Boolean).slice(0, 2);
+  ].filter(Boolean);
+  const offerBadges =
+    variant === "default"
+      ? product.badges.filter(isOfferBadge).filter((badge) => !hiddenBadges.includes(badge))
+      : [];
+  const showDelivery = product.deliveryBadge !== "국내배송";
 
   return (
     <motion.article
@@ -84,35 +85,25 @@ export function ProductCard({
                   {availability === "sold" ? "판매 완료" : "품절"}
                 </span>
               </div>
-            ) : product.isPreOwned && variant !== "wishlist" ? (
-              <span className="absolute bottom-2.5 left-2.5 rounded-md bg-background/85 px-2 py-0.5 text-[11px] font-medium text-muted-foreground backdrop-blur">
-                중고
-              </span>
             ) : null}
           </ProductPreviewMedia>
         </div>
 
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-1 text-sm font-semibold tracking-tight text-foreground">
+          <div className="text-sm font-semibold tracking-tight text-foreground">
             {product.brand}
-            {product.authenticationStatus !== "PENDING" ? (
-              <ShieldCheck className="size-3.5 text-[#2563EB] dark:text-sky-400" />
-            ) : null}
           </div>
 
-          <p className="line-clamp-2 min-h-[2.5rem] text-[13px] leading-tight text-muted-foreground">
-            {product.name}
-          </p>
+          <HoverMarqueeText>{product.name}</HoverMarqueeText>
 
-          <div className="flex flex-wrap gap-1.5">
-            <DeliveryBadgeChip delivery={product.deliveryBadge} />
-            {variant === "default"
-              ? product.badges
-                  .filter(isOfferBadge)
-                  .filter((badge) => !hiddenBadges.includes(badge))
-                  .map((badge) => <OfferBadge key={badge} label={badge} />)
-              : null}
-          </div>
+          {showDelivery || offerBadges.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {showDelivery ? <DeliveryBadgeChip delivery={product.deliveryBadge} /> : null}
+              {offerBadges.map((badge) => (
+                <OfferBadge key={badge} label={badge} />
+              ))}
+            </div>
+          ) : null}
 
           <PriceDisplay
             price={product.price}
@@ -172,5 +163,51 @@ export function ProductCard({
         </span>
       ) : null}
     </motion.article>
+  );
+}
+
+function HoverMarqueeText({ children }: { children: string }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [distance, setDistance] = useState(0);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const text = textRef.current;
+    if (!wrap || !text) return;
+
+    const measure = () => {
+      setDistance(Math.max(0, text.scrollWidth - wrap.clientWidth));
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(wrap);
+    observer.observe(text);
+    return () => observer.disconnect();
+  }, [children]);
+
+  const duration = Math.min(14, Math.max(3.5, distance / 28));
+
+  return (
+    <div ref={wrapRef} className="overflow-hidden">
+      <p
+        ref={textRef}
+        className={cn(
+          "whitespace-nowrap text-[13px] leading-tight text-muted-foreground ease-linear",
+          distance > 0 && "transition-transform group-hover:[transform:translateX(var(--marquee-x))]"
+        )}
+        style={
+          distance > 0
+            ? ({
+                "--marquee-x": `-${distance}px`,
+                transitionDuration: `${duration}s`,
+              } as React.CSSProperties)
+            : undefined
+        }
+      >
+        {children}
+      </p>
+    </div>
   );
 }

@@ -19,6 +19,7 @@ export default async function HomePage() {
     timeSaleProducts,
     timeSaleEndsAt,
     rankedProducts,
+    rankedTabs,
     audienceTabs,
     priceBandTabs,
     trendStories,
@@ -29,14 +30,14 @@ export default async function HomePage() {
       <HeroCarousel slides={heroSlides} />
       <CategoryQuickBar items={categoryItems} />
       <TimeSaleSection products={timeSaleProducts} endsAt={timeSaleEndsAt} />
-      <RankingSection rankedProducts={rankedProducts} />
+      <RankingSection rankedProducts={rankedProducts} rankedTabs={rankedTabs} />
       <AudiencePickSection
         title="지금 누구를 위한 명품을 찾고 계세요?"
         description="상황에 맞는 명품을 골라드릴게요."
         tabs={audienceTabs}
         moreHref="/search"
       />
-      <PriceBandSection tabs={priceBandTabs} moreHref="/sale" />
+      <PriceBandSection tabs={priceBandTabs} moreHref="/products" />
       <TrendPickSection stories={trendStories} />
       <TrustEvidenceSection />
       <SellTradeCTA />

@@ -160,7 +160,7 @@ export default function LoginPage() {
             <h1 className="text-center text-[2rem] font-bold leading-none tracking-tight text-foreground">
               로그인
             </h1>
-            {redirectPath.startsWith("/wishlist") ? (
+            {redirectPath.startsWith("/my/wishlist") ? (
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
                 관심 있는 상품을 저장하면 가격과 배송 변화를 확인할 수 있어요.
               </p>
