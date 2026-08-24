@@ -23,7 +23,7 @@ export function SearchBar({ initialQuery = "" }: { initialQuery?: string }) {
         onChange={(event) => setValue(event.target.value)}
         placeholder="브랜드, 상품명으로 검색"
         aria-label="상품 검색"
-        className="h-12 w-full rounded-full border border-border bg-background py-3.5 pl-12 pr-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30"
+        className="h-12 w-full rounded-md border border-border bg-background py-3.5 pl-12 pr-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30"
       />
     </form>
   );

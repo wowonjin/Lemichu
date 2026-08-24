@@ -372,7 +372,7 @@ export function AdminCategoriesPage() {
                     <img
                       src={item.imageSrc}
                       alt=""
-                      className="size-20 shrink-0 rounded-lg bg-[#f4f6f8] object-contain"
+                      className="size-20 shrink-0 bg-[#f4f6f8] object-contain"
                     />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-foreground">
@@ -512,7 +512,7 @@ function CategoryImageField({
 
   return (
     <div>
-      <div className="overflow-hidden rounded-lg border border-border bg-[#f4f6f8]">
+      <div className="overflow-hidden border border-border bg-[#f4f6f8]">
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={preview} alt="" className="aspect-square w-full object-contain" />

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
-import { CatalogImage } from "@/components/product/CatalogImage";
+import { ProductPreviewMedia } from "@/components/product/ProductPreviewMedia";
 import { cn } from "@/lib/cn";
 import { formatPrice } from "@/lib/formatPrice";
 import type { Product } from "@/types/product";
@@ -12,6 +12,8 @@ import {
   AuthenticationBadge,
   ConditionBadge,
   DeliveryBadgeChip,
+  OfferBadge,
+  isOfferBadge,
 } from "./ProductBadge";
 import { WishlistToggleButton } from "./WishlistToggleButton";
 import { useWishlist } from "@/components/wishlist/WishlistProvider";
@@ -63,40 +65,38 @@ export function ProductCard({
       <Link href={product.href} className="flex flex-col gap-3">
         <div
           className={cn(
-            "relative aspect-square w-full overflow-hidden rounded-[10px] border border-transparent bg-muted",
+            "relative aspect-square w-full overflow-hidden border border-transparent bg-muted",
             imageClassName
           )}
         >
-          <CatalogImage
-            src={product.imageUrl}
-            alt={`${product.brand} ${product.name}`}
-            seed={product.id}
+          <ProductPreviewMedia
+            product={product}
             sizes="(min-width: 1600px) 20vw, (min-width: 1200px) 25vw, (min-width: 768px) 33vw, 50vw"
-            className="h-full w-full object-contain p-7 mix-blend-multiply dark:mix-blend-normal"
-          />
-
-          <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
-            {imageBadges}
-          </div>
-
-          {unavailable ? (
-            <div className="absolute inset-0 grid place-items-center bg-background/70">
-              <span className="bg-foreground px-3 py-1 text-xs font-semibold text-background">
-                {availability === "sold" ? "판매 완료" : "품절"}
-              </span>
+            imageClassName="h-full w-full object-cover mix-blend-multiply dark:mix-blend-normal"
+          >
+            <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
+              {imageBadges}
             </div>
-          ) : product.isPreOwned && variant !== "wishlist" ? (
-            <span className="absolute bottom-2.5 left-2.5 rounded-md bg-background/85 px-2 py-0.5 text-[11px] font-medium text-muted-foreground backdrop-blur">
-              중고
-            </span>
-          ) : null}
+
+            {unavailable ? (
+              <div className="absolute inset-0 grid place-items-center bg-background/70">
+                <span className="bg-foreground px-3 py-1 text-xs font-semibold text-background">
+                  {availability === "sold" ? "판매 완료" : "품절"}
+                </span>
+              </div>
+            ) : product.isPreOwned && variant !== "wishlist" ? (
+              <span className="absolute bottom-2.5 left-2.5 rounded-md bg-background/85 px-2 py-0.5 text-[11px] font-medium text-muted-foreground backdrop-blur">
+                중고
+              </span>
+            ) : null}
+          </ProductPreviewMedia>
         </div>
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1 text-sm font-semibold tracking-tight text-foreground">
             {product.brand}
             {product.authenticationStatus !== "PENDING" ? (
-              <ShieldCheck className="size-3.5 text-gold" />
+              <ShieldCheck className="size-3.5 text-[#2563EB] dark:text-sky-400" />
             ) : null}
           </div>
 
@@ -108,16 +108,9 @@ export function ProductCard({
             <DeliveryBadgeChip delivery={product.deliveryBadge} />
             {variant === "default"
               ? product.badges
-                  .filter((badge) => badge === "가격하락" || badge === "희소상품" || badge === "미사용급")
+                  .filter(isOfferBadge)
                   .filter((badge) => !hiddenBadges.includes(badge))
-                  .map((badge) => (
-                    <span
-                      key={badge}
-                      className="inline-flex items-center rounded-md border border-gold/40 bg-gold-soft/50 px-2 py-0.5 text-[11px] font-medium text-foreground"
-                    >
-                      {badge}
-                    </span>
-                  ))
+                  .map((badge) => <OfferBadge key={badge} label={badge} />)
               : null}
           </div>
 
@@ -169,7 +162,8 @@ export function ProductCard({
       <WishlistToggleButton
         product={product}
         onUnwish={onUnwish}
-        className="absolute right-2.5 top-2.5 z-10"
+        className="absolute right-0 top-0 z-10 size-9"
+        iconClassName="size-[18px]"
       />
 
       {variant === "wishlist" && record && record.priceAtAdd > product.price ? (

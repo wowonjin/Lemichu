@@ -1,18 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent, type RefObject } from "react";
+import { type FormEvent, type RefObject } from "react";
 import Link from "next/link";
 import { Search, X } from "lucide-react";
-import { cn } from "@/lib/cn";
-import { brands } from "@/data/brands";
-import { popularKeywords, recommendedKeywords } from "@/data/searchKeywords";
-import {
-  addRecentSearch,
-  clearRecentSearches,
-  readRecentSearches,
-  removeRecentSearch,
-} from "@/lib/searchHistory";
 import { SearchDiscovery } from "./SearchDiscovery";
+import { useRecentSearches } from "@/hooks/useRecentSearches";
+import { useSearchDiscovery } from "@/hooks/useSearchDiscovery";
+import { useSearchSuggestions } from "@/hooks/useSearchSuggestions";
+import { useUsedCatalogMode } from "@/hooks/useUsedCatalogMode";
+import { cn } from "@/lib/cn";
+import type { SearchSource } from "@/lib/search/types";
 
 export function HeaderSearchPanel({
   isOpen,
@@ -29,41 +26,14 @@ export function HeaderSearchPanel({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onClose: () => void;
 }) {
-  const [recent, setRecent] = useState<string[]>([]);
+  const { usedOnly } = useUsedCatalogMode();
+  const { recent, remember, remove, clear } = useRecentSearches();
+  const discovery = useSearchDiscovery(undefined, isOpen);
+  const { suggestions, loading: suggestionsLoading } = useSearchSuggestions(isOpen ? query : "", usedOnly);
   const normalizedQuery = query.trim().toLowerCase();
 
-  useEffect(() => {
-    if (isOpen) setRecent(readRecentSearches());
-  }, [isOpen]);
-
-  const suggestions = useMemo(() => {
-    if (!normalizedQuery) return [];
-
-    const seen = new Set<string>();
-    const matches: { label: string; href: string }[] = [];
-
-    const push = (label: string, href: string) => {
-      if (seen.has(label) || !label.toLowerCase().includes(normalizedQuery)) return;
-      seen.add(label);
-      matches.push({ label, href });
-    };
-
-    brands.forEach((brand) => {
-      push(brand.name, brand.href);
-      push(brand.wordmark, brand.href);
-    });
-    recommendedKeywords.forEach((keyword) => {
-      push(keyword, `/search?q=${encodeURIComponent(keyword)}`);
-    });
-    popularKeywords.forEach((keyword) => {
-      push(keyword, `/search?q=${encodeURIComponent(keyword)}`);
-    });
-
-    return matches.slice(0, 7);
-  }, [normalizedQuery]);
-
-  const rememberAndClose = (keyword?: string) => {
-    if (keyword) setRecent(addRecentSearch(keyword));
+  const rememberAndClose = (keyword?: string, source: SearchSource = "suggestion") => {
+    if (keyword) remember(keyword, source, usedOnly);
     onClose();
   };
 
@@ -112,7 +82,7 @@ export function HeaderSearchPanel({
                       onQueryChange("");
                       inputRef.current?.focus();
                     }}
-                    className="grid size-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                    className="grid size-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                   >
                     <X className="size-4" strokeWidth={1.8} />
                   </button>
@@ -135,35 +105,42 @@ export function HeaderSearchPanel({
               {normalizedQuery ? (
                 <section>
                   <h3 className="text-sm font-semibold text-foreground">자동완성</h3>
-                  {suggestions.length > 0 ? (
+                  {suggestionsLoading ? (
+                    <p className="mt-3 text-sm text-muted-foreground">상품을 찾고 있습니다...</p>
+                  ) : suggestions.length > 0 ? (
                     <ul className="mt-2 divide-y divide-border/70">
                       {suggestions.map((item) => (
                         <li key={`${item.href}-${item.label}`}>
                           <Link
                             href={item.href}
-                            onClick={() => rememberAndClose(item.label)}
+                            onClick={() => rememberAndClose(item.label, "suggestion")}
                             className="flex items-center gap-3 py-3 text-sm text-foreground transition-colors hover:text-gold"
                           >
                             <Search className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.8} />
-                            <span>{item.label}</span>
+                            <span className="truncate">{item.label}</span>
                           </Link>
                         </li>
                       ))}
                     </ul>
                   ) : (
                     <p className="mt-3 text-sm text-muted-foreground">
-                      일치하는 브랜드나 검색어가 없습니다. 엔터로 검색해 보세요.
+                      일치하는 브랜드나 상품이 없습니다. 엔터로 검색해 보세요.
                     </p>
                   )}
                 </section>
               ) : (
                 <SearchDiscovery
                   recent={recent}
+                  recommended={discovery.recommended}
+                  popular={discovery.popular}
+                  popularUpdatedAt={discovery.popularUpdatedAt}
+                  categories={discovery.categories}
                   showCategories
+                  usedOnly={usedOnly}
                   onSelect={rememberAndClose}
                   onClose={onClose}
-                  onRemoveRecent={(keyword) => setRecent(removeRecentSearch(keyword))}
-                  onClearRecent={() => setRecent(clearRecentSearches())}
+                  onRemoveRecent={remove}
+                  onClearRecent={clear}
                 />
               )}
             </div>

@@ -23,7 +23,7 @@ function AlertToggle({
       aria-pressed={on}
       onClick={() => setOn((v) => !v)}
       className={cn(
-        "flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full border text-sm font-medium transition-colors",
+        "flex h-11 flex-1 items-center justify-center gap-1.5 rounded-md border text-sm font-medium transition-colors",
         on
           ? "border-gold bg-gold-soft/50 text-foreground"
           : "border-border bg-background text-foreground/80 hover:border-foreground/30"

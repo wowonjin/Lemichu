@@ -19,7 +19,7 @@ function WishlistFallback() {
           {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={index}
-              className="aspect-[3/4] animate-pulse rounded-[24px] bg-white dark:bg-[#1C1C1E]"
+              className="aspect-[3/4] animate-pulse rounded-md bg-white dark:bg-[#1C1C1E]"
             />
           ))}
         </div>

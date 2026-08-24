@@ -52,9 +52,6 @@ export default async function CategoryDetailPage({
   ]);
   const products = filterByCategory(category.id, catalogProducts);
   const title = content?.label ?? category.label;
-  const description =
-    content?.description ??
-    `${category.hint} 카테고리의 검수 완료 명품 ${products.length}개를 확인하세요.`;
 
   return (
     <CustomerPageShell>
@@ -69,11 +66,10 @@ export default async function CategoryDetailPage({
       <CustomerPageHero
         eyebrow="Category"
         title={title}
-        description={description}
         className="mt-5"
       >
         {content?.imageSrc ? (
-          <div className="relative overflow-hidden rounded-[1.5rem] bg-[#f4f6f8]">
+          <div className="relative overflow-hidden bg-[#f4f6f8]">
             <div className="relative aspect-[4/3]">
               <Image
                 src={content.imageSrc}
@@ -83,7 +79,7 @@ export default async function CategoryDetailPage({
                 className="object-contain p-8"
               />
             </div>
-            <p className="absolute bottom-4 left-4 rounded-full bg-foreground/80 px-3 py-1 text-xs font-semibold text-background">
+            <p className="absolute bottom-4 left-4 rounded-md bg-foreground/80 px-3 py-1 text-xs font-semibold text-background">
               {products.length}개 상품
             </p>
           </div>

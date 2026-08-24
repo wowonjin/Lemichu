@@ -3,8 +3,9 @@
 import { useId, useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
-import { CatalogImage } from "@/components/product/CatalogImage";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { Reveal, panelItem, panelStagger } from "@/components/home/section-motion";
+import { ProductPreviewMedia } from "@/components/product/ProductPreviewMedia";
 import { cn } from "@/lib/cn";
 import { formatPrice } from "@/lib/formatPrice";
 import type { RankedProduct } from "@/types/product";
@@ -40,7 +41,7 @@ function RankingCard({ product, rank }: { product: RankedProduct; rank: number }
 
   return (
     <Link href={product.href} className="group block">
-      <div className="relative aspect-square overflow-hidden rounded-[16px] bg-[#F7F7F7] dark:bg-muted">
+      <div className="relative aspect-square overflow-hidden bg-[#F7F7F7] dark:bg-muted">
         <span
           className="absolute left-3.5 top-3 z-10 text-[14px] font-bold tabular-nums tracking-tight text-foreground md:left-4 md:top-3.5 md:text-[15px]"
           aria-hidden
@@ -49,16 +50,24 @@ function RankingCard({ product, rank }: { product: RankedProduct; rank: number }
         </span>
         <span className="sr-only">{rank}위</span>
 
-        <span className="absolute right-3 top-3 z-10 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold tracking-tight text-[#6B6B6B] md:right-3.5 md:top-3.5 dark:bg-background/70 dark:text-muted-foreground">
+        <span
+          className={cn(
+            "absolute right-3 top-3 z-10 inline-flex h-[22px] items-center rounded-[4px] px-1.5 text-[11px] font-semibold tracking-tight ring-1 ring-inset md:right-3.5 md:top-3.5",
+            badge === "NEW" &&
+              "bg-[#EEFBF4] text-[#0F7A4B] ring-[#B7E4CC] dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/25",
+            badge === "급상승" &&
+              "bg-[#FFF0F1] text-[#C81E3A] ring-[#F5C2C8] dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/25",
+            badge === "인기" &&
+              "bg-[#FFF4E5] text-[#C05621] ring-[#F0C48A] dark:bg-amber-400/10 dark:text-amber-200 dark:ring-amber-400/25"
+          )}
+        >
           {badge}
         </span>
 
-        <CatalogImage
-          src={product.imageUrl}
-          alt={`${product.brand} ${product.name}`}
-          seed={product.id}
+        <ProductPreviewMedia
+          product={product}
           sizes="(min-width: 768px) 25vw, 50vw"
-          className="object-contain p-6 mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-[1.03] dark:mix-blend-normal md:p-7"
+          imageClassName="object-cover mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-[1.03] dark:mix-blend-normal"
         />
       </div>
 
@@ -83,6 +92,7 @@ function RankingCard({ product, rank }: { product: RankedProduct; rank: number }
 export function RankingSection({ rankedProducts }: { rankedProducts: RankedProduct[] }) {
   const [tab, setTab] = useState<HomeRankingTabId>("all");
   const tabPrefix = useId();
+  const reduceMotion = useReducedMotion();
   const products = rankedProducts
     .filter((product) => matchesRankingTab(product, tab))
     .slice(0, VISIBLE_LIMIT);
@@ -90,7 +100,7 @@ export function RankingSection({ rankedProducts }: { rankedProducts: RankedProdu
   return (
     <section className="bg-background" aria-labelledby="ranking-heading">
       <div className="container py-12 md:py-16">
-        <div className="flex items-start justify-between gap-4">
+        <Reveal className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h2
               id="ranking-heading"
@@ -115,68 +125,79 @@ export function RankingSection({ rankedProducts }: { rankedProducts: RankedProdu
               <ChevronRight className="size-4" />
             </Link>
           </div>
-        </div>
+        </Reveal>
 
-        <div
-          role="tablist"
-          aria-label="랭킹 카테고리"
-          className="mt-7 flex items-end gap-6 md:mt-8"
-        >
-          {HOME_RANKING_TABS.map((item) => {
-            const selected = tab === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                id={`${tabPrefix}-${item.id}`}
-                aria-selected={selected}
-                aria-controls={`${tabPrefix}-panel`}
-                onClick={() => setTab(item.id)}
-                className={cn(
-                  "relative pb-2 text-[15px] font-semibold transition-colors md:text-[16px]",
-                  selected
-                    ? "text-foreground"
-                    : "text-[#8B8B8B] hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
-                )}
-              >
-                {item.label}
-                {selected ? (
-                  <motion.span
-                    layoutId="ranking-tab-underline"
-                    className="absolute inset-x-0 bottom-0 h-[2px] bg-foreground"
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                  />
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
+        <Reveal delay={0.08} variant="soft">
+          <div
+            role="tablist"
+            aria-label="랭킹 카테고리"
+            className="mt-7 flex items-end gap-6 md:mt-8"
+          >
+            {HOME_RANKING_TABS.map((item) => {
+              const selected = tab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  id={`${tabPrefix}-${item.id}`}
+                  aria-selected={selected}
+                  aria-controls={`${tabPrefix}-panel`}
+                  onClick={() => setTab(item.id)}
+                  className={cn(
+                    "relative pb-2 text-[15px] font-semibold transition-colors md:text-[16px]",
+                    selected
+                      ? "text-foreground"
+                      : "text-[#8B8B8B] hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
+                  )}
+                >
+                  {item.label}
+                  {selected ? (
+                    <motion.span
+                      layoutId="ranking-tab-underline"
+                      className="absolute inset-x-0 bottom-0 h-[2px] bg-foreground"
+                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    />
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </Reveal>
 
         <AnimatePresence mode="wait">
-          <motion.div
-            key={tab}
-            id={`${tabPrefix}-panel`}
-            role="tabpanel"
-            aria-labelledby={`${tabPrefix}-${tab}`}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="mt-6 md:mt-8"
-          >
-            {products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-4 md:gap-x-5">
-                {products.map((product, index) => (
-                  <RankingCard key={product.id} product={product} rank={index + 1} />
-                ))}
-              </div>
-            ) : (
-              <p className="py-16 text-center text-sm text-[#8B8B8B] dark:text-muted-foreground">
-                아직 집계된 상품이 없어요
-              </p>
-            )}
-          </motion.div>
+          {products.length > 0 ? (
+            <motion.div
+              key={tab}
+              id={`${tabPrefix}-panel`}
+              role="tabpanel"
+              aria-labelledby={`${tabPrefix}-${tab}`}
+              initial={reduceMotion ? false : "hidden"}
+              animate="visible"
+              exit={{ opacity: 0 }}
+              variants={panelStagger}
+              className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 md:mt-8 md:grid-cols-4 md:gap-x-5"
+            >
+              {products.map((product, index) => (
+                <motion.div key={product.id} variants={reduceMotion ? undefined : panelItem}>
+                  <RankingCard product={product} rank={index + 1} />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.p
+              key={`${tab}-empty`}
+              id={`${tabPrefix}-panel`}
+              role="tabpanel"
+              aria-labelledby={`${tabPrefix}-${tab}`}
+              initial={reduceMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="mt-6 py-16 text-center text-sm text-[#8B8B8B] dark:text-muted-foreground md:mt-8"
+            >
+              아직 집계된 상품이 없어요
+            </motion.p>
+          )}
         </AnimatePresence>
       </div>
     </section>

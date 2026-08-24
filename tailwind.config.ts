@@ -56,11 +56,12 @@ const config: Config = {
         serif: ["var(--font-serif)", "Georgia", "serif"],
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 4px)",
-        sm: "calc(var(--radius) - 8px)",
-        xl: "calc(var(--radius) + 4px)",
-        "2xl": "calc(var(--radius) + 8px)",
+        sm: "2px",
+        md: "4px",
+        lg: "4px",
+        xl: "4px",
+        "2xl": "4px",
+        "3xl": "4px",
       },
       keyframes: {
         "accordion-down": {

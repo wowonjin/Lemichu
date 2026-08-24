@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ export function HeroCarousel({ slides = fallbackSlides }: { slides?: HeroSlide[]
   const [progressKey, setProgressKey] = useState(0);
   const total = heroSlides.length;
   const pointerStart = useRef<number | null>(null);
+  const reduceMotion = useReducedMotion();
   const safeIndex = index % total;
   const slide = heroSlides[safeIndex] ?? heroSlides[0];
   const dark = slide.dark;
@@ -104,11 +105,18 @@ export function HeroCarousel({ slides = fallbackSlides }: { slides?: HeroSlide[]
             className="absolute inset-0"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <motion.img
               src={slide.image}
               alt=""
               className="absolute inset-0 h-full w-full object-cover object-[center_45%]"
               draggable={false}
+              initial={reduceMotion ? false : { scale: 1.08 }}
+              animate={{ scale: 1 }}
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { duration: 6.4, ease: "linear" }
+              }
             />
             <div
               className={cn(
@@ -151,7 +159,12 @@ export function HeroCarousel({ slides = fallbackSlides }: { slides?: HeroSlide[]
           </motion.div>
         </AnimatePresence>
 
-        <div className="absolute inset-x-0 bottom-5 z-20 flex items-center justify-center gap-2 md:bottom-7">
+        <motion.div
+          className="absolute inset-x-0 bottom-5 z-20 flex items-center justify-center gap-2 md:bottom-7"
+          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.35, ease }}
+        >
             {heroSlides.map((item, slideIndex) => (
               <button
                 key={item.id}
@@ -176,7 +189,7 @@ export function HeroCarousel({ slides = fallbackSlides }: { slides?: HeroSlide[]
                 ) : null}
               </button>
             ))}
-          </div>
+        </motion.div>
         </div>
     </section>
   );

@@ -1,5 +1,14 @@
+import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { firestoreDb, isFirebaseConfigured } from "@/lib/firebase";
+
 const STORAGE_KEY = "lemichu.recentSearches";
 const MAX_RECENT = 8;
+
+const LOCAL_FALLBACK_ERROR_CODES = new Set([
+  "permission-denied",
+  "unauthenticated",
+  "unavailable",
+]);
 
 function sanitize(keywords: unknown): string[] {
   if (!Array.isArray(keywords)) return [];
@@ -8,6 +17,15 @@ function sanitize(keywords: unknown): string[] {
     .map((item) => item.trim())
     .filter(Boolean)
     .slice(0, MAX_RECENT);
+}
+
+function mergeKeywords(primary: string[], secondary: string[]) {
+  return sanitize([...primary, ...secondary]);
+}
+
+function shouldUseLocalFallback(error: unknown) {
+  if (!error || typeof error !== "object" || !("code" in error)) return false;
+  return LOCAL_FALLBACK_ERROR_CODES.has(String(error.code));
 }
 
 export function readRecentSearches(): string[] {
@@ -42,4 +60,40 @@ export function removeRecentSearch(keyword: string): string[] {
 export function clearRecentSearches(): string[] {
   writeRecentSearches([]);
   return [];
+}
+
+export async function persistRecentSearchesRemote(userId: string, keywords: string[]) {
+  if (!isFirebaseConfigured || !firestoreDb || !userId) return;
+
+  try {
+    await setDoc(
+      doc(firestoreDb, "users", userId),
+      {
+        recentSearches: sanitize(keywords),
+        recentSearchesUpdatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  } catch (error) {
+    if (!shouldUseLocalFallback(error)) throw error;
+  }
+}
+
+export async function syncRecentSearchesWithRemote(userId: string): Promise<string[]> {
+  const local = readRecentSearches();
+  if (!isFirebaseConfigured || !firestoreDb || !userId) return local;
+
+  try {
+    const snapshot = await getDoc(doc(firestoreDb, "users", userId));
+    const remote = sanitize(snapshot.data()?.recentSearches);
+    const merged = mergeKeywords(local, remote);
+    writeRecentSearches(merged);
+    if (merged.join("\0") !== remote.join("\0")) {
+      await persistRecentSearchesRemote(userId, merged);
+    }
+    return merged;
+  } catch (error) {
+    if (shouldUseLocalFallback(error)) return local;
+    throw error;
+  }
 }

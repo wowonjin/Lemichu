@@ -218,7 +218,7 @@ export function HeaderBannerEditor({
                         aria-pressed={active}
                         onClick={() => updateSlide(index, { theme: themeId })}
                         className={cn(
-                          "size-7 rounded-full border-2 transition-transform",
+                          "size-7 rounded-md border-2 transition-transform",
                           active
                             ? "scale-110 border-foreground"
                             : "border-transparent hover:scale-105"

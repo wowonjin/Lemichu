@@ -24,7 +24,7 @@ export function HeroCampaign() {
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="max-w-xl"
         >
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-background px-3 py-1 text-xs font-medium text-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-gold/40 bg-background px-3 py-1 text-xs font-medium text-foreground">
             <ShieldCheck className="size-3.5 text-gold" />
             전문 검수팀 1:1 정품 검수
           </span>
@@ -66,7 +66,7 @@ export function HeroCampaign() {
               transition={{ duration: 0.6, delay: 0.1 * i, ease: "easeOut" }}
               className={`absolute left-1/2 top-1/2 w-60 -translate-x-1/2 -translate-y-1/2 ${cardOffsets[i]}`}
             >
-              <div className="overflow-hidden rounded-2xl border border-border bg-background">
+              <div className="overflow-hidden border border-border bg-background">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={getTemporaryImageUrl(card.seed)}
@@ -94,7 +94,7 @@ export function HeroCampaign() {
 
         {/* Mobile: single hero card preview */}
         <div className="relative mx-auto w-full max-w-xs md:hidden">
-          <div className="overflow-hidden rounded-2xl border border-border bg-background">
+          <div className="overflow-hidden border border-border bg-background">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={getTemporaryImageUrl(heroCards[0].seed)}

@@ -14,8 +14,8 @@ export default function CartPage() {
           </p>
         </header>
 
-        <section className="mt-8 rounded-[28px] bg-white px-6 py-20 text-center dark:bg-[#1C1C1E]">
-          <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#F5F5F7] dark:bg-[#2C2C2E]">
+        <section className="mt-8 rounded-md bg-white px-6 py-20 text-center dark:bg-[#1C1C1E]">
+          <span className="mx-auto grid size-16 place-items-center rounded-md bg-[#F5F5F7] dark:bg-[#2C2C2E]">
             <ShoppingBag className="size-7 text-[#6E6E73]" strokeWidth={1.5} />
           </span>
           <h2 className="mt-6 text-[28px] font-semibold tracking-[-0.03em]">
@@ -26,7 +26,7 @@ export default function CartPage() {
           </p>
           <Link
             href="/new-arrivals"
-            className="mt-7 inline-flex h-12 items-center justify-center rounded-full bg-[#0071E3] px-7 text-[17px] text-white transition-colors hover:bg-[#0077ED]"
+            className="mt-7 inline-flex h-12 items-center justify-center rounded-md bg-[#0071E3] px-7 text-[17px] text-white transition-colors hover:bg-[#0077ED]"
           >
             상품 보러가기
           </Link>
@@ -64,7 +64,7 @@ function TrustCard({
   description: string;
 }) {
   return (
-    <div className="rounded-[22px] bg-white px-5 py-5 dark:bg-[#1C1C1E]">
+    <div className="rounded-md bg-white px-5 py-5 dark:bg-[#1C1C1E]">
       <Icon className="size-5 text-[#0071E3]" strokeWidth={1.7} />
       <p className="mt-3 text-[15px] font-semibold tracking-[-0.01em]">{title}</p>
       <p className="mt-1.5 text-[13px] leading-relaxed text-[#6E6E73] dark:text-[#A1A1A6]">

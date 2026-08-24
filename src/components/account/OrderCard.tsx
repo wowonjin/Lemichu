@@ -21,7 +21,7 @@ export function OrderCard({
 
   return (
     <article className="grid gap-5 py-6 md:grid-cols-[88px_minmax(0,1fr)]">
-      <div className="relative size-[88px] overflow-hidden rounded-2xl bg-muted">
+      <div className="relative size-[88px] overflow-hidden bg-muted">
         {firstItem && isRealImage(firstItem.imageUrl) ? (
           <Image
             src={firstItem.imageUrl}
@@ -110,19 +110,19 @@ export function OrderCard({
         <div className="mt-5 flex flex-wrap gap-2 text-sm font-semibold">
           <Link
             href={`/my/orders#${order.id}`}
-            className="inline-flex h-10 items-center rounded-full bg-secondary px-4 text-foreground"
+            className="inline-flex h-10 items-center rounded-md bg-secondary px-4 text-foreground"
           >
             주문 상세 보기
           </Link>
           <Link
             href={`/my/delivery?order=${order.id}`}
-            className="inline-flex h-10 items-center rounded-full bg-secondary px-4 text-foreground"
+            className="inline-flex h-10 items-center rounded-md bg-secondary px-4 text-foreground"
           >
             배송 조회
           </Link>
           <Link
             href={`/my/inquiries?order=${order.id}`}
-            className="inline-flex h-10 items-center rounded-full px-4 text-muted-foreground hover:bg-secondary"
+            className="inline-flex h-10 items-center rounded-md px-4 text-muted-foreground hover:bg-secondary"
           >
             문의하기
           </Link>

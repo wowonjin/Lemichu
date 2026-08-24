@@ -2,13 +2,31 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { ProductPreviewMedia } from "@/components/product/ProductPreviewMedia";
+import { Reveal, Stagger, StaggerItem } from "@/components/home/section-motion";
 import { cn } from "@/lib/cn";
 import { formatPrice, getDiscountRate } from "@/lib/formatPrice";
 import type { TimeSaleProduct } from "@/lib/homeCatalog";
 
 function pad(value: number): string {
   return String(value).padStart(2, "0");
+}
+
+function BlinkColon() {
+  const reduceMotion = useReducedMotion();
+  if (reduceMotion) return <span className="text-gold">:</span>;
+
+  return (
+    <motion.span
+      className="text-gold"
+      animate={{ opacity: [1, 0.28, 1] }}
+      transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+    >
+      :
+    </motion.span>
+  );
 }
 
 function Countdown({ endsAt }: { endsAt: string }) {
@@ -42,9 +60,9 @@ function Countdown({ endsAt }: { endsAt: string }) {
         aria-live="off"
       >
         <span>{pad(hours)}</span>
-        <span className="text-gold">:</span>
+        <BlinkColon />
         <span>{pad(minutes)}</span>
-        <span className="text-gold">:</span>
+        <BlinkColon />
         <span>{pad(seconds)}</span>
       </div>
     </div>
@@ -56,32 +74,32 @@ function SaleCard({ product }: { product: TimeSaleProduct }) {
   const rate = product.discountRate ?? getDiscountRate(product.price, product.retailPrice);
 
   return (
-    <article className="group relative w-[78%] shrink-0 snap-start overflow-hidden rounded-lg bg-background sm:w-[calc((100%_-_1rem)/2)] lg:w-[calc((100%_-_3rem)/4)]">
+    <article className="group relative overflow-hidden bg-background">
       <Link href={product.href} className="block">
         <div className="relative aspect-square w-full overflow-hidden bg-muted">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={product.imageUrl}
-            alt={`${product.brand} ${product.name}`}
-            className="h-full w-full object-contain p-6 mix-blend-multiply"
-          />
-          <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
-            {product.remainingQty === 1 ? (
-              <span className="rounded-md bg-foreground px-2 py-0.5 text-[11px] font-medium text-background">
-                남은 수량 1개
-              </span>
-            ) : (
-              <span className="rounded-md bg-background/90 px-2 py-0.5 text-[11px] font-medium text-foreground">
-                남은 수량 {product.remainingQty}개
-              </span>
-            )}
-          </div>
+          <ProductPreviewMedia
+            product={product}
+            sizes="(min-width: 1024px) 22vw, 70vw"
+            imageClassName="object-cover mix-blend-multiply"
+          >
+            <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+              {product.remainingQty === 1 ? (
+                <span className="rounded-md bg-foreground px-2 py-0.5 text-[11px] font-medium text-background">
+                  남은 수량 1개
+                </span>
+              ) : (
+                <span className="rounded-md bg-background/90 px-2 py-0.5 text-[11px] font-medium text-foreground">
+                  남은 수량 {product.remainingQty}개
+                </span>
+              )}
+            </div>
+          </ProductPreviewMedia>
         </div>
 
         <div className="space-y-1.5 bg-foreground px-4 py-3 text-background">
           <div className="flex items-baseline justify-between gap-2">
             <p className="truncate text-sm font-semibold">{product.brand}</p>
-            {rate ? <span className="shrink-0 text-sm font-bold text-gold">{rate}%</span> : null}
+            {rate ? <span className="shrink-0 text-sm font-bold text-[#F04452]">{rate}%</span> : null}
           </div>
           <p className="text-sm tabular-nums text-background/80">{formatPrice(product.price)}원</p>
           <p className="text-[11px] text-background/60">오늘 {product.wishCount}명이 찜했어요</p>
@@ -126,14 +144,14 @@ export function TimeSaleSection({
   return (
     <section className="bg-background">
       <div className="container py-10 md:py-14">
-        <div className="text-center">
+        <Reveal className="text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
             오늘의 타임세일
           </h2>
           <div className="mt-3">
             <Countdown endsAt={endsAt} />
           </div>
-        </div>
+        </Reveal>
 
         <div className="relative mt-8">
           <button
@@ -155,11 +173,23 @@ export function TimeSaleSection({
 
           <div
             ref={trackRef}
-            className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 no-scrollbar"
+            className="overflow-x-auto py-1 no-scrollbar"
           >
-            {saleProducts.map((product) => (
-              <SaleCard key={product.id} product={product} />
-            ))}
+            <Stagger
+              stagger={0.08}
+              delay={0.08}
+              className="flex snap-x snap-mandatory gap-4 pb-1"
+            >
+              {saleProducts.map((product) => (
+                <StaggerItem
+                  key={product.id}
+                  variant="scale"
+                  className="w-[78%] shrink-0 snap-start sm:w-[calc((100%_-_1rem)/2)] lg:w-[calc((100%_-_3rem)/4)]"
+                >
+                  <SaleCard product={product} />
+                </StaggerItem>
+              ))}
+            </Stagger>
           </div>
         </div>
       </div>

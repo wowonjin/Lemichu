@@ -33,9 +33,11 @@ export const searchCategoryShortcuts = [
   { label: "중고명품", href: "/pre-owned" },
 ];
 
-export function formatPopularUpdatedAt(date = new Date()) {
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hour = String(date.getHours()).padStart(2, "0");
+export function formatPopularUpdatedAt(date: Date | string = new Date()) {
+  const value = typeof date === "string" ? new Date(date) : date;
+  const safe = Number.isNaN(value.getTime()) ? new Date() : value;
+  const month = String(safe.getMonth() + 1).padStart(2, "0");
+  const day = String(safe.getDate()).padStart(2, "0");
+  const hour = String(safe.getHours()).padStart(2, "0");
   return `${month}.${day} ${hour}:00 기준`;
 }

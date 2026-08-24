@@ -252,7 +252,7 @@ function DashboardBody({ products }: { products: Product[] }) {
               return (
                 <li key={alert.id}>
                   <div className="flex items-start gap-3 py-4">
-                    <span className="mt-0.5 grid size-11 place-items-center rounded-full bg-secondary text-foreground">
+                    <span className="mt-0.5 grid size-11 place-items-center rounded-md bg-secondary text-foreground">
                       {alert.kind === "price-drop" ? (
                         <Heart className="size-4" />
                       ) : alert.kind === "today-ship" ? (
@@ -289,7 +289,7 @@ function DashboardBody({ products }: { products: Product[] }) {
       </AccountSection>
 
       <AccountSection title="구매를 고민 중인 상품">
-        <div className="flex gap-2 rounded-full bg-secondary p-1" role="tablist" aria-label="고민 중인 상품">
+        <div className="flex gap-2 rounded-md bg-secondary p-1" role="tablist" aria-label="고민 중인 상품">
           {[
             { key: "wishlist" as const, label: "찜한 상품", count: wishEntries.length },
             { key: "recent" as const, label: "최근 본 상품", count: recent.length },
@@ -300,7 +300,7 @@ function DashboardBody({ products }: { products: Product[] }) {
               role="tab"
               aria-selected={considerTab === tab.key}
               onClick={() => setConsiderTab(tab.key)}
-              className={`min-h-10 flex-1 rounded-full border text-[13px] transition-colors ${
+              className={`min-h-10 flex-1 rounded-md border text-[13px] transition-colors ${
                 considerTab === tab.key
                   ? "border-border bg-background font-semibold text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground"

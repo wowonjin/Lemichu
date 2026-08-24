@@ -19,16 +19,22 @@ import {
   isVariantAvailable,
 } from "@/lib/product-variants";
 import { getTodaySaleEndIso } from "@/lib/saleWindow";
-import type { Product, RankedProduct } from "@/types/product";
+import { isConditionGrade, type Product, type RankedProduct } from "@/types/product";
 
 type ProductDoc = StoreProduct & {
   color?: string;
   size?: string;
   isPreOwned?: boolean;
+  condition?: string;
   todayShip?: boolean;
   overseasShipping?: boolean;
   storeCategoryId?: string;
 };
+
+function conditionFor(product: ProductDoc, isPreOwned: boolean) {
+  if (!isPreOwned) return undefined;
+  return isConditionGrade(product.condition) ? product.condition : "A";
+}
 
 function toMillis(value: unknown) {
   if (!value || typeof value !== "object") return 0;
@@ -57,6 +63,15 @@ function imageUrlFor(product: ProductDoc) {
     product.representativeImage?.thumbnail.url ||
     product.representativeImageUrl
   );
+}
+
+function extraImageUrlsFor(product: ProductDoc) {
+  const fromUrls = (product.optionalImageUrls ?? []).filter(Boolean);
+  if (fromUrls.length > 0) return fromUrls;
+
+  return (product.optionalImages ?? [])
+    .map((image) => image.medium?.url || image.original?.url || image.thumbnail?.url)
+    .filter((url): url is string => Boolean(url));
 }
 
 export function storeProductToProduct(product: ProductDoc): Product {
@@ -93,7 +108,7 @@ export function storeProductToProduct(product: ProductDoc): Product {
     brand: product.brand,
     name: product.name,
     imageUrl: imageUrlFor(product),
-    imageUrls: [imageUrlFor(product), ...(product.optionalImageUrls ?? [])].filter(Boolean),
+    imageUrls: [imageUrlFor(product), ...extraImageUrlsFor(product)].filter(Boolean),
     price: salePrice,
     basePrice: product.salePrice,
     retailPrice,
@@ -101,7 +116,7 @@ export function storeProductToProduct(product: ProductDoc): Product {
     color: product.color,
     size: product.size,
     detailContent: product.detailContent,
-    condition: isPreOwned ? "A" : undefined,
+    condition: conditionFor(product, isPreOwned),
     isPreOwned,
     categoryId: product.storeCategoryId,
     authenticationStatus: "VERIFIED",
@@ -136,7 +151,7 @@ async function loadRegisteredProducts(): Promise<Product[]> {
 
 const getCachedRegisteredProducts = unstable_cache(
   loadRegisteredProducts,
-  ["catalog-registered-products-v3"],
+  ["catalog-registered-products-v4"],
   { revalidate: 30, tags: ["products"] }
 );
 

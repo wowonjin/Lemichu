@@ -30,7 +30,7 @@ export function SignupBenefits() {
       <ul className="mt-5 space-y-4">
         {benefits.map((benefit) => (
           <li key={benefit.title} className="flex gap-3">
-            <span className="grid size-10 shrink-0 place-items-center rounded-full border border-gold/30 bg-background">
+            <span className="grid size-10 shrink-0 place-items-center rounded-md border border-gold/30 bg-background">
               <benefit.icon className="size-5 text-gold" />
             </span>
             <div>

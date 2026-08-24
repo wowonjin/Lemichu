@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ProductInquiryChat } from "@/components/product/ProductInquiryChat";
 import { WishlistToggleButton } from "@/components/product/WishlistToggleButton";
+import { productActionIconClassName } from "@/components/product/productActionStyles";
 import { useProductVariantPurchase } from "@/components/product/ProductVariantPurchase";
-import { formatPrice, getDiscountRate } from "@/lib/formatPrice";
 import { createProductCheckoutItem } from "@/lib/checkout";
+import { getPurchaseButtonLabel } from "@/lib/formatPrice";
 import { readAuthUser } from "@/lib/auth";
 import { getLoginHref } from "@/lib/redirect";
 import { requestTossPayment } from "@/lib/toss-checkout";
@@ -31,8 +34,6 @@ export function ProductPurchaseBar({
   } = useProductVariantPurchase();
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [message, setMessage] = useState("");
-  const price = selectedPrice;
-  const discountRate = getDiscountRate(price, product.retailPrice);
 
   const handlePurchase = async () => {
     setMessage("");
@@ -64,38 +65,29 @@ export function ProductPurchaseBar({
 
   return (
     <div className="fixed inset-x-0 bottom-16 z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur md:hidden">
-      <div className="flex items-center gap-3">
-        <WishlistToggleButton
-          product={product}
-          className="size-12 shrink-0 rounded-full border border-[#EBEBEB] bg-background dark:border-border"
-          iconClassName="fill-transparent"
-        />
-
-        <div className="flex min-w-0 flex-col leading-tight">
-          <span className="text-[11px] text-muted-foreground">구매가</span>
-          <span className="flex items-baseline gap-1">
-            <span className="text-base font-semibold tabular-nums text-foreground">
-              {formatPrice(price)}원
-            </span>
-            {discountRate ? (
-              <span className="text-xs font-semibold tabular-nums text-gold">
-                {discountRate}%
-              </span>
-            ) : null}
-          </span>
-        </div>
+      <div className="flex items-center gap-2">
+        <WishlistToggleButton product={product} appearance="boxed" />
+        <button
+          type="button"
+          aria-label="장바구니"
+          onClick={() => setMessage("장바구니 페이지에서 여러 상품을 함께 결제할 수 있어요.")}
+          className={productActionIconClassName}
+        >
+          <ShoppingBag className="size-5" strokeWidth={1.75} />
+        </button>
+        <ProductInquiryChat product={product} appearance="boxed" />
 
         <Button
+          variant="buy"
           size="lg"
           disabled={isPurchasing || !canPurchase}
           onClick={handlePurchase}
-          className="h-12 flex-1"
+          className="h-auto min-h-12 min-w-0 flex-1 px-3 py-2 text-[13px] font-semibold leading-tight"
         >
-          {isPurchasing
-            ? "결제 준비 중..."
-            : !canPurchase && requiresVariantSelection
-              ? "옵션 선택"
-              : "구매하기"}
+          {getPurchaseButtonLabel(selectedPrice, product.retailPrice, {
+            purchasing: isPurchasing,
+            needsOption: !canPurchase && requiresVariantSelection,
+          })}
         </Button>
       </div>
       {message ? (

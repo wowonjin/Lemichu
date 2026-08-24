@@ -47,7 +47,7 @@ export function InterestBrandPicker({
               disabled={disabled}
               onClick={() => toggle(brand.id)}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors",
                 active
                   ? "border-foreground bg-foreground text-background"
                   : "border-border bg-background text-foreground/80 hover:border-foreground/30",

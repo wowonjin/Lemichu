@@ -5,40 +5,39 @@ import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { SearchDiscovery } from "@/components/search/SearchDiscovery";
-import {
-  addRecentSearch,
-  clearRecentSearches,
-  readRecentSearches,
-  removeRecentSearch,
-} from "@/lib/searchHistory";
+import { useRecentSearches } from "@/hooks/useRecentSearches";
+import { useSearchDiscovery } from "@/hooks/useSearchDiscovery";
+import { buildSearchHref } from "@/lib/search/url";
+import type { SearchDiscoveryPayload } from "@/lib/search/types";
 import type { Product } from "@/types/product";
 
 export function SearchTab({
   initialQuery = "",
   results,
   hasQuery,
+  usedOnly = false,
+  discovery,
 }: {
   initialQuery?: string;
   results: Product[];
   hasQuery: boolean;
+  usedOnly?: boolean;
+  discovery?: SearchDiscoveryPayload;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
-  const [recent, setRecent] = useState<string[]>([]);
+  const { recent, remember, remove, clear } = useRecentSearches();
+  const liveDiscovery = useSearchDiscovery(discovery, !hasQuery);
 
   useEffect(() => {
     setQuery(initialQuery);
   }, [initialQuery]);
 
-  useEffect(() => {
-    setRecent(readRecentSearches());
-  }, []);
-
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const value = query.trim();
-    if (value) setRecent(addRecentSearch(value));
-    router.push(value ? `/search?q=${encodeURIComponent(value)}` : "/search");
+    if (value) remember(value, "submit", usedOnly);
+    router.push(value ? buildSearchHref(value, { used: usedOnly }) : usedOnly ? "/search?used=1" : "/search");
   };
 
   return (
@@ -64,7 +63,7 @@ export function SearchTab({
                 type="button"
                 aria-label="검색어 지우기"
                 onClick={() => setQuery("")}
-                className="grid size-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                className="grid size-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
               >
                 <X className="size-4" strokeWidth={1.8} />
               </button>
@@ -82,7 +81,7 @@ export function SearchTab({
           {hasQuery ? (
             <section>
               <h2 className="text-base font-semibold text-foreground">
-                ‘{initialQuery}’ 검색 결과
+                {usedOnly ? "중고 " : ""}‘{initialQuery}’ 검색 결과
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">총 {results.length}개 상품</p>
               <div className="mt-6">
@@ -104,9 +103,14 @@ export function SearchTab({
           ) : (
             <SearchDiscovery
               recent={recent}
-              onSelect={(keyword) => setRecent(addRecentSearch(keyword))}
-              onRemoveRecent={(keyword) => setRecent(removeRecentSearch(keyword))}
-              onClearRecent={() => setRecent(clearRecentSearches())}
+              recommended={liveDiscovery.recommended}
+              popular={liveDiscovery.popular}
+              popularUpdatedAt={liveDiscovery.popularUpdatedAt}
+              categories={liveDiscovery.categories}
+              usedOnly={usedOnly}
+              onSelect={(keyword, source) => remember(keyword, source, usedOnly)}
+              onRemoveRecent={remove}
+              onClearRecent={clear}
             />
           )}
         </div>

@@ -105,7 +105,7 @@ export function AccountPageShell({
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
-            className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+            className="inline-flex h-11 items-center gap-2 rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
           >
             <Menu className="size-4" />
             메뉴
@@ -203,7 +203,7 @@ export function AccountErrorState({
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex h-11 items-center justify-center rounded-full bg-foreground px-5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+          className="inline-flex h-11 items-center justify-center rounded-md bg-foreground px-5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
         >
           다시 시도
         </button>
@@ -235,7 +235,7 @@ export function AccountCtaLink({
     <Link
       href={href}
       className={cn(
-        "inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground",
+        "inline-flex h-11 items-center justify-center rounded-md px-5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground",
         variant === "primary"
           ? "bg-foreground text-background hover:bg-foreground/90"
           : "text-muted-foreground hover:text-foreground"

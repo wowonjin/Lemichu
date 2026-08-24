@@ -58,8 +58,8 @@ export function WishlistCatalog({ products }: { products: Product[] }) {
           count={0}
           subtitle="로그인하면 관심 상품의 가격과 배송 변화를 확인할 수 있습니다."
         />
-        <section className="mt-8 rounded-[28px] bg-white px-6 py-20 text-center dark:bg-[#1C1C1E]">
-          <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#F5F5F7] dark:bg-[#2C2C2E]">
+        <section className="mt-8 rounded-md bg-white px-6 py-20 text-center dark:bg-[#1C1C1E]">
+          <span className="mx-auto grid size-16 place-items-center rounded-md bg-[#F5F5F7] dark:bg-[#2C2C2E]">
             <Heart className="size-7 text-[#6E6E73]" strokeWidth={1.5} />
           </span>
           <h2 className="mt-6 text-[28px] font-semibold tracking-[-0.03em]">
@@ -70,7 +70,7 @@ export function WishlistCatalog({ products }: { products: Product[] }) {
           </p>
           <Link
             href={getLoginHref(pathname)}
-            className="mt-7 inline-flex h-12 items-center justify-center rounded-full bg-[#0071E3] px-7 text-[17px] text-white transition-colors hover:bg-[#0077ED]"
+            className="mt-7 inline-flex h-12 items-center justify-center rounded-md bg-[#0071E3] px-7 text-[17px] text-white transition-colors hover:bg-[#0077ED]"
           >
             로그인하기
           </Link>
@@ -188,12 +188,12 @@ function WishlistCatalogBody({ products }: { products: Product[] }) {
     return (
       <WishlistShell>
         <WishlistHero count={0} subtitle="목록을 불러오지 못했습니다." />
-        <section className="mt-8 rounded-[28px] bg-white px-6 py-20 text-center dark:bg-[#1C1C1E]">
+        <section className="mt-8 rounded-md bg-white px-6 py-20 text-center dark:bg-[#1C1C1E]">
           <p className="text-[17px] text-[#6E6E73] dark:text-[#A1A1A6]">{error}</p>
           <button
             type="button"
             onClick={retry}
-            className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-[#0071E3] px-7 text-[17px] text-white transition-colors hover:bg-[#0077ED]"
+            className="mt-6 inline-flex h-12 items-center justify-center rounded-md bg-[#0071E3] px-7 text-[17px] text-white transition-colors hover:bg-[#0077ED]"
           >
             다시 시도
           </button>
@@ -237,7 +237,7 @@ function WishlistCatalogBody({ products }: { products: Product[] }) {
       {records.length > 0 ? (
         <>
           <div
-            className="mt-8 flex gap-2 overflow-x-auto no-scrollbar rounded-[22px] bg-white p-1.5 dark:bg-[#1C1C1E]"
+            className="mt-8 flex gap-2 overflow-x-auto no-scrollbar rounded-md bg-white p-1.5 dark:bg-[#1C1C1E]"
             role="tablist"
           >
             {WISHLIST_TABS.map((tab) => {
@@ -253,7 +253,7 @@ function WishlistCatalogBody({ products }: { products: Product[] }) {
                   disabled={disabled}
                   onClick={() => replaceQuery({ ...query, tab })}
                   className={cn(
-                    "shrink-0 rounded-full px-4 py-2.5 text-[14px] transition-colors",
+                    "shrink-0 rounded-md px-4 py-2.5 text-[14px] transition-colors",
                     disabled
                       ? "cursor-not-allowed text-[#6E6E73]/40"
                       : selected
@@ -281,7 +281,7 @@ function WishlistCatalogBody({ products }: { products: Product[] }) {
                       [chip.key]: chip.key === "priceDrop" ? false : "",
                     })
                   }
-                  className="inline-flex h-8 items-center rounded-full bg-white px-3 text-[12px] text-[#1D1D1F] dark:bg-[#1C1C1E] dark:text-[#F5F5F7]"
+                  className="inline-flex h-8 items-center rounded-md bg-white px-3 text-[12px] text-[#1D1D1F] dark:bg-[#1C1C1E] dark:text-[#F5F5F7]"
                 >
                   {chip.label} ×
                 </button>
@@ -297,7 +297,7 @@ function WishlistCatalogBody({ products }: { products: Product[] }) {
                 onChange={(event) =>
                   replaceQuery({ ...query, sort: event.target.value as WishlistQueryState["sort"] })
                 }
-                className="h-11 rounded-full bg-white px-4 text-[14px] text-[#1D1D1F] outline-none dark:bg-[#1C1C1E] dark:text-[#F5F5F7]"
+                className="h-11 rounded-md bg-white px-4 text-[14px] text-[#1D1D1F] outline-none dark:bg-[#1C1C1E] dark:text-[#F5F5F7]"
               >
                 {WISHLIST_SORTS.map((sort) => (
                   <option key={sort} value={sort}>
@@ -308,7 +308,7 @@ function WishlistCatalogBody({ products }: { products: Product[] }) {
               <button
                 type="button"
                 onClick={() => setFilterOpen(true)}
-                className="inline-flex h-11 items-center gap-1.5 rounded-full bg-white px-4 text-[14px] font-medium dark:bg-[#1C1C1E]"
+                className="inline-flex h-11 items-center gap-1.5 rounded-md bg-white px-4 text-[14px] font-medium dark:bg-[#1C1C1E]"
               >
                 <SlidersHorizontal className="size-4" />
                 필터{chips.length > 0 ? ` ${chips.length}` : ""}
@@ -319,8 +319,8 @@ function WishlistCatalogBody({ products }: { products: Product[] }) {
       ) : null}
 
       {records.length === 0 ? (
-        <section className="mt-8 rounded-[28px] bg-white px-6 py-20 text-center dark:bg-[#1C1C1E]">
-          <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#F5F5F7] dark:bg-[#2C2C2E]">
+        <section className="mt-8 rounded-md bg-white px-6 py-20 text-center dark:bg-[#1C1C1E]">
+          <span className="mx-auto grid size-16 place-items-center rounded-md bg-[#F5F5F7] dark:bg-[#2C2C2E]">
             <Heart className="size-7 text-[#6E6E73]" strokeWidth={1.5} />
           </span>
           <h2 className="mt-6 text-[28px] font-semibold tracking-[-0.03em]">
@@ -331,20 +331,20 @@ function WishlistCatalogBody({ products }: { products: Product[] }) {
           </p>
           <Link
             href="/ranking"
-            className="mt-7 inline-flex h-12 items-center justify-center rounded-full bg-[#0071E3] px-7 text-[17px] text-white transition-colors hover:bg-[#0077ED]"
+            className="mt-7 inline-flex h-12 items-center justify-center rounded-md bg-[#0071E3] px-7 text-[17px] text-white transition-colors hover:bg-[#0077ED]"
           >
             인기 상품 둘러보기
           </Link>
         </section>
       ) : filtered.length === 0 ? (
-        <section className="mt-8 rounded-[28px] bg-white px-6 py-20 text-center dark:bg-[#1C1C1E]">
+        <section className="mt-8 rounded-md bg-white px-6 py-20 text-center dark:bg-[#1C1C1E]">
           <h2 className="text-[28px] font-semibold tracking-[-0.03em]">
             조건에 맞는 상품이 없습니다.
           </h2>
           <button
             type="button"
             onClick={() => replaceQuery({ ...EMPTY_WISHLIST_QUERY, tab: query.tab })}
-            className="mt-7 inline-flex h-12 items-center justify-center rounded-full bg-[#0071E3] px-7 text-[17px] text-white transition-colors hover:bg-[#0077ED]"
+            className="mt-7 inline-flex h-12 items-center justify-center rounded-md bg-[#0071E3] px-7 text-[17px] text-white transition-colors hover:bg-[#0077ED]"
           >
             필터 초기화
           </button>
@@ -372,7 +372,7 @@ function WishlistCatalogBody({ products }: { products: Product[] }) {
       )}
 
       {missingRecords.length > 0 ? (
-        <ul className="mt-6 divide-y divide-[#D2D2D7]/70 overflow-hidden rounded-[22px] bg-white dark:divide-[#424245] dark:bg-[#1C1C1E]">
+        <ul className="mt-6 divide-y divide-[#D2D2D7]/70 overflow-hidden rounded-md bg-white dark:divide-[#424245] dark:bg-[#1C1C1E]">
           {missingRecords.map((record) => (
             <li key={record.productId} className="flex items-center justify-between gap-4 px-5 py-4">
               <p className="text-[14px] text-[#6E6E73] dark:text-[#A1A1A6]">
@@ -391,7 +391,7 @@ function WishlistCatalogBody({ products }: { products: Product[] }) {
       ) : null}
 
       {editMode && records.length > 0 ? (
-        <div className="fixed inset-x-0 bottom-16 z-40 border-t border-black/5 bg-white/90 px-5 py-3 backdrop-blur-xl md:static md:mt-8 md:rounded-[22px] md:border-0 md:bg-white md:px-6 md:py-4 dark:border-white/10 dark:bg-[#1C1C1E]/90 md:dark:bg-[#1C1C1E]">
+        <div className="fixed inset-x-0 bottom-16 z-40 border-t border-black/5 bg-white/90 px-5 py-3 backdrop-blur-xl md:static md:mt-8 md:rounded-md md:border-0 md:bg-white md:px-6 md:py-4 dark:border-white/10 dark:bg-[#1C1C1E]/90 md:dark:bg-[#1C1C1E]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[15px] font-medium">{selectedIds.length}개 선택</p>
             <div className="flex flex-wrap gap-2">
@@ -404,21 +404,21 @@ function WishlistCatalogBody({ products }: { products: Product[] }) {
                       : filtered.map((entry) => entry.product.id)
                   )
                 }
-                className="h-11 rounded-full px-4 text-[14px] text-[#0071E3] hover:text-[#0077ED]"
+                className="h-11 rounded-md px-4 text-[14px] text-[#0071E3] hover:text-[#0077ED]"
               >
                 전체 선택
               </button>
               <button
                 type="button"
                 onClick={handleBulkDelete}
-                className="h-11 rounded-full px-4 text-[14px] text-[#0071E3] hover:text-[#0077ED]"
+                className="h-11 rounded-md px-4 text-[14px] text-[#0071E3] hover:text-[#0077ED]"
               >
                 선택 삭제
               </button>
               <button
                 type="button"
                 onClick={() => setAlertOpen(true)}
-                className="h-11 rounded-full bg-[#0071E3] px-5 text-[14px] text-white hover:bg-[#0077ED]"
+                className="h-11 rounded-md bg-[#0071E3] px-5 text-[14px] text-white hover:bg-[#0077ED]"
               >
                 가격 알림 설정
               </button>
@@ -536,7 +536,7 @@ function WishlistPulse() {
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className="aspect-[3/4] animate-pulse rounded-[24px] bg-white dark:bg-[#1C1C1E]"
+            className="aspect-[3/4] animate-pulse rounded-md bg-white dark:bg-[#1C1C1E]"
           />
         ))}
       </div>
@@ -565,15 +565,15 @@ function AppleWishlistCard({
   const dropped = record.priceAtAdd > product.price;
 
   return (
-    <article className="group relative overflow-hidden rounded-[24px] bg-white p-4 transition-transform duration-300 hover:-translate-y-0.5 dark:bg-[#1C1C1E]">
+    <article className="group relative overflow-hidden rounded-md bg-white p-4 transition-transform duration-300 hover:-translate-y-0.5 dark:bg-[#1C1C1E]">
       <Link href={product.href} className="block">
-        <div className="relative aspect-square overflow-hidden rounded-[18px] bg-[#F5F5F7] dark:bg-[#2C2C2E]">
+        <div className="relative aspect-square overflow-hidden bg-[#F5F5F7] dark:bg-[#2C2C2E]">
           {isRealImage(product.imageUrl) ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={product.imageUrl}
               alt={`${product.brand} ${product.name}`}
-              className="h-full w-full object-contain p-5 mix-blend-multiply dark:mix-blend-normal"
+              className="h-full w-full object-cover mix-blend-multiply dark:mix-blend-normal"
             />
           ) : (
             <div
@@ -583,7 +583,7 @@ function AppleWishlistCard({
           )}
           {unavailable ? (
             <div className="absolute inset-0 grid place-items-center bg-white/70 dark:bg-black/55">
-              <span className="rounded-full bg-[#1D1D1F] px-3 py-1 text-[12px] text-white">
+              <span className="rounded-md bg-[#1D1D1F] px-3 py-1 text-[12px] text-white">
                 {availability === "sold" ? "판매 완료" : "품절"}
               </span>
             </div>
@@ -637,7 +637,7 @@ function AppleWishlistCard({
         >
           <span
             className={cn(
-              "grid size-[22px] place-items-center rounded-full border transition-colors",
+              "grid size-[22px] place-items-center rounded-md border transition-colors",
               selected
                 ? "border-[#0071E3] bg-[#0071E3] text-white"
                 : "border-[#D2D2D7] bg-white text-transparent dark:border-[#636366] dark:bg-[#1C1C1E]"
@@ -658,7 +658,7 @@ function AppleWishlistCard({
         <WishlistToggleButton
           product={product}
           onUnwish={onUnwish}
-          className="absolute right-5 top-5 z-10 size-10 rounded-full bg-white/90 text-[#1D1D1F] shadow-sm backdrop-blur dark:bg-[#1C1C1E]/90 dark:text-white"
+          className="absolute right-5 top-5 z-10 size-10 rounded-md bg-white/90 text-[#1D1D1F] shadow-sm backdrop-blur dark:bg-[#1C1C1E]/90 dark:text-white"
         />
       )}
     </article>
@@ -684,15 +684,15 @@ function SuggestionRail({ products }: { products: Product[] }) {
           <Link
             key={product.id}
             href={product.href}
-            className="group overflow-hidden rounded-[24px] bg-white p-4 transition-transform duration-300 hover:-translate-y-0.5 dark:bg-[#1C1C1E]"
+            className="group overflow-hidden rounded-md bg-white p-4 transition-transform duration-300 hover:-translate-y-0.5 dark:bg-[#1C1C1E]"
           >
-            <div className="relative aspect-square overflow-hidden rounded-[18px] bg-[#F5F5F7] dark:bg-[#2C2C2E]">
+            <div className="relative aspect-square overflow-hidden bg-[#F5F5F7] dark:bg-[#2C2C2E]">
               {isRealImage(product.imageUrl) ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={product.imageUrl}
                   alt={`${product.brand} ${product.name}`}
-                  className="h-full w-full object-contain p-5 mix-blend-multiply dark:mix-blend-normal"
+                  className="h-full w-full object-cover mix-blend-multiply dark:mix-blend-normal"
                 />
               ) : (
                 <div
@@ -723,7 +723,7 @@ function TrustCard({
   description: string;
 }) {
   return (
-    <div className="rounded-[22px] bg-white px-5 py-5 dark:bg-[#1C1C1E]">
+    <div className="rounded-md bg-white px-5 py-5 dark:bg-[#1C1C1E]">
       <Icon className="size-5 text-[#0071E3]" strokeWidth={1.7} />
       <p className="mt-3 text-[15px] font-semibold tracking-[-0.01em]">{title}</p>
       <p className="mt-1.5 text-[13px] leading-relaxed text-[#6E6E73] dark:text-[#A1A1A6]">
@@ -861,14 +861,14 @@ function FilterPanel({
         <button
           type="button"
           onClick={() => onChange({ ...EMPTY_WISHLIST_QUERY, tab: query.tab, sort: query.sort })}
-          className="h-12 flex-1 rounded-full bg-[#F5F5F7] text-[15px] font-medium dark:bg-[#2C2C2E]"
+          className="h-12 flex-1 rounded-md bg-[#F5F5F7] text-[15px] font-medium dark:bg-[#2C2C2E]"
         >
           초기화
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="h-12 flex-1 rounded-full bg-[#0071E3] text-[15px] text-white hover:bg-[#0077ED]"
+          className="h-12 flex-1 rounded-md bg-[#0071E3] text-[15px] text-white hover:bg-[#0077ED]"
         >
           {previewCount}개 보기
         </button>
@@ -950,7 +950,7 @@ function AlertPanel({
           await Promise.all(selectedIds.map((id) => onSave(id, alerts)));
           onClose();
         }}
-        className="mt-6 h-12 w-full rounded-full bg-[#0071E3] text-[17px] text-white hover:bg-[#0077ED]"
+        className="mt-6 h-12 w-full rounded-md bg-[#0071E3] text-[17px] text-white hover:bg-[#0077ED]"
       >
         조건 저장
       </button>
@@ -1015,7 +1015,7 @@ function Chip({
       aria-pressed={selected}
       onClick={onClick}
       className={cn(
-        "min-h-10 rounded-full px-4 text-[14px] transition-colors",
+        "min-h-10 rounded-md px-4 text-[14px] transition-colors",
         selected
           ? "bg-[#1D1D1F] text-white dark:bg-white dark:text-[#1D1D1F]"
           : "bg-[#F5F5F7] text-[#6E6E73] hover:text-[#1D1D1F] dark:bg-[#2C2C2E] dark:hover:text-white"

@@ -9,7 +9,7 @@ export function CustomerPageShell({
   className?: string;
 }) {
   return (
-    <div className={cn("bg-gradient-to-b from-sand via-background to-background", className)}>
+    <div className={cn("bg-background", className)}>
       <div className="container py-8 md:py-12">{children}</div>
     </div>
   );
@@ -24,7 +24,7 @@ export function CustomerPageHero({
 }: {
   eyebrow: string;
   title: ReactNode;
-  description: string;
+  description?: string;
   children?: ReactNode;
   className?: string;
 }) {
@@ -43,9 +43,11 @@ export function CustomerPageHero({
           <h1 className="mt-4 text-balance font-serif text-3xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl">
             {title}
           </h1>
-          <p className="mt-4 max-w-xl text-balance text-sm leading-relaxed text-muted-foreground md:text-base">
-            {description}
-          </p>
+          {description ? (
+            <p className="mt-4 max-w-xl text-balance text-sm leading-relaxed text-muted-foreground md:text-base">
+              {description}
+            </p>
+          ) : null}
         </div>
         {children ? <div className="min-w-0">{children}</div> : null}
       </div>
@@ -74,7 +76,7 @@ export function CustomerSection({
 
 export function GoldPill({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex rounded-full bg-gold-soft px-3 py-1 text-xs font-semibold text-foreground">
+    <span className="inline-flex rounded-md bg-gold-soft px-3 py-1 text-xs font-semibold text-foreground">
       {children}
     </span>
   );

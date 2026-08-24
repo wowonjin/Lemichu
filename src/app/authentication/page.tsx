@@ -29,7 +29,7 @@ const highlights = [
 
 export default function AuthenticationPage() {
   return (
-    <div className="bg-gradient-to-b from-sand via-background to-background">
+    <div className="bg-background">
       <CustomerPageShell className="bg-transparent">
         <CustomerPageHero
           eyebrow="Authentication"
@@ -43,7 +43,7 @@ export default function AuthenticationPage() {
               key={item.title}
               className="rounded-2xl border border-border bg-sand p-6 text-center"
             >
-              <span className="mx-auto grid size-12 place-items-center rounded-full bg-background text-gold shadow-sm">
+              <span className="mx-auto grid size-12 place-items-center rounded-md bg-background text-gold shadow-sm">
                 <item.icon className="size-6" strokeWidth={1.8} />
               </span>
               <h2 className="mt-4 text-sm font-semibold text-foreground">
@@ -66,13 +66,13 @@ export default function AuthenticationPage() {
         <div className="mt-4 flex flex-wrap justify-center gap-3">
           <Link
             href="/policy/guarantee"
-            className="inline-flex h-11 items-center justify-center rounded-full border border-border bg-background px-6 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-background px-6 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
           >
             가품 보상 정책
           </Link>
           <Link
             href="/policy/delivery"
-            className="inline-flex h-11 items-center justify-center rounded-full border border-border bg-background px-6 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-background px-6 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
           >
             배송/교환/반품
           </Link>

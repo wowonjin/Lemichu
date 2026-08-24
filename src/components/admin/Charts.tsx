@@ -163,10 +163,10 @@ export function StatusBars({ data }: { data: StatusSlice[] }) {
               {slice.count}건 · {Math.round(slice.ratio * 100)}%
             </span>
           </div>
-          <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-secondary">
+          <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-md bg-secondary">
             <div
               className={cn(
-                "h-full rounded-full transition-all",
+                "h-full rounded-md transition-all",
                 STATUS_BAR_COLORS[slice.status] ?? "bg-gold"
               )}
               style={{ width: `${Math.max(slice.ratio * 100, 4)}%` }}

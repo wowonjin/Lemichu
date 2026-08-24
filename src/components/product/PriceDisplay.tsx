@@ -44,7 +44,7 @@ export function PriceDisplay({
         {computedRate ? (
           <span
             className={cn(
-              "font-bold tabular-nums text-gold",
+              "font-bold tabular-nums text-[#F04452]",
               size === "lg" ? "text-[16px]" : "text-sm font-semibold"
             )}
           >

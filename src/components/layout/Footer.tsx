@@ -111,6 +111,8 @@ export function Footer() {
             <nav className="flex items-center gap-3 text-[13px]">
               <Link
                 href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="font-semibold text-foreground transition-colors hover:text-gold"
               >
                 개인정보 처리방침
@@ -118,6 +120,8 @@ export function Footer() {
               <span aria-hidden className="h-3 w-px bg-border" />
               <Link
                 href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-muted-foreground transition-colors hover:text-foreground"
               >
                 이용약관

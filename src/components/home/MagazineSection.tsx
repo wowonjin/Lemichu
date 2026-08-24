@@ -18,7 +18,7 @@ export function MagazineSection() {
               <span className="absolute left-3 top-3 rounded-md bg-background/85 px-2 py-0.5 text-[11px] font-medium text-foreground backdrop-blur">
                 {item.category}
               </span>
-              <span className="absolute right-3 top-3 grid size-7 place-items-center rounded-full bg-background/85 text-foreground opacity-0 backdrop-blur transition-opacity group-hover:opacity-100">
+              <span className="absolute right-3 top-3 grid size-7 place-items-center rounded-md bg-background/85 text-foreground opacity-0 backdrop-blur transition-opacity group-hover:opacity-100">
                 <ArrowUpRight className="size-4" />
               </span>
             </div>

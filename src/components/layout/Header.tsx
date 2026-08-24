@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { Suspense, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronRight, Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -9,7 +9,8 @@ import { ADMIN_EMAIL, isAdminUser, type AuthUser, observeAuthUser, signOut } fro
 import { getLoginHref } from "@/lib/redirect";
 import { HoverTooltip } from "@/components/ui/hover-tooltip";
 import { HeaderSearchPanel } from "@/components/search/HeaderSearchPanel";
-import { addRecentSearch } from "@/lib/searchHistory";
+import { rememberCustomerSearch } from "@/lib/search/client";
+import { buildSearchHref } from "@/lib/search/url";
 import { AccountMenu } from "./AccountMenu";
 import { HeaderEventBanner } from "./HeaderEventBanner";
 import { ModeToggle } from "./ModeToggle";
@@ -165,7 +166,7 @@ const menuTabs = [
 ];
 
 const headerIconClassName =
-  "group relative grid size-10 place-items-center rounded-full text-foreground transition-colors hover:bg-secondary";
+  "group relative grid size-10 place-items-center rounded-md text-foreground transition-colors hover:bg-secondary";
 
 function HeaderIconLink({
   href,
@@ -201,6 +202,8 @@ export function Header() {
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(menuTabs[0].label);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const activeMenu = menuTabs.find((tab) => tab.label === activeTab) ?? menuTabs[0];
@@ -219,9 +222,18 @@ export function Header() {
   const submitSearch = (event: FormEvent) => {
     event.preventDefault();
     const query = searchQuery.trim();
-    if (query) addRecentSearch(query);
+    const usedOnly =
+      pathname.startsWith("/pre-owned") ||
+      (pathname === "/search" && new URLSearchParams(window.location.search).get("used") === "1");
+    if (query) {
+      rememberCustomerSearch(query, {
+        uid: authUser?.uid,
+        source: "submit",
+        usedOnly,
+      });
+    }
     setIsSearchOpen(false);
-    router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
+    router.push(query ? buildSearchHref(query, { used: usedOnly }) : usedOnly ? "/search?used=1" : "/search");
   };
 
   const handleLogout = async () => {
@@ -241,7 +253,9 @@ export function Header() {
 
   useEffect(() => {
     if (!isSearchOpen) return;
-    const timer = window.setTimeout(() => searchInputRef.current?.focus(), 160);
+    const timer = window.setTimeout(() => {
+      searchInputRef.current?.focus({ preventScroll: true });
+    }, 160);
     return () => window.clearTimeout(timer);
   }, [isSearchOpen]);
 
@@ -263,22 +277,6 @@ export function Header() {
   }, [isAccountOpen]);
 
   useEffect(() => {
-    const root = document.documentElement;
-    const { body } = document;
-    const scrollbarWidth = window.innerWidth - root.clientWidth;
-
-    if (isMenuOpen || isSearchOpen) {
-      root.style.overflow = "hidden";
-      body.style.overflow = "hidden";
-      if (scrollbarWidth > 0) {
-        body.style.paddingRight = `${scrollbarWidth}px`;
-      }
-    } else {
-      root.style.overflow = "";
-      body.style.overflow = "";
-      body.style.paddingRight = "";
-    }
-
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsMenuOpen(false);
@@ -288,18 +286,45 @@ export function Header() {
     };
 
     window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const syncHeaderHeight = () => {
+      document.documentElement.style.setProperty(
+        "--header-height",
+        `${header.offsetHeight}px`
+      );
+    };
+
+    syncHeaderHeight();
+    const observer = new ResizeObserver(syncHeaderHeight);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const overlay = overlayRef.current;
+    if (!overlay || !(isMenuOpen || isSearchOpen)) return;
+
+    const preventBackgroundScroll = (event: Event) => {
+      event.preventDefault();
+    };
+
+    overlay.addEventListener("wheel", preventBackgroundScroll, { passive: false });
+    overlay.addEventListener("touchmove", preventBackgroundScroll, { passive: false });
     return () => {
-      root.style.overflow = "";
-      body.style.overflow = "";
-      body.style.paddingRight = "";
-      window.removeEventListener("keydown", handleKeyDown);
+      overlay.removeEventListener("wheel", preventBackgroundScroll);
+      overlay.removeEventListener("touchmove", preventBackgroundScroll);
     };
   }, [isMenuOpen, isSearchOpen]);
 
   return (
     <>
-      <header className="relative sticky top-0 z-50 w-full bg-background">
+      <header ref={headerRef} className="relative sticky top-0 z-50 w-full bg-background">
         {pathname === "/login" || pathname === "/signup" ? null : <HeaderEventBanner />}
         <div className={cn("relative", isSearchOpen && "z-20")}>
         <div className="container">
@@ -311,7 +336,17 @@ export function Header() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/logo.png" alt="LEMICHU" className="h-5 w-auto dark:invert md:h-6" />
               </Link>
-              <ModeToggle />
+              <Suspense
+                fallback={
+                  <div className="relative grid grid-cols-2 items-center rounded-md bg-secondary p-0.5 text-xs font-semibold">
+                    <span className="absolute inset-y-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-foreground" />
+                    <span className="relative z-10 rounded-md px-2.5 py-1 text-center text-background">전체</span>
+                    <span className="relative z-10 rounded-md px-2.5 py-1 text-center text-muted-foreground">중고</span>
+                  </div>
+                }
+              >
+                <ModeToggle />
+              </Suspense>
             </div>
 
             {/* Right: search + auth / logged-in actions */}
@@ -357,13 +392,13 @@ export function Header() {
                 <>
                   <Link
                     href={loginHref}
-                    className="inline-flex h-9 items-center rounded-full px-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary md:h-10 md:px-4"
+                    className="inline-flex h-9 items-center rounded-md px-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary md:h-10 md:px-4"
                   >
                     로그인
                   </Link>
                   <Link
                     href="/signup"
-                    className="inline-flex h-9 items-center rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 md:h-10 md:px-4"
+                    className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 md:h-10 md:px-4"
                   >
                     회원가입
                   </Link>
@@ -373,14 +408,16 @@ export function Header() {
           </div>
         </div>
 
-        <HeaderSearchPanel
-          isOpen={isSearchOpen}
-          query={searchQuery}
-          inputRef={searchInputRef}
-          onQueryChange={setSearchQuery}
-          onSubmit={submitSearch}
-          onClose={closeSearch}
-        />
+        <Suspense fallback={null}>
+          <HeaderSearchPanel
+            isOpen={isSearchOpen}
+            query={searchQuery}
+            inputRef={searchInputRef}
+            onQueryChange={setSearchQuery}
+            onSubmit={submitSearch}
+            onClose={closeSearch}
+          />
+        </Suspense>
         </div>
 
         <div className="container">
@@ -402,7 +439,7 @@ export function Header() {
                     setIsSearchOpen(false);
                     setIsMenuOpen((open) => !open);
                   }}
-                  className="-ml-1 grid size-9 shrink-0 place-items-center rounded-full text-foreground transition-colors hover:bg-secondary"
+                  className="-ml-1 grid size-9 shrink-0 place-items-center rounded-md text-foreground transition-colors hover:bg-secondary"
                 >
                   {isMenuOpen ? (
                     <X className="size-5" strokeWidth={1.8} />
@@ -528,6 +565,7 @@ export function Header() {
       </header>
 
       <div
+        ref={overlayRef}
         className={cn(
           "fixed inset-0 z-40 bg-foreground/40 transition-opacity duration-300",
           isMenuOpen || isSearchOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"

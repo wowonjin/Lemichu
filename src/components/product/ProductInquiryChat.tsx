@@ -4,6 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { MessageCircle, X, Send, Headset } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/cn";
+import {
+  productActionIconClassName,
+  productActionStackClassName,
+} from "@/components/product/productActionStyles";
 import type { Product } from "@/types/product";
 
 type ChatMessage = {
@@ -17,7 +21,13 @@ function buildGreeting(product: Product): string {
   return `안녕하세요.\n\n${product.brand} ${product.name}${colorPart} 상품 문의드립니다.`;
 }
 
-export function ProductInquiryChat({ product }: { product: Product }) {
+export function ProductInquiryChat({
+  product,
+  appearance = "stack",
+}: {
+  product: Product;
+  appearance?: "stack" | "boxed";
+}) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -53,9 +63,14 @@ export function ProductInquiryChat({ product }: { product: Product }) {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[#EBEBEB] bg-background text-sm font-semibold text-foreground transition-colors hover:bg-[#F7F7F7] dark:border-border dark:hover:bg-muted">
-        <MessageCircle className="size-4 text-gold" />
-        상품 문의하기
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="상품문의"
+        className={appearance === "boxed" ? productActionIconClassName : productActionStackClassName}
+      >
+        <MessageCircle className="size-5" strokeWidth={1.75} />
+        {appearance === "stack" ? <span>상품문의</span> : null}
       </button>
 
       <AnimatePresence>
@@ -65,13 +80,13 @@ export function ProductInquiryChat({ product }: { product: Product }) {
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 24 }} transition={{ type: "spring", stiffness: 320, damping: 30 }} role="dialog" aria-label="상품 문의 채팅" className="fixed inset-x-0 bottom-0 z-[61] mx-auto flex h-[78vh] max-h-[640px] w-full flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-xl md:inset-x-auto md:bottom-6 md:right-6 md:h-[560px] md:w-[380px] md:rounded-2xl">
               <div className="flex items-center justify-between border-b border-border bg-foreground px-4 py-3 text-background">
                 <div className="flex items-center gap-2">
-                  <span className="grid size-8 place-items-center rounded-full bg-background/15"><Headset className="size-4" /></span>
+                  <span className="grid size-8 place-items-center rounded-md bg-background/15"><Headset className="size-4" /></span>
                   <div>
                     <p className="text-sm font-semibold">레미츄 상품 문의</p>
                     <p className="text-[11px] text-background/70">평일 10:00-18:00 운영</p>
                   </div>
                 </div>
-                <button type="button" onClick={() => setOpen(false)} aria-label="닫기" className="grid size-8 place-items-center rounded-full transition-colors hover:bg-background/15"><X className="size-4" /></button>
+                <button type="button" onClick={() => setOpen(false)} aria-label="닫기" className="grid size-8 place-items-center rounded-md transition-colors hover:bg-background/15"><X className="size-4" /></button>
               </div>
 
               <div className="border-b border-border bg-sand px-4 py-3">
@@ -97,7 +112,7 @@ export function ProductInquiryChat({ product }: { product: Product }) {
               <div className="border-t border-border p-3">
                 <div className="flex items-end gap-2">
                   <textarea value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); send(); } }} rows={2} placeholder="문의 내용을 입력하세요" className="max-h-28 min-h-[44px] flex-1 resize-none rounded-xl border border-border bg-background p-2.5 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground/30" />
-                  <button type="button" onClick={send} disabled={!input.trim()} aria-label="전송" className="grid size-11 shrink-0 place-items-center rounded-full bg-foreground text-background transition-opacity hover:opacity-90 disabled:opacity-40"><Send className="size-4" /></button>
+                  <button type="button" onClick={send} disabled={!input.trim()} aria-label="전송" className="grid size-11 shrink-0 place-items-center rounded-md bg-foreground text-background transition-opacity hover:opacity-90 disabled:opacity-40"><Send className="size-4" /></button>
                 </div>
               </div>
             </motion.div>

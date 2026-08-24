@@ -23,7 +23,10 @@
     "buyma:translations:sync:check": "node scripts/sync-full-translations-to-staging.mjs",
     "buyma:translations:sync": "node scripts/sync-full-translations-to-staging.mjs --write",
     "mock:cleanup:check": "node scripts/cleanup-mock-products.mjs",
-    "mock:cleanup": "node scripts/cleanup-mock-products.mjs --write"
+    "mock:cleanup": "node scripts/cleanup-mock-products.mjs --write",
+    "bunjang:preowned:check": "node scripts/import-bunjang-preowned.mjs",
+    "bunjang:preowned:import": "node scripts/import-bunjang-preowned.mjs --write",
+    "bunjang:preowned:verify": "node scripts/verify-bunjang-preowned.mjs"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",

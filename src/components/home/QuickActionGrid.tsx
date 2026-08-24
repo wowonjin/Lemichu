@@ -11,7 +11,7 @@ export function QuickActionGrid() {
               href={action.href}
               className="group flex h-full flex-col items-center justify-center gap-2.5 rounded-2xl border border-border bg-background px-2 py-5 text-center transition-colors hover:border-foreground/20 hover:bg-secondary md:py-6"
             >
-              <span className="grid size-11 place-items-center rounded-full bg-secondary text-foreground transition-colors group-hover:bg-gold-soft md:size-12">
+              <span className="grid size-11 place-items-center rounded-md bg-secondary text-foreground transition-colors group-hover:bg-gold-soft md:size-12">
                 <action.icon className="size-5 md:size-[22px]" strokeWidth={1.8} />
               </span>
               <div>

@@ -120,7 +120,7 @@ export function ProductAdminEditor({ product }: { product: Product }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-32 right-4 z-50 inline-flex h-11 items-center gap-1.5 rounded-full bg-foreground px-5 text-[13px] font-semibold text-background shadow-lg transition-colors hover:bg-foreground/90 md:bottom-6 md:right-6"
+        className="fixed bottom-32 right-4 z-50 inline-flex h-11 items-center gap-1.5 rounded-md bg-foreground px-5 text-[13px] font-semibold text-background shadow-lg transition-colors hover:bg-foreground/90 md:bottom-6 md:right-6"
       >
         <Pencil className="size-3.5" />
         상품 수정
@@ -158,7 +158,7 @@ export function ProductAdminEditor({ product }: { product: Product }) {
                   type="button"
                   onClick={() => setOpen(false)}
                   aria-label="닫기"
-                  className="grid size-9 place-items-center rounded-full text-foreground transition-colors hover:bg-[#F7F7F7] dark:hover:bg-muted"
+                  className="grid size-9 place-items-center rounded-md text-foreground transition-colors hover:bg-[#F7F7F7] dark:hover:bg-muted"
                 >
                   <X className="size-4" />
                 </button>
@@ -226,7 +226,7 @@ export function ProductAdminEditor({ product }: { product: Product }) {
 
               <div className="border-t border-[#EEEEEE] px-5 py-4 dark:border-border">
                 {error ? (
-                  <p className="mb-3 rounded-[12px] bg-red-50 px-3.5 py-2.5 text-xs font-medium text-red-600 dark:bg-red-950/40 dark:text-red-400">
+                  <p className="mb-3 rounded-md bg-red-50 px-3.5 py-2.5 text-xs font-medium text-red-600 dark:bg-red-950/40 dark:text-red-400">
                     {error}
                   </p>
                 ) : null}
@@ -235,7 +235,7 @@ export function ProductAdminEditor({ product }: { product: Product }) {
                     type="button"
                     onClick={save}
                     disabled={saving}
-                    className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-foreground text-[14px] font-semibold text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
+                    className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-md bg-foreground text-[14px] font-semibold text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
                   >
                     {saving ? (
                       <>
@@ -258,7 +258,7 @@ export function ProductAdminEditor({ product }: { product: Product }) {
                       setError("");
                       setSaved(false);
                     }}
-                    className="inline-flex h-12 items-center justify-center rounded-full bg-[#F7F7F7] px-5 text-[14px] font-semibold text-foreground transition-colors hover:bg-[#F0F0F0] dark:bg-muted dark:hover:bg-secondary"
+                    className="inline-flex h-12 items-center justify-center rounded-md bg-[#F7F7F7] px-5 text-[14px] font-semibold text-foreground transition-colors hover:bg-[#F0F0F0] dark:bg-muted dark:hover:bg-secondary"
                   >
                     되돌리기
                   </button>
@@ -273,7 +273,7 @@ export function ProductAdminEditor({ product }: { product: Product }) {
 }
 
 const inputClassName =
-  "block w-full rounded-[12px] border border-[#EBEBEB] bg-background px-3.5 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-[#B0B0B0] focus:border-foreground dark:border-border dark:placeholder:text-muted-foreground";
+  "block w-full rounded-md border border-[#EBEBEB] bg-background px-3.5 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-[#B0B0B0] focus:border-foreground dark:border-border dark:placeholder:text-muted-foreground";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (

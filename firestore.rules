@@ -81,5 +81,19 @@ service cloud.firestore {
       allow read: if true;
       allow create, update, delete: if isAdmin();
     }
+
+    match /searchEvents/{eventId} {
+      allow read, write: if false;
+    }
+
+    match /searchCounters/{counterId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /searchStats/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
   }
 }

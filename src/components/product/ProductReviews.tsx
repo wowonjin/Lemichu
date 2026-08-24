@@ -28,10 +28,8 @@ function Stars({
         >
           <Star
             className={cn(
-              size === "md" ? "size-6" : "size-4",
-              n <= value
-                ? "fill-gold text-gold"
-                : "fill-transparent text-border"
+              size === "md" ? "size-5" : "size-3.5",
+              n <= value ? "fill-gold text-gold" : "fill-transparent text-[#D0D0D0] dark:text-border"
             )}
           />
         </button>
@@ -50,14 +48,14 @@ export function ProductReviews({
   const [body, setBody] = useState("");
 
   const avg =
-    reviews.reduce((sum, r) => sum + r.rating, 0) / (reviews.length || 1);
+    reviews.reduce((sum, review) => sum + review.rating, 0) / (reviews.length || 1);
   const distribution = [5, 4, 3, 2, 1].map((score) => ({
     score,
     count: reviews.filter((review) => review.rating === score).length,
   }));
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
     if (!body.trim()) return;
     setReviews((prev) => [
       {
@@ -74,7 +72,7 @@ export function ProductReviews({
   };
 
   return (
-    <section>
+    <div>
       <div className="flex items-end justify-between gap-4">
         <div className="min-w-0">
           <h2 className="text-[24px] font-bold leading-[1.3] tracking-tight text-foreground md:text-[30px]">
@@ -89,25 +87,28 @@ export function ProductReviews({
         </span>
       </div>
 
-      <div className="mt-7 grid gap-3 md:mt-8 md:gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <div className="rounded-[20px] bg-[#F7F7F7] px-6 py-6 dark:bg-muted md:px-7 md:py-7">
-          <div className="flex items-end gap-2">
-            <span className="text-[36px] font-bold leading-none tabular-nums tracking-tight text-foreground">
-              {avg.toFixed(1)}
-            </span>
-            <span className="pb-0.5 text-[13px] text-[#8B8B8B] dark:text-muted-foreground">
-              / 5.0
-            </span>
+      <div className="mt-7 rounded-md bg-[#F7F7F7] px-6 py-6 dark:bg-muted md:mt-8 md:px-7 md:py-7">
+        <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
+          <span className="text-[36px] font-bold leading-none tabular-nums tracking-tight text-foreground">
+            {reviews.length ? avg.toFixed(1) : "0.0"}
+          </span>
+          <div className="pb-0.5">
+            <Stars value={reviews.length ? Math.round(avg) : 0} />
+            <p className="mt-1 text-[12px] text-[#8B8B8B] dark:text-muted-foreground">
+              5점 만점
+            </p>
           </div>
-          <div className="mt-3">
-            <Stars value={Math.round(avg)} />
-          </div>
+        </div>
+
+        {reviews.length > 0 ? (
           <div className="mt-5 space-y-2">
             {distribution.map(({ score, count }) => {
-              const percent = reviews.length ? (count / reviews.length) * 100 : 0;
-
+              const percent = (count / reviews.length) * 100;
               return (
-                <div key={score} className="grid grid-cols-[34px_1fr_28px] items-center gap-2 text-xs">
+                <div
+                  key={score}
+                  className="grid grid-cols-[32px_minmax(0,1fr)_20px] items-center gap-2 text-[12px]"
+                >
                   <span className="text-[#8B8B8B] dark:text-muted-foreground">{score}점</span>
                   <span className="h-1.5 overflow-hidden rounded-full bg-[#E8E8E8] dark:bg-secondary">
                     <span
@@ -115,64 +116,65 @@ export function ProductReviews({
                       style={{ width: `${percent}%` }}
                     />
                   </span>
-                  <span className="text-right text-[#8B8B8B] dark:text-muted-foreground">
+                  <span className="text-right tabular-nums text-[#8B8B8B] dark:text-muted-foreground">
                     {count}
                   </span>
                 </div>
               );
             })}
           </div>
-        </div>
-
-        <form
-          onSubmit={submit}
-          className="flex flex-col rounded-[20px] bg-[#F7F7F7] px-6 py-6 dark:bg-muted md:px-7 md:py-7"
-        >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-[15px] font-bold tracking-tight text-foreground">리뷰 작성</p>
-              <p className="mt-1 text-xs text-[#8B8B8B] dark:text-muted-foreground">
-                상품 상태와 배송 경험을 간단히 남겨주세요.
-              </p>
-            </div>
-            <Stars value={rating} onChange={setRating} size="md" />
-          </div>
-          <textarea
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            rows={4}
-            placeholder="예) 상품 상태가 설명과 같았고, 포장이 꼼꼼했어요."
-            className="mt-4 block w-full flex-1 resize-none rounded-[14px] border-0 bg-white p-4 text-sm leading-6 outline-none placeholder:text-[#B0B0B0] dark:bg-card dark:placeholder:text-muted-foreground"
-          />
-          <div className="mt-3 flex items-center justify-between">
-            <span className="text-xs text-[#B0B0B0] dark:text-muted-foreground">
-              {body.trim().length}/500
-            </span>
-            <Button type="submit" size="sm" disabled={!body.trim()} className="px-5">
-              리뷰 등록
-            </Button>
-          </div>
-        </form>
+        ) : (
+          <p className="mt-4 text-[13px] leading-6 text-[#8B8B8B] dark:text-muted-foreground">
+            아직 등록된 리뷰가 없어요. 첫 후기를 남겨 주세요.
+          </p>
+        )}
       </div>
 
-      <ul className="mt-6 divide-y divide-[#EEEEEE] border-t border-[#EEEEEE] dark:divide-border dark:border-border md:mt-8">
-        {reviews.map((review) => (
-          <li key={review.id} className="grid gap-3 py-5 md:grid-cols-[160px_minmax(0,1fr)] md:py-6">
-            <div>
-              <span className="text-sm font-semibold tracking-tight text-foreground">
-                {review.author}
-              </span>
-              <span className="mt-1 block text-xs text-[#B0B0B0] dark:text-muted-foreground">
-                {review.date}
-              </span>
-            </div>
-            <div>
-              <Stars value={review.rating} />
-              <p className="mt-2.5 text-sm leading-7 text-foreground">{review.body}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </section>
+      <form
+        onSubmit={submit}
+        className="mt-3 rounded-md bg-[#F7F7F7] px-6 py-6 dark:bg-muted md:px-7 md:py-7"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[15px] font-bold tracking-tight text-foreground">리뷰 작성</p>
+          <Stars value={rating} onChange={setRating} size="md" />
+        </div>
+        <textarea
+          value={body}
+          onChange={(event) => setBody(event.target.value.slice(0, 500))}
+          rows={3}
+          placeholder="상품 상태와 배송 경험을 간단히 남겨주세요."
+          className="mt-4 block w-full resize-none rounded-md border-0 bg-white p-3.5 text-[13px] leading-6 outline-none placeholder:text-[#B0B0B0] dark:bg-card dark:placeholder:text-muted-foreground"
+        />
+        <div className="mt-3 flex items-center justify-between">
+          <span className="text-[12px] text-[#B0B0B0] dark:text-muted-foreground">
+            {body.trim().length}/500
+          </span>
+          <Button type="submit" size="sm" disabled={!body.trim()} className="px-5">
+            리뷰 등록
+          </Button>
+        </div>
+      </form>
+
+      {reviews.length > 0 ? (
+        <ul className="mt-6 divide-y divide-[#EEEEEE] border-t border-[#EEEEEE] dark:divide-border dark:border-border">
+          {reviews.map((review) => (
+            <li key={review.id} className="py-5">
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                <span className="text-[13px] font-semibold tracking-tight text-foreground">
+                  {review.author}
+                </span>
+                <Stars value={review.rating} />
+                <span className="text-[12px] text-[#B0B0B0] dark:text-muted-foreground">
+                  {review.date}
+                </span>
+              </div>
+              <p className="mt-2.5 text-[13px] leading-6 text-foreground md:text-[14px]">
+                {review.body}
+              </p>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   );
 }

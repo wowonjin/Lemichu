@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { CatalogImage } from "@/components/product/CatalogImage";
+import { Reveal, Stagger, StaggerItem } from "@/components/home/section-motion";
 import { cn } from "@/lib/cn";
 import { formatPrice, getDiscountRate } from "@/lib/formatPrice";
 import type { Product } from "@/types/product";
@@ -29,12 +32,12 @@ function ProductImage({
   product,
   className,
   sizes,
-  paddingClassName = "p-3",
+  imageClassName,
 }: {
   product: Product;
   className?: string;
   sizes: string;
-  paddingClassName?: string;
+  imageClassName?: string;
 }) {
   return (
     <div className={cn("relative overflow-hidden bg-[#F7F7F7] dark:bg-muted", className)}>
@@ -44,8 +47,8 @@ function ProductImage({
         seed={product.id}
         sizes={sizes}
         className={cn(
-          "object-contain mix-blend-multiply dark:mix-blend-normal",
-          paddingClassName
+          "object-cover mix-blend-multiply dark:mix-blend-normal",
+          imageClassName
         )}
       />
     </div>
@@ -56,10 +59,10 @@ function RelatedThumb({ product }: { product: Product }) {
   const rate = product.discountRate ?? getDiscountRate(product.price, product.retailPrice);
 
   return (
-    <div className="group/thumb relative aspect-square overflow-hidden rounded-[12px] bg-[#F7F7F7] dark:bg-muted">
+    <div className="group/thumb relative aspect-square overflow-hidden bg-[#F7F7F7] dark:bg-muted">
       <ProductImage product={product} sizes="120px" className="h-full w-full" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-black/35 to-transparent px-1 pb-1.5 pt-8 opacity-0 transition-opacity duration-200 group-hover/thumb:opacity-100">
-        <span className="max-w-full truncate rounded-full bg-white/92 px-1.5 py-0.5 text-[10px] font-medium tabular-nums tracking-tight text-[#6B6B6B] shadow-sm">
+        <span className="max-w-full truncate rounded-md bg-white/92 px-1.5 py-0.5 text-[10px] font-medium tabular-nums tracking-tight text-[#6B6B6B] shadow-sm">
           {rate ? <span className="mr-0.5 text-[#F04452]">{rate}%</span> : null}
           {formatPrice(product.price)}
         </span>
@@ -74,14 +77,14 @@ function EditorialCard({ story }: { story: TrendStory }) {
     story.products.length > 3 ? story.products.slice(1, 4) : story.products.slice(0, 3);
 
   return (
-    <article className="w-[min(300px,78vw)] shrink-0 snap-start lg:w-auto">
+    <article>
       <Link href={story.href} className="group block" aria-label={`${story.title} 에디토리얼 보기`}>
-        <div className="relative aspect-[4/5] overflow-hidden rounded-[20px] bg-[#F7F7F7] dark:bg-muted">
+        <div className="relative aspect-square overflow-hidden bg-[#F7F7F7] dark:bg-muted">
           {cover ? (
             <ProductImage
               product={cover}
               sizes="(min-width: 1024px) 28vw, 78vw"
-              paddingClassName="p-10 transition-transform duration-700 ease-out group-hover:scale-[1.03] md:p-12"
+              imageClassName="transition-transform duration-700 ease-out group-hover:scale-[1.03]"
               className="h-full w-full"
             />
           ) : null}
@@ -115,7 +118,7 @@ export function TrendPickSection({ stories }: { stories: TrendStory[] }) {
   return (
     <section className="bg-background pb-12 md:pb-16" aria-labelledby="trend-heading">
       <div className="container pt-12 md:pt-16">
-        <div className="flex items-start justify-between gap-4">
+        <Reveal className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h2
               id="trend-heading"
@@ -140,14 +143,26 @@ export function TrendPickSection({ stories }: { stories: TrendStory[] }) {
               <ChevronRight className="size-4" />
             </Link>
           </div>
-        </div>
+        </Reveal>
       </div>
 
       <div className="mt-6 md:mt-8 lg:container">
-        <div className="flex gap-5 overflow-x-auto px-4 pb-1 no-scrollbar snap-x snap-mandatory lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible lg:px-0">
-          {stories.map((story) => (
-            <EditorialCard key={story.id} story={story} />
-          ))}
+        <div className="overflow-x-auto px-4 py-1 no-scrollbar lg:overflow-visible lg:px-0">
+          <Stagger
+            stagger={0.1}
+            delay={0.08}
+            className="flex gap-5 snap-x snap-mandatory lg:grid lg:grid-cols-3 lg:gap-8"
+          >
+            {stories.map((story) => (
+              <StaggerItem
+                key={story.id}
+                variant="up"
+                className="w-[min(300px,78vw)] shrink-0 snap-start lg:w-auto"
+              >
+                <EditorialCard story={story} />
+              </StaggerItem>
+            ))}
+          </Stagger>
         </div>
       </div>
     </section>

@@ -92,7 +92,7 @@ export function AdminUsersPage() {
               <tr key={user.uid} className="transition-colors hover:bg-secondary/50">
                 <td className="py-4 pr-4 first:pl-0">
                   <div className="flex items-center gap-3">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-foreground text-sm font-bold text-background">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-md bg-foreground text-sm font-bold text-background">
                       {user.name?.slice(0, 1) || "U"}
                     </span>
                     <div className="min-w-0">

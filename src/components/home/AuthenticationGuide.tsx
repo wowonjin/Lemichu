@@ -28,7 +28,7 @@ export function AuthenticationGuide() {
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {authSteps.map((step) => (
             <div key={step.id} className="rounded-2xl bg-background p-5">
-              <span className="grid size-10 place-items-center rounded-full bg-secondary">
+              <span className="grid size-10 place-items-center rounded-md bg-secondary">
                 <step.icon className="size-[18px] text-foreground" strokeWidth={1.8} />
               </span>
               <h3 className="mt-4 text-sm font-semibold text-foreground">

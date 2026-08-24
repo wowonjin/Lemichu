@@ -681,7 +681,7 @@ function ProductRow({
         width={48}
         height={48}
         loading="lazy"
-        className="size-12 shrink-0 rounded-md object-cover"
+        className="size-12 shrink-0 object-cover"
       />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-foreground">
@@ -852,7 +852,7 @@ function ImageDropzone({
         )}
       >
         <div>
-          <span className="mx-auto grid size-11 place-items-center rounded-full bg-background text-muted-foreground shadow-sm">
+          <span className="mx-auto grid size-11 place-items-center rounded-md bg-background text-muted-foreground shadow-sm">
             {isDragOver ? <ImagePlus className="size-5" /> : <UploadCloud className="size-5" />}
           </span>
           <p className="mt-3 text-sm font-semibold text-foreground">{emptyTitle}</p>
@@ -903,7 +903,7 @@ function ImagePreviewItem({
   }, [file]);
 
   return (
-    <li className="group relative overflow-hidden rounded-lg border border-border bg-secondary">
+    <li className="group relative overflow-hidden border border-border bg-secondary">
       {previewUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -922,7 +922,7 @@ function ImagePreviewItem({
           onRemove();
         }}
         aria-label={`${file.name} 삭제`}
-        className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-foreground/70 text-background opacity-0 transition-opacity hover:bg-foreground focus-visible:opacity-100 group-hover:opacity-100 disabled:hidden"
+        className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-md bg-foreground/70 text-background opacity-0 transition-opacity hover:bg-foreground focus-visible:opacity-100 group-hover:opacity-100 disabled:hidden"
       >
         <X className="size-3.5" />
       </button>

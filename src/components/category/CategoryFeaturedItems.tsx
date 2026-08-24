@@ -18,14 +18,14 @@ export function CategoryFeaturedItems({
         {items.map((item) => {
           const inner = (
             <>
-              <span className="relative block aspect-square overflow-hidden rounded-[10px] bg-[#f4f6f8]">
+              <span className="relative block aspect-square overflow-hidden bg-[#f4f6f8]">
                 <Image
                   src={item.imageSrc}
                   alt={`${item.brand} ${item.title}`.trim()}
                   fill
                   sizes="(min-width: 1280px) 20vw, (min-width: 768px) 30vw, 50vw"
                   unoptimized
-                  className="object-contain p-6"
+                  className="object-cover"
                 />
               </span>
               <span className="mt-3 block text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">

@@ -263,7 +263,7 @@ function RecentOrder({ order }: { order: PurchaseOrder }) {
         </p>
         <span
           className={cn(
-            "rounded-full px-2.5 py-1 text-xs font-semibold",
+            "rounded-md px-2.5 py-1 text-xs font-semibold",
             statusBadgeClass[order.status] ?? "bg-secondary text-foreground"
           )}
         >
@@ -277,7 +277,7 @@ function RecentOrder({ order }: { order: PurchaseOrder }) {
 function RecentUser({ user }: { user: AdminUserProfile }) {
   return (
     <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-foreground text-sm font-bold text-background">
+      <span className="grid size-10 shrink-0 place-items-center rounded-md bg-foreground text-sm font-bold text-background">
         {user.name?.slice(0, 1) || "U"}
       </span>
       <div className="min-w-0">

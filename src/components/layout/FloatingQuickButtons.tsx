@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ArrowUp } from "lucide-react";
 import { HoverTooltip } from "@/components/ui/hover-tooltip";
+import { cn } from "@/lib/cn";
 
 const ICON_VERSION = "20260822c";
 
@@ -22,7 +23,7 @@ function Tooltip({ label }: { label: string }) {
 }
 
 const sideButtonBaseClassName =
-  "grid place-items-center rounded-full bg-white ring-1 ring-black/5 transition-transform duration-200 group-hover:-translate-y-0.5";
+  "grid place-items-center rounded-md bg-white ring-1 ring-black/5 transition-transform duration-200 group-hover:-translate-y-0.5";
 const sideButtonShadowClassName =
   "shadow-[0_2px_6px_rgba(15,23,42,0.08),0_8px_18px_rgba(15,23,42,0.12)] group-hover:shadow-[0_4px_10px_rgba(15,23,42,0.1),0_12px_24px_rgba(15,23,42,0.16)]";
 
@@ -62,7 +63,7 @@ function KakaoInquiryButton({
       target="_blank"
       rel="noopener noreferrer"
       aria-label="카카오톡 문의"
-      className={`group ${buttonClassName} overflow-hidden bg-[#FFE812] ${sizeClassName}`}
+      className={cn("group", buttonClassName, "bg-[#FEE500]", sizeClassName)}
     >
       <Image
         src="/floating/kakaotalk.svg"

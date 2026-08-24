@@ -12,7 +12,7 @@ export function CategoryExplorer() {
         {categories.map((category) => (
           <li key={category.id}>
             <Link href={category.href} className="group block">
-              <div className="relative aspect-square overflow-hidden rounded-2xl border border-border">
+              <div className="relative aspect-square overflow-hidden border border-border">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={getTemporaryImageUrl(category.id)}

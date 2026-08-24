@@ -6,8 +6,10 @@ import { ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductInquiryChat } from "@/components/product/ProductInquiryChat";
 import { WishlistToggleButton } from "@/components/product/WishlistToggleButton";
+import { productActionStackClassName } from "@/components/product/productActionStyles";
 import { useProductVariantPurchase } from "@/components/product/ProductVariantPurchase";
 import { createProductCheckoutItem } from "@/lib/checkout";
+import { getPurchaseButtonLabel } from "@/lib/formatPrice";
 import { readAuthUser } from "@/lib/auth";
 import { getLoginHref } from "@/lib/redirect";
 import { requestTossPayment } from "@/lib/toss-checkout";
@@ -17,6 +19,7 @@ export function ProductCheckoutActions({ product }: { product: Product }) {
   const router = useRouter();
   const {
     selectedVariant,
+    selectedPrice,
     canPurchase,
     requiresVariantSelection,
   } = useProductVariantPurchase();
@@ -52,33 +55,32 @@ export function ProductCheckoutActions({ product }: { product: Product }) {
   };
 
   return (
-    <div className="pt-6">
-      <div className="grid grid-cols-[56px_1fr] gap-2">
-        <WishlistToggleButton
-          product={product}
-          className="h-14 w-full rounded-full border border-[#EBEBEB] bg-background transition-colors hover:bg-[#F7F7F7] dark:border-border dark:hover:bg-muted"
-          iconClassName="fill-transparent"
-        />
-        <Button
-          size="lg"
-          disabled={isPurchasing || !canPurchase}
-          onClick={handlePurchase}
-          className="h-14 text-[15px] font-semibold hover:bg-foreground/90"
-        >
-          {isPurchasing ? "결제 준비 중..." : "구매하기"}
-        </Button>
-      </div>
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        <Button
-          variant="outline"
+    <div className="pt-4">
+      <div className="grid grid-cols-3 gap-2">
+        <WishlistToggleButton product={product} appearance="stack" />
+        <button
+          type="button"
+          aria-label="장바구니"
           onClick={() => setMessage("장바구니 페이지에서 여러 상품을 함께 결제할 수 있어요.")}
-          className="h-12 w-full border-[#EBEBEB] text-sm font-semibold hover:bg-[#F7F7F7] dark:border-border dark:hover:bg-muted"
+          className={productActionStackClassName}
         >
-          <ShoppingBag className="size-4" />
-          장바구니 담기
-        </Button>
-        <ProductInquiryChat product={product} />
+          <ShoppingBag className="size-5" strokeWidth={1.75} />
+          <span>장바구니</span>
+        </button>
+        <ProductInquiryChat product={product} appearance="stack" />
       </div>
+      <Button
+        variant="buy"
+        size="lg"
+        disabled={isPurchasing || !canPurchase}
+        onClick={handlePurchase}
+        className="mt-2 h-14 w-full px-4 text-[14px] font-semibold leading-tight md:text-[15px]"
+      >
+        {getPurchaseButtonLabel(selectedPrice, product.retailPrice, {
+          purchasing: isPurchasing,
+          needsOption: !canPurchase && requiresVariantSelection,
+        })}
+      </Button>
       {!canPurchase && !message ? (
         <p className="mt-3 text-center text-xs font-medium text-[#8B8B8B] dark:text-muted-foreground">
           {requiresVariantSelection
@@ -87,7 +89,7 @@ export function ProductCheckoutActions({ product }: { product: Product }) {
         </p>
       ) : null}
       {message ? (
-        <p className="mt-3 rounded-[14px] bg-[#F7F7F7] px-4 py-3 text-center text-xs font-medium text-foreground dark:bg-muted">
+        <p className="mt-3 rounded-md bg-[#F7F7F7] px-4 py-3 text-center text-xs font-medium text-foreground dark:bg-muted">
           {message}
         </p>
       ) : null}

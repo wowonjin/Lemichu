@@ -80,7 +80,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           </p>
           <Link
             href={loginHref}
-            className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+            className="mt-6 inline-flex h-11 items-center justify-center rounded-md bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
           >
             로그인하러 가기
           </Link>
@@ -127,7 +127,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
         <div className="border-t border-border p-3">
           <div className="flex items-center gap-3 rounded-md bg-secondary px-3 py-2.5">
-            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-foreground text-sm font-bold uppercase text-background">
+            <span className="grid size-9 shrink-0 place-items-center rounded-md bg-foreground text-sm font-bold uppercase text-background">
               {initial}
             </span>
             <div className="min-w-0">

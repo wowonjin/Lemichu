@@ -50,7 +50,7 @@ export default async function SellGuidePage({
           </p>
           <Link
             href="/sell"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-gold px-6 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-gold px-6 text-sm font-medium text-white transition-opacity hover:opacity-90"
           >
             판매 시작하기
             <ArrowRight className="size-4" />

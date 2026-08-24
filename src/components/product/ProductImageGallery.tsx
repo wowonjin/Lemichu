@@ -1,7 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from "react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { getPlaceholderGradient, isRealImage } from "@/lib/placeholder";
 import {
@@ -48,8 +56,8 @@ export function ProductImageGallery({
   }, [activeIndex]);
 
   return (
-    <div className="grid gap-4 md:grid-cols-[76px_minmax(0,1fr)]">
-      <div className="hidden max-h-[min(36rem,70vh)] space-y-3 overflow-y-auto md:block">
+    <div className="grid gap-4 md:grid-cols-[auto_minmax(0,1fr)]">
+      <ThumbnailRail imageCount={galleryImages.length}>
         {galleryImages.map((imageUrl, index) => (
           <ThumbnailButton
             key={`${imageUrl}-${index}`}
@@ -64,11 +72,11 @@ export function ProductImageGallery({
             onSelect={() => goTo(index)}
           />
         ))}
-      </div>
+      </ThumbnailRail>
 
       <div>
         <div
-          className="relative -mx-4 aspect-square overflow-hidden bg-[#F7F7F7] dark:bg-muted md:mx-0 md:rounded-[20px]"
+          className="relative -mx-4 aspect-square overflow-hidden bg-[#F7F7F7] dark:bg-muted md:mx-0"
           onKeyDown={(event) => {
             if (!canNavigate) return;
             if (event.key === "ArrowLeft") {
@@ -113,14 +121,14 @@ export function ProductImageGallery({
                 direction="next"
                 onClick={() => goTo(activeIndex + 1)}
               />
-              <p className="absolute bottom-3 right-3 z-10 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium tabular-nums text-foreground backdrop-blur">
+              <p className="absolute bottom-3 right-3 z-10 rounded-md bg-background/90 px-2.5 py-1 text-xs font-medium tabular-nums text-foreground backdrop-blur">
                 {activeIndex + 1} / {galleryImages.length}
               </p>
             </>
           ) : null}
         </div>
 
-        <div className="mt-3 flex gap-2 overflow-x-auto md:hidden">
+        <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar md:hidden">
           {galleryImages.map((imageUrl, index) => (
             <ThumbnailButton
               key={`mobile-${imageUrl}-${index}`}
@@ -136,6 +144,169 @@ export function ProductImageGallery({
         </div>
         {children}
       </div>
+    </div>
+  );
+}
+
+function ThumbnailRail({
+  imageCount,
+  children,
+}: {
+  imageCount: number;
+  children: ReactNode;
+}) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const thumbHeightRef = useRef(28);
+  const dragOffsetRef = useRef(0);
+  const [metrics, setMetrics] = useState({
+    overflow: false,
+    canUp: false,
+    canDown: false,
+    listHeight: 0,
+    thumbTop: 0,
+    thumbHeight: 28,
+  });
+
+  const updateMetrics = useCallback(() => {
+    const list = listRef.current;
+    const track = trackRef.current;
+    if (!list) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = list;
+    const overflow = scrollHeight > clientHeight + 1;
+    const maxScroll = Math.max(scrollHeight - clientHeight, 1);
+    const trackHeight = track?.clientHeight || clientHeight;
+    const thumbHeight = Math.max((clientHeight / scrollHeight) * trackHeight, 24);
+    const thumbTop = (scrollTop / maxScroll) * Math.max(trackHeight - thumbHeight, 1);
+
+    thumbHeightRef.current = thumbHeight;
+    setMetrics({
+      overflow,
+      canUp: scrollTop > 2,
+      canDown: scrollTop < maxScroll - 2,
+      listHeight: clientHeight,
+      thumbTop,
+      thumbHeight,
+    });
+  }, []);
+
+  useEffect(() => {
+    updateMetrics();
+    const list = listRef.current;
+    const content = contentRef.current;
+    if (!list) return;
+
+    list.addEventListener("scroll", updateMetrics, { passive: true });
+    const observer = new ResizeObserver(updateMetrics);
+    observer.observe(list);
+    if (content) observer.observe(content);
+
+    return () => {
+      list.removeEventListener("scroll", updateMetrics);
+      observer.disconnect();
+    };
+  }, [imageCount, updateMetrics]);
+
+  useLayoutEffect(() => {
+    if (!metrics.overflow) return;
+    updateMetrics();
+  }, [metrics.overflow, updateMetrics]);
+
+  const scrollByStep = (direction: -1 | 1) => {
+    listRef.current?.scrollBy({
+      top: direction * 88,
+      behavior: "smooth",
+    });
+  };
+
+  const scrollFromClientY = (clientY: number, thumbOffset: number) => {
+    const list = listRef.current;
+    const track = trackRef.current;
+    if (!list || !track) return;
+
+    const rect = track.getBoundingClientRect();
+    const thumbHeight = thumbHeightRef.current;
+    const maxThumbTop = Math.max(rect.height - thumbHeight, 1);
+    const nextThumbTop = Math.min(Math.max(clientY - rect.top - thumbOffset, 0), maxThumbTop);
+    const maxScroll = Math.max(list.scrollHeight - list.clientHeight, 1);
+    list.scrollTop = (nextThumbTop / maxThumbTop) * maxScroll;
+  };
+
+  const onThumbPointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dragOffsetRef.current = event.clientY - event.currentTarget.getBoundingClientRect().top;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const onThumbPointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+    scrollFromClientY(event.clientY, dragOffsetRef.current);
+  };
+
+  return (
+    <div className="hidden md:flex md:items-start md:gap-1.5">
+      <div
+        ref={listRef}
+        className="no-scrollbar w-[76px] max-h-[min(36rem,70vh)] overflow-y-auto overscroll-contain"
+      >
+        <div ref={contentRef} className="space-y-3">
+          {children}
+        </div>
+      </div>
+
+      {metrics.overflow ? (
+        <div
+          className="flex w-4 shrink-0 flex-col items-center"
+          style={{ height: metrics.listHeight || undefined }}
+        >
+          <button
+            type="button"
+            aria-label="이전 썸네일"
+            disabled={!metrics.canUp}
+            onClick={() => scrollByStep(-1)}
+            className="flex size-4 items-center justify-center text-[#B0B0B0] transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-25"
+          >
+            <ChevronUp className="size-3.5" />
+          </button>
+
+          <div
+            ref={trackRef}
+            className="relative my-1 w-full flex-1 cursor-pointer"
+            onPointerDown={(event) => {
+              if (event.target !== event.currentTarget) return;
+              scrollFromClientY(event.clientY, thumbHeightRef.current / 2);
+            }}
+          >
+            <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 rounded-full bg-[#E8E8E8] dark:bg-border" />
+            <button
+              type="button"
+              aria-label="썸네일 스크롤"
+              onPointerDown={onThumbPointerDown}
+              onPointerMove={onThumbPointerMove}
+              className="group absolute left-1/2 flex w-3 -translate-x-1/2 cursor-grab justify-center active:cursor-grabbing"
+              style={{
+                top: metrics.thumbTop,
+                height: metrics.thumbHeight,
+              }}
+            >
+              <span className="h-full w-1 rounded-full bg-[#C2C2C2] transition-colors group-hover:bg-[#8A8A8A] dark:bg-muted-foreground/60" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            aria-label="다음 썸네일"
+            disabled={!metrics.canDown}
+            onClick={() => scrollByStep(1)}
+            className="flex size-4 items-center justify-center text-[#B0B0B0] transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-25"
+          >
+            <ChevronDown className="size-3.5" />
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -167,13 +338,13 @@ function ThumbnailButton({
       aria-current={selected ? "true" : undefined}
       aria-label={`${index + 1}번째 사진 보기`}
       className={cn(
-        "aspect-square overflow-hidden rounded-[12px] border-2 bg-[#F7F7F7] p-1 transition-colors dark:bg-muted",
+        "aspect-square overflow-hidden border-2 bg-[#F7F7F7] p-1 transition-colors dark:bg-muted",
         selected ? "border-foreground" : "border-transparent hover:border-[#D9D9D9]",
         className
       )}
     >
       <div
-        className="h-full overflow-hidden rounded-[8px]"
+        className="h-full overflow-hidden"
         style={
           isRealImage(imageUrl)
             ? undefined
@@ -208,7 +379,7 @@ function NavButton({
       onClick={onClick}
       aria-label={direction === "prev" ? "이전 사진" : "다음 사진"}
       className={cn(
-        "absolute top-1/2 z-10 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm backdrop-blur transition-colors hover:bg-background",
+        "absolute top-1/2 z-10 flex size-9 -translate-y-1/2 items-center justify-center rounded-md bg-background/90 text-foreground shadow-sm backdrop-blur transition-colors hover:bg-background",
         direction === "prev" ? "left-3" : "right-3"
       )}
     >

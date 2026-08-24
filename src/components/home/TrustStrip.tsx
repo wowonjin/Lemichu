@@ -7,7 +7,7 @@ export function TrustStrip() {
         <ul className="grid grid-cols-5 justify-items-center gap-x-4 gap-y-5">
           {trustItems.map((item) => (
             <li key={item.id}>
-              <span className="grid size-10 shrink-0 place-items-center rounded-full border border-gold/30 bg-gold-soft/40">
+              <span className="grid size-10 shrink-0 place-items-center rounded-md border border-gold/30 bg-gold-soft/40">
                 <item.icon className="size-5 text-gold" />
               </span>
             </li>

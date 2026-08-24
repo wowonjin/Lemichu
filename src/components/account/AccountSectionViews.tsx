@@ -358,7 +358,7 @@ function BrandsView() {
                     type="button"
                     aria-pressed={active}
                     onClick={() => toggle(brand.id)}
-                    className="min-h-10 rounded-full px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"
+                    className="min-h-10 rounded-md px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"
                   >
                     {active ? "팔로우 중" : "팔로우"}
                   </button>
@@ -441,7 +441,7 @@ function AddressesView() {
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold text-foreground">{address.name}</p>
                     {address.isDefault ? (
-                      <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                      <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
                         기본
                       </span>
                     ) : null}
@@ -503,7 +503,7 @@ function AddressesView() {
             ))}
             <button
               type="submit"
-              className="h-12 rounded-full bg-foreground text-sm font-semibold text-background"
+              className="h-12 rounded-md bg-foreground text-sm font-semibold text-background"
             >
               저장
             </button>
@@ -550,11 +550,11 @@ function NotificationsView() {
               role="switch"
               aria-checked={settings[row.key]}
               onClick={() => toggle(row.key)}
-              className={`flex h-8 w-12 items-center rounded-full px-1 transition-colors ${
+              className={`flex h-8 w-12 items-center rounded-md px-1 transition-colors ${
                 settings[row.key] ? "justify-end bg-foreground" : "justify-start bg-border"
               }`}
             >
-              <span className="size-6 rounded-full bg-background shadow-sm" />
+              <span className="size-6 rounded-md bg-background shadow-sm" />
               <span className="sr-only">{settings[row.key] ? "켜짐" : "꺼짐"}</span>
             </button>
           </div>

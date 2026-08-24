@@ -1,5 +1,11 @@
 export type ConditionGrade = "NEW" | "S" | "A" | "B";
 
+export const CONDITION_GRADES: ConditionGrade[] = ["NEW", "S", "A", "B"];
+
+export function isConditionGrade(value: unknown): value is ConditionGrade {
+  return typeof value === "string" && CONDITION_GRADES.includes(value as ConditionGrade);
+}
+
 export type AuthenticationStatus = "VERIFIED" | "PENDING" | "BRAND_OFFICIAL";
 
 export type DeliveryBadge = "오늘출고" | "국내배송" | "해외배송" | "예약배송";

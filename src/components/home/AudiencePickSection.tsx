@@ -3,8 +3,9 @@
 import { useId, useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
-import { CatalogImage } from "@/components/product/CatalogImage";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { Reveal, panelItem, panelStagger } from "@/components/home/section-motion";
+import { ProductPreviewMedia } from "@/components/product/ProductPreviewMedia";
 import { cn } from "@/lib/cn";
 import { formatPrice, getDiscountRate } from "@/lib/formatPrice";
 import { WishlistToggleButton } from "@/components/product/WishlistToggleButton";
@@ -19,13 +20,11 @@ function AudienceProductCard({ product }: { product: Product }) {
   return (
     <article className="group relative">
       <Link href={product.href} className="block">
-        <div className="relative aspect-square overflow-hidden rounded-[16px] bg-[#F7F7F7] dark:bg-muted">
-          <CatalogImage
-            src={product.imageUrl}
-            alt={`${product.brand} ${product.name}`}
-            seed={product.id}
+        <div className="relative aspect-square overflow-hidden bg-[#F7F7F7] dark:bg-muted">
+          <ProductPreviewMedia
+            product={product}
             sizes="(min-width: 1024px) 22vw, 48vw"
-            className="object-contain p-6 mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-[1.03] dark:mix-blend-normal md:p-7"
+            imageClassName="object-cover mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-[1.03] dark:mix-blend-normal"
           />
         </div>
 
@@ -70,6 +69,7 @@ export function AudiencePickSection({
 }) {
   const [tabId, setTabId] = useState(tabs[0]?.id ?? "");
   const tabPrefix = useId();
+  const reduceMotion = useReducedMotion();
   const active = tabs.find((tab) => tab.id === tabId) ?? tabs[0];
 
   if (!active) return null;
@@ -79,7 +79,7 @@ export function AudiencePickSection({
   return (
     <section className="bg-background" aria-labelledby="audience-heading">
       <div className="container py-12 md:py-16">
-        <div className="flex items-start justify-between gap-4">
+        <Reveal className="flex items-start justify-between gap-4">
           <div className="min-w-0 max-w-[640px]">
             <h2
               id="audience-heading"
@@ -103,75 +103,86 @@ export function AudiencePickSection({
               <ChevronRight className="size-4" />
             </Link>
           ) : null}
-        </div>
+        </Reveal>
 
-        <div
-          role="tablist"
-          aria-label="상황별 큐레이션"
-          className="mt-7 grid grid-cols-2 gap-2.5 md:mt-8 md:grid-cols-4 md:gap-3"
-        >
-          {tabs.map((tab) => {
-            const selected = tab.id === active.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                id={`${tabPrefix}-${tab.id}`}
-                aria-selected={selected}
-                aria-controls={`${tabPrefix}-panel`}
-                onClick={() => setTabId(tab.id)}
-                className={cn(
-                  "rounded-[20px] px-4 py-4 text-left transition-colors duration-200 md:min-h-[112px] md:px-6 md:py-6",
-                  selected
-                    ? "bg-foreground text-background"
-                    : "bg-[#F7F7F7] text-foreground hover:bg-[#F0F0F0] dark:bg-muted dark:hover:bg-secondary"
-                )}
-              >
-                <span className="block text-[15px] font-bold leading-5 tracking-tight md:text-[17px]">
-                  {tab.shortLabel ?? tab.label}
-                </span>
-                {tab.audience ? (
-                  <span
-                    className={cn(
-                      "mt-1.5 block text-[12px] font-medium leading-5 md:mt-2 md:text-[13px]",
-                      selected
-                        ? "text-background/60"
-                        : "text-[#8B8B8B] dark:text-muted-foreground"
-                    )}
-                  >
-                    {tab.audience}
+        <Reveal delay={0.08} variant="soft">
+          <div
+            role="tablist"
+            aria-label="상황별 큐레이션"
+            className="mt-7 grid grid-cols-2 gap-2.5 md:mt-8 md:grid-cols-4 md:gap-3"
+          >
+            {tabs.map((tab) => {
+              const selected = tab.id === active.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  id={`${tabPrefix}-${tab.id}`}
+                  aria-selected={selected}
+                  aria-controls={`${tabPrefix}-panel`}
+                  onClick={() => setTabId(tab.id)}
+                  className={cn(
+                    "rounded-md px-4 py-4 text-left transition-colors duration-200 md:min-h-[112px] md:px-6 md:py-6",
+                    selected
+                      ? "bg-foreground text-background"
+                      : "bg-[#F7F7F7] text-foreground hover:bg-[#F0F0F0] dark:bg-muted dark:hover:bg-secondary"
+                  )}
+                >
+                  <span className="block text-[15px] font-bold leading-5 tracking-tight md:text-[17px]">
+                    {tab.shortLabel ?? tab.label}
                   </span>
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
+                  {tab.audience ? (
+                    <span
+                      className={cn(
+                        "mt-1.5 block text-[12px] font-medium leading-5 md:mt-2 md:text-[13px]",
+                        selected
+                          ? "text-background/60"
+                          : "text-[#8B8B8B] dark:text-muted-foreground"
+                      )}
+                    >
+                      {tab.audience}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </Reveal>
 
         <AnimatePresence mode="wait">
-          <motion.div
-            key={active.id}
-            id={`${tabPrefix}-panel`}
-            role="tabpanel"
-            aria-labelledby={`${tabPrefix}-${active.id}`}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="mt-6 md:mt-8"
-          >
-            {products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-4 md:gap-x-5 md:gap-y-0">
-                {products.map((product) => (
-                  <AudienceProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <p className="py-16 text-center text-sm text-[#8B8B8B] dark:text-muted-foreground">
-                아직 맞는 상품을 고르고 있어요
-              </p>
-            )}
-          </motion.div>
+          {products.length > 0 ? (
+            <motion.div
+              key={active.id}
+              id={`${tabPrefix}-panel`}
+              role="tabpanel"
+              aria-labelledby={`${tabPrefix}-${active.id}`}
+              initial={reduceMotion ? false : "hidden"}
+              animate="visible"
+              exit={{ opacity: 0 }}
+              variants={panelStagger}
+              className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 md:mt-8 md:grid-cols-4 md:gap-x-5 md:gap-y-0"
+            >
+              {products.map((product) => (
+                <motion.div key={product.id} variants={reduceMotion ? undefined : panelItem}>
+                  <AudienceProductCard product={product} />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.p
+              key={`${active.id}-empty`}
+              id={`${tabPrefix}-panel`}
+              role="tabpanel"
+              aria-labelledby={`${tabPrefix}-${active.id}`}
+              initial={reduceMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="mt-6 py-16 text-center text-sm text-[#8B8B8B] dark:text-muted-foreground md:mt-8"
+            >
+              아직 맞는 상품을 고르고 있어요
+            </motion.p>
+          )}
         </AnimatePresence>
       </div>
     </section>

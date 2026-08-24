@@ -19,11 +19,6 @@ export default async function NewArrivalsPage() {
 
   return (
     <CustomerPageShell className="bg-background font-sans">
-      {content?.description ? (
-        <p className="mb-6 max-w-2xl text-sm leading-6 text-muted-foreground">
-          {content.description}
-        </p>
-      ) : null}
       {content?.items?.length ? (
         <div className="mb-10">
           <CategoryFeaturedItems items={content.items} title="오늘출고 큐레이션" />

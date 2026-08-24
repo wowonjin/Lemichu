@@ -87,7 +87,7 @@ export function OrderHistory({ fallbackOrders }: { fallbackOrders: FallbackOrder
         </p>
         <Link
           href={getLoginHref("/my/orders")}
-          className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           로그인하기
         </Link>
@@ -148,7 +148,7 @@ function FirestoreOrderRow({ order }: { order: PurchaseOrder }) {
     <div className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 md:flex-row md:items-center md:justify-between">
       <div>
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-gold-soft px-2.5 py-0.5 text-xs font-semibold text-foreground">
+          <span className="rounded-md bg-gold-soft px-2.5 py-0.5 text-xs font-semibold text-foreground">
             {statusLabels[order.status] ?? order.status}
           </span>
           <time className="text-xs text-muted-foreground">{formatOrderDate(order)}</time>
@@ -186,7 +186,7 @@ function FallbackOrderRow({ order }: { order: FallbackOrder }) {
     <div className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 md:flex-row md:items-center md:justify-between">
       <div>
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-foreground">
+          <span className="rounded-md bg-secondary px-2.5 py-0.5 text-xs font-semibold text-foreground">
             {order.status}
           </span>
           <time className="text-xs text-muted-foreground">{order.date}</time>

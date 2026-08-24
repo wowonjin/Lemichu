@@ -1,6 +1,6 @@
 import type { Product } from "@/types/product";
 import { getProductKind, type ProductKind } from "@/lib/productKind";
-import { isVariantAvailable } from "@/lib/product-variants";
+import { formatSizeDisplayLabel, isVariantAvailable } from "@/lib/product-variants";
 
 export type ProductOption = {
   label: string;
@@ -37,11 +37,17 @@ function asSingle(label?: string, detail?: string): ProductOption[] {
   return [{ label: value, detail }];
 }
 
+function asSize(label?: string, detail?: string): ProductOption[] {
+  const value = label?.trim();
+  if (!value || value === "상세 옵션 확인") return [];
+  return [{ label: formatSizeDisplayLabel(value), detail }];
+}
+
 export function getProductOptionSet(product: Product): ProductOptionSet {
   const kind = getProductKind(product);
   if (product.variants?.length) {
     const sizes = product.variants.map((variant) => ({
-      label: variant.size?.trim() || "단일 사이즈",
+      label: formatSizeDisplayLabel(variant.size),
       detail: isVariantAvailable(variant) ? undefined : "품절",
     }));
     const colors = product.variants.map((variant) => ({
@@ -50,9 +56,9 @@ export function getProductOptionSet(product: Product): ProductOptionSet {
     const sizeGuide = product.variants
       .filter((variant) => variant.measurements && Object.keys(variant.measurements).length > 0)
       .map((variant) => ({
-        label: variant.size?.trim() || "단일 사이즈",
+        label: formatSizeDisplayLabel(variant.size),
         detail: Object.entries(variant.measurements ?? {})
-          .map(([label, value]) => `${label} ${value}`)
+          .map(([label, value]) => `${label} ${/cm$/i.test(value) ? value : `${value}cm`}`)
           .join(" · "),
       }));
 
@@ -71,9 +77,9 @@ export function getProductOptionSet(product: Product): ProductOptionSet {
     return {
       kind,
       sizeLabel: "케이스 사이즈",
-      sizes: asSingle(size, "해당 상품 실측 사이즈"),
+      sizes: asSize(size, "해당 상품 실측 사이즈"),
       colors: color,
-      sizeGuide: asSingle(size, "케이스 직경 기준"),
+      sizeGuide: asSize(size, "케이스 직경 기준"),
     };
   }
 
@@ -81,9 +87,9 @@ export function getProductOptionSet(product: Product): ProductOptionSet {
     return {
       kind,
       sizeLabel: "사이즈",
-      sizes: asSingle(size ?? "단일 사이즈"),
+      sizes: asSize(size ?? "단일 사이즈"),
       colors: color,
-      sizeGuide: asSingle(size, "호수 또는 길이 기준"),
+      sizeGuide: asSize(size, "호수 또는 길이 기준"),
     };
   }
 
@@ -91,9 +97,9 @@ export function getProductOptionSet(product: Product): ProductOptionSet {
     return {
       kind,
       sizeLabel: "사이즈",
-      sizes: asSingle(size, "해당 상품 재고 사이즈"),
+      sizes: asSize(size, "해당 상품 재고 사이즈"),
       colors: color,
-      sizeGuide: asSingle(size, "브랜드 표기 사이즈"),
+      sizeGuide: asSize(size, "브랜드 표기 사이즈"),
     };
   }
 
@@ -101,7 +107,7 @@ export function getProductOptionSet(product: Product): ProductOptionSet {
     return {
       kind,
       sizeLabel: "사이즈",
-      sizes: asSingle(size && size !== "단일" ? size : "단일 사이즈"),
+      sizes: asSize(size && size !== "단일" ? size : "단일 사이즈"),
       colors: color,
       sizeGuide: [],
     };
@@ -111,9 +117,9 @@ export function getProductOptionSet(product: Product): ProductOptionSet {
     return {
       kind,
       sizeLabel: "사이즈",
-      sizes: asSingle(size),
+      sizes: asSize(size),
       colors: color,
-      sizeGuide: asSingle(size, "브랜드 표기 사이즈"),
+      sizeGuide: asSize(size, "브랜드 표기 사이즈"),
     };
   }
 
@@ -126,9 +132,9 @@ export function getProductOptionSet(product: Product): ProductOptionSet {
   return {
     kind,
     sizeLabel: "사이즈",
-    sizes: currentBagSize ? [currentBagSize] : asSingle(size ?? "단일 사이즈"),
+    sizes: currentBagSize ? [currentBagSize] : asSize(size ?? "단일 사이즈"),
     colors: color,
-    sizeGuide: isBagFamily && bagSize ? bagSizeGuide : asSingle(size),
+    sizeGuide: isBagFamily && bagSize ? bagSizeGuide : asSize(size),
   };
 }
 

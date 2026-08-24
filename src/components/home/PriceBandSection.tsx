@@ -3,8 +3,9 @@
 import { useId, useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
-import { CatalogImage } from "@/components/product/CatalogImage";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { Reveal, panelItem, panelStagger } from "@/components/home/section-motion";
+import { ProductPreviewMedia } from "@/components/product/ProductPreviewMedia";
 import { cn } from "@/lib/cn";
 import { formatPrice, getDiscountRate } from "@/lib/formatPrice";
 import type { HomeTabProducts } from "@/lib/homeCatalog";
@@ -15,13 +16,11 @@ function PriceBandCard({ product }: { product: Product }) {
 
   return (
     <Link href={product.href} className="group block">
-      <div className="relative aspect-square overflow-hidden rounded-[16px] bg-[#F7F7F7] dark:bg-muted">
-        <CatalogImage
-          src={product.imageUrl}
-          alt={`${product.brand} ${product.name}`}
-          seed={product.id}
+      <div className="relative aspect-square overflow-hidden bg-[#F7F7F7] dark:bg-muted">
+        <ProductPreviewMedia
+          product={product}
           sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-          className="object-contain p-6 mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-[1.03] dark:mix-blend-normal md:p-7"
+          imageClassName="object-cover mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-[1.03] dark:mix-blend-normal"
         />
       </div>
 
@@ -55,6 +54,7 @@ export function PriceBandSection({
 }) {
   const [tabId, setTabId] = useState(tabs[0]?.id ?? "");
   const tabPrefix = useId();
+  const reduceMotion = useReducedMotion();
   const active = tabs.find((tab) => tab.id === tabId) ?? tabs[0];
 
   if (!active) return null;
@@ -64,7 +64,7 @@ export function PriceBandSection({
   return (
     <section className="bg-background" aria-labelledby="price-band-heading">
       <div className="container py-12 md:py-16">
-        <div className="flex items-start justify-between gap-4">
+        <Reveal className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h2
               id="price-band-heading"
@@ -87,61 +87,72 @@ export function PriceBandSection({
               <ChevronRight className="size-4" />
             </Link>
           ) : null}
-        </div>
+        </Reveal>
 
-        <div
-          role="tablist"
-          aria-label="가격대"
-          className="mt-7 flex flex-wrap gap-2 md:mt-8"
-        >
-          {tabs.map((tab) => {
-            const selected = tab.id === active.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                id={`${tabPrefix}-${tab.id}`}
-                aria-selected={selected}
-                aria-controls={`${tabPrefix}-panel`}
-                onClick={() => setTabId(tab.id)}
-                className={cn(
-                  "rounded-full px-3.5 py-2 text-[13px] font-semibold tracking-tight transition-colors md:px-4 md:py-2.5 md:text-[14px]",
-                  selected
-                    ? "bg-foreground text-background"
-                    : "bg-[#F7F7F7] text-[#6B6B6B] hover:text-foreground dark:bg-muted dark:text-muted-foreground dark:hover:text-foreground"
-                )}
-              >
-                {tab.shortLabel ?? tab.label}
-              </button>
-            );
-          })}
-        </div>
+        <Reveal delay={0.08} variant="soft">
+          <div
+            role="tablist"
+            aria-label="가격대"
+            className="mt-7 flex flex-wrap gap-2 md:mt-8"
+          >
+            {tabs.map((tab) => {
+              const selected = tab.id === active.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  id={`${tabPrefix}-${tab.id}`}
+                  aria-selected={selected}
+                  aria-controls={`${tabPrefix}-panel`}
+                  onClick={() => setTabId(tab.id)}
+                  className={cn(
+                    "rounded-md px-3.5 py-2 text-[13px] font-semibold tracking-tight transition-colors md:px-4 md:py-2.5 md:text-[14px]",
+                    selected
+                      ? "bg-foreground text-background"
+                      : "bg-[#F7F7F7] text-[#6B6B6B] hover:text-foreground dark:bg-muted dark:text-muted-foreground dark:hover:text-foreground"
+                  )}
+                >
+                  {tab.shortLabel ?? tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </Reveal>
 
         <AnimatePresence mode="wait">
-          <motion.div
-            key={active.id}
-            id={`${tabPrefix}-panel`}
-            role="tabpanel"
-            aria-labelledby={`${tabPrefix}-${active.id}`}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="mt-6 md:mt-8"
-          >
-            {products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-4 md:gap-x-5">
-                {products.map((product) => (
-                  <PriceBandCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <p className="py-16 text-center text-sm text-[#8B8B8B] dark:text-muted-foreground">
-                이 금액대 상품을 준비하고 있어요
-              </p>
-            )}
-          </motion.div>
+          {products.length > 0 ? (
+            <motion.div
+              key={active.id}
+              id={`${tabPrefix}-panel`}
+              role="tabpanel"
+              aria-labelledby={`${tabPrefix}-${active.id}`}
+              initial={reduceMotion ? false : "hidden"}
+              animate="visible"
+              exit={{ opacity: 0 }}
+              variants={panelStagger}
+              className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 md:mt-8 md:grid-cols-4 md:gap-x-5"
+            >
+              {products.map((product) => (
+                <motion.div key={product.id} variants={reduceMotion ? undefined : panelItem}>
+                  <PriceBandCard product={product} />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.p
+              key={`${active.id}-empty`}
+              id={`${tabPrefix}-panel`}
+              role="tabpanel"
+              aria-labelledby={`${tabPrefix}-${active.id}`}
+              initial={reduceMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="mt-6 py-16 text-center text-sm text-[#8B8B8B] dark:text-muted-foreground md:mt-8"
+            >
+              이 금액대 상품을 준비하고 있어요
+            </motion.p>
+          )}
         </AnimatePresence>
       </div>
     </section>

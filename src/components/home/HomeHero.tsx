@@ -40,7 +40,7 @@ export function HomeHero({ products }: { products: Product[] }) {
             <Link
               key={product.id}
               href={product.href}
-              className="group overflow-hidden rounded-2xl border border-border bg-background"
+              className="group overflow-hidden border border-border bg-background"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

@@ -51,7 +51,7 @@ export function AccountMenu({
         aria-controls="account-menu"
         onClick={onToggle}
         className={cn(
-          "inline-flex h-10 items-center gap-2 rounded-full px-2.5 text-sm font-semibold transition-colors md:px-3",
+          "inline-flex h-10 items-center gap-2 rounded-md px-2.5 text-sm font-semibold transition-colors md:px-3",
           isOpen
             ? "bg-secondary text-foreground"
             : "bg-background text-foreground hover:bg-secondary"

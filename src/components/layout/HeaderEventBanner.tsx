@@ -19,7 +19,7 @@ import {
 } from "@/lib/headerBanner";
 
 const controlClassName =
-  "grid size-8 place-items-center rounded-full text-current/35 transition-[color,background-color,transform] duration-150 hover:bg-current/10 hover:text-current active:scale-90";
+  "grid size-8 place-items-center rounded-md text-current/35 transition-[color,background-color,transform] duration-150 hover:bg-current/10 hover:text-current active:scale-90";
 
 export function HeaderEventBanner({ previewSettings }: { previewSettings?: HeaderBannerSettings }) {
   const [settings, setSettings] = useState(previewSettings ?? DEFAULT_HEADER_BANNER);
@@ -104,7 +104,7 @@ export function HeaderEventBanner({ previewSettings }: { previewSettings?: Heade
             type="button"
             aria-label="닫기"
             onClick={() => setIsEditing(false)}
-            className="grid size-9 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="grid size-9 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             <X className="size-4" />
           </button>
@@ -182,7 +182,7 @@ export function HeaderEventBanner({ previewSettings }: { previewSettings?: Heade
           >
             {current.badge ? (
               <span
-                className="inline-flex h-5 shrink-0 items-center rounded-full px-2 text-[11px] font-bold leading-none tracking-tight"
+                className="inline-flex h-5 shrink-0 items-center rounded-md px-2 text-[11px] font-bold leading-none tracking-tight"
                 style={{
                   backgroundColor: theme.badgeBackground,
                   color: theme.badgeText,
