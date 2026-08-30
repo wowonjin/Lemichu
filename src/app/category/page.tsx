@@ -18,7 +18,7 @@ export default function CategoryIndexPage() {
       >
         <div className="rounded-[1.5rem] bg-foreground p-5 text-background">
           <GoldPill>Luxury Finder</GoldPill>
-          <p className="mt-5 text-4xl font-semibold tracking-tight">
+          <p className="mt-4 text-3xl font-semibold tracking-tight sm:mt-5 sm:text-4xl">
             {categories.length}개
           </p>
           <p className="mt-2 text-sm leading-6 text-background/65">
@@ -28,12 +28,12 @@ export default function CategoryIndexPage() {
       </CustomerPageHero>
 
       <CustomerSection className="mt-8">
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
         {categories.map((category) => (
           <li key={category.id}>
             <Link
               href={category.href}
-              className="group flex items-center gap-3 rounded-2xl border border-border bg-sand p-4 transition-colors hover:border-gold/50 hover:bg-gold-soft"
+              className="group flex items-center gap-3 rounded-2xl border border-border bg-sand p-3.5 transition-colors hover:border-gold/50 hover:bg-gold-soft sm:p-4"
             >
               <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-background text-foreground shadow-sm">
                 <category.icon className="size-5" strokeWidth={1.8} />

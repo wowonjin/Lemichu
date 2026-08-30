@@ -4,6 +4,7 @@ export type Brand = {
   /** uppercase wordmark shown in the brand wall */
   wordmark: string;
   href: string;
+  aliases?: string[];
 };
 
 export const brands: Brand[] = [
@@ -14,7 +15,43 @@ export const brands: Brand[] = [
   { id: "chanel", name: "샤넬", wordmark: "CHANEL", href: "/brand/chanel" },
   { id: "dior", name: "디올", wordmark: "Dior", href: "/brand/dior" },
   { id: "loewe", name: "로에베", wordmark: "LOEWE", href: "/brand/loewe" },
+  {
+    id: "saint-laurent",
+    name: "생로랑",
+    wordmark: "SAINT LAURENT",
+    href: "/brand/saint-laurent",
+    aliases: ["ysl", "생 로랑", "입생로랑", "saint laurent", "saint-laurent"],
+  },
+  { id: "gucci", name: "구찌", wordmark: "GUCCI", href: "/brand/gucci", aliases: ["구치"] },
+  {
+    id: "chrome-hearts",
+    name: "크롬하츠",
+    wordmark: "Chrome Hearts",
+    href: "/brand/chrome-hearts",
+    aliases: ["크롬 하츠", "chromehearts"],
+  },
+  {
+    id: "cartier",
+    name: "까르띠에",
+    wordmark: "Cartier",
+    href: "/brand/cartier",
+    aliases: ["카르티에"],
+  },
+  {
+    id: "hermes",
+    name: "에르메스",
+    wordmark: "HERMÈS",
+    href: "/brand/hermes",
+    aliases: ["hermès", "에르메스 파리"],
+  },
   { id: "maison-margiela", name: "메종 마르지엘라", wordmark: "Maison Margiela", href: "/brand/maison-margiela" },
+  {
+    id: "ferragamo",
+    name: "페라가모",
+    wordmark: "FERRAGAMO",
+    href: "/brand/ferragamo",
+    aliases: ["salvatore ferragamo", "살바토레 페라가모"],
+  },
   { id: "valentino", name: "발렌티노", wordmark: "Valentino", href: "/brand/valentino" },
   { id: "goyard", name: "고야드", wordmark: "GOYARD", href: "/brand/goyard" },
   { id: "max-mara", name: "막스마라", wordmark: "Max Mara", href: "/brand/max-mara" },

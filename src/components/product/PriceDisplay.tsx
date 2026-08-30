@@ -30,6 +30,11 @@ export function PriceDisplay({
       ) : null}
 
       <div className="flex items-baseline gap-1.5">
+        {computedRate && size === "lg" ? (
+          <span className="text-[18px] font-bold tabular-nums text-[#C4A052]">
+            {computedRate}%
+          </span>
+        ) : null}
         <span
           className={cn(
             "tabular-nums text-foreground",
@@ -41,13 +46,8 @@ export function PriceDisplay({
           {formatPrice(price)}
           <span className="ml-0.5 text-[0.8em] font-semibold">원</span>
         </span>
-        {computedRate ? (
-          <span
-            className={cn(
-              "font-bold tabular-nums text-[#F04452]",
-              size === "lg" ? "text-[16px]" : "text-sm font-semibold"
-            )}
-          >
+        {computedRate && size !== "lg" ? (
+          <span className="text-sm font-bold tabular-nums text-[#F04452]">
             {computedRate}%
           </span>
         ) : null}

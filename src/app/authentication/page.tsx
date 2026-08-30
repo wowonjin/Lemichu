@@ -41,7 +41,7 @@ export default function AuthenticationPage() {
           {highlights.map((item) => (
             <div
               key={item.title}
-              className="rounded-2xl border border-border bg-sand p-6 text-center"
+              className="rounded-2xl border border-border bg-sand p-4 text-center sm:p-6"
             >
               <span className="mx-auto grid size-12 place-items-center rounded-md bg-background text-gold shadow-sm">
                 <item.icon className="size-6" strokeWidth={1.8} />

@@ -12,7 +12,7 @@ export default function BrandPage() {
     <CustomerPageShell className="bg-background font-sans">
       <section>
         <div className="flex flex-col gap-3 pb-2 md:flex-row md:items-end md:justify-between">
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+          <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
             브랜드
           </h2>
         </div>
@@ -24,9 +24,9 @@ export default function BrandPage() {
             <li key={brand.id}>
               <Link
                 href={brand.href}
-                className="flex h-28 flex-col items-center justify-center gap-1 bg-transparent transition-colors hover:bg-secondary"
+                className="flex h-24 flex-col items-center justify-center gap-1 bg-transparent px-2 text-center transition-colors hover:bg-secondary sm:h-28"
               >
-                <span className="text-base font-semibold tracking-wide text-foreground">
+                <span className="max-w-full truncate text-sm font-semibold tracking-wide text-foreground sm:text-base">
                   {brand.wordmark}
                 </span>
                 <span className="text-xs text-muted-foreground">{brand.name}</span>

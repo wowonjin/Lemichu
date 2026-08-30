@@ -86,7 +86,7 @@ export default async function CategoryDetailPage({
         ) : (
           <div className="rounded-[1.5rem] bg-foreground p-5 text-background">
             <GoldPill>{category.hint}</GoldPill>
-            <p className="mt-5 text-4xl font-semibold tracking-tight">{products.length}개</p>
+            <p className="mt-4 text-3xl font-semibold tracking-tight sm:mt-5 sm:text-4xl">{products.length}개</p>
             <p className="mt-2 text-sm leading-6 text-background/65">
               메인 카드와 같은 구조로 상품을 비교할 수 있어요.
             </p>

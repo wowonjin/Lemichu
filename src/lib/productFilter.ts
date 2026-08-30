@@ -1,4 +1,5 @@
 import { getProductKind, productHaystack, type ProductKind } from "@/lib/productKind";
+import { findBrandByName } from "@/lib/search/brands";
 import type { Product } from "@/types/product";
 
 const categoryToKind: Record<string, ProductKind> = {
@@ -47,10 +48,13 @@ export function filterByCategory(categoryId: string, products: Product[]): Produ
 }
 
 export function filterByBrand(brandName: string, products: Product[]): Product[] {
-  const target = brandName.trim().toLowerCase();
-  return products.filter(
-    (product) => product.brand.trim().toLowerCase() === target
+  const brand = findBrandByName(brandName);
+  const aliases = new Set(
+    [brandName, brand?.name, brand?.wordmark, brand?.id.replace(/-/g, " "), ...(brand?.aliases ?? [])]
+      .map((value) => value?.trim().toLowerCase())
+      .filter((value): value is string => Boolean(value))
   );
+  return products.filter((product) => aliases.has(product.brand.trim().toLowerCase()));
 }
 
 /**

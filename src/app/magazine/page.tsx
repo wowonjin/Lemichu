@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function MagazinePage() {
   return (
-    <div className="container py-8 md:py-10">
+    <div className="container min-w-0 py-5 md:py-10">
       <h1 className="font-serif text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
         레미츄 매거진
       </h1>

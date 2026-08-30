@@ -34,6 +34,18 @@ export function toAbsolutePublicUrl(pathOrUrl: string): string {
   return `${origin}${pathOrUrl.startsWith("/") ? "" : "/"}${pathOrUrl}`;
 }
 
+export function getKakaoChannelUrl(): string {
+  const raw = process.env.NEXT_PUBLIC_KAKAO_CHAT_URL?.trim() || DEFAULT_KAKAO_CHANNEL_URL;
+
+  try {
+    const url = new URL(raw);
+    url.pathname = url.pathname.replace(/\/chat\/?$/, "") || "/";
+    return url.toString();
+  } catch {
+    return DEFAULT_KAKAO_CHANNEL_URL;
+  }
+}
+
 export function getKakaoChatUrl(): string {
   const raw = process.env.NEXT_PUBLIC_KAKAO_CHAT_URL?.trim() || DEFAULT_KAKAO_CHANNEL_URL;
 

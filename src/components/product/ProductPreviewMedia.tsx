@@ -3,6 +3,7 @@
 import { useState, type MouseEvent, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CatalogImage } from "@/components/product/CatalogImage";
+import { SoldOutOverlay, isSoldProduct } from "@/components/product/SoldOutOverlay";
 import { cn } from "@/lib/cn";
 import type { Product } from "@/types/product";
 
@@ -50,6 +51,7 @@ export function ProductPreviewMedia({
         className={imageClassName}
       />
       {children}
+      {isSoldProduct(product) ? <SoldOutOverlay /> : null}
       {canNavigate ? (
         <>
           <NavArrow

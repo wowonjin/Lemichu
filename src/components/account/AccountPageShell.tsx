@@ -152,9 +152,9 @@ export function AccountPageShell({
 
   return (
     <div className="bg-background">
-      <div className="container pb-20 pt-8 md:pt-10">
+      <div className="container min-w-0 pb-24 pt-5 md:pb-20 md:pt-10">
         <div className="mb-5 flex items-center justify-between lg:hidden">
-          <p className="text-[20px] font-bold tracking-tight text-foreground">마이페이지</p>
+          <p className="text-lg font-bold tracking-tight text-foreground md:text-[20px]">마이페이지</p>
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
@@ -264,16 +264,20 @@ export function AccountStatRow({
   }>;
 }) {
   const columns =
-    items.length === 5 ? "grid-cols-5" : items.length === 4 ? "grid-cols-4" : "grid-cols-3";
+    items.length === 5
+      ? "grid-cols-2 gap-y-4 sm:grid-cols-5 sm:gap-y-0 sm:divide-x"
+      : items.length === 4
+        ? "grid-cols-2 gap-y-4 sm:grid-cols-4 sm:gap-y-0 sm:divide-x"
+        : "grid-cols-3 divide-x";
 
   return (
-    <div className={cn("grid divide-x divide-border", columns)}>
+    <div className={cn("grid divide-border", columns)}>
       {items.map((item) => {
         const content = (
           <>
             <p
               className={cn(
-                "text-[20px] font-bold tabular-nums leading-none tracking-tight md:text-[22px]",
+                "text-lg font-bold tabular-nums leading-none tracking-tight md:text-[22px]",
                 item.emphasize ? "text-foreground" : "text-muted-foreground"
               )}
             >
@@ -284,13 +288,13 @@ export function AccountStatRow({
                 </span>
               ) : null}
             </p>
-            <p className="mt-2 text-[11px] font-medium leading-4 text-muted-foreground sm:text-[12px]">
+            <p className="mt-1.5 text-[11px] font-medium leading-4 text-muted-foreground sm:mt-2 sm:text-[12px]">
               {item.label}
             </p>
           </>
         );
 
-        const className = "px-1 py-1 text-center first:pl-0 last:pr-0";
+        const className = "min-w-0 px-1 py-1 text-center sm:first:pl-0 sm:last:pr-0";
 
         if (item.href) {
           return (

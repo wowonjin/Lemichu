@@ -53,7 +53,7 @@ export default async function MagazineArticlePage({
 
       {meta ? (
         <div className="container mt-4">
-          <div className="relative aspect-[16/7] overflow-hidden rounded-2xl border border-border">
+          <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-border sm:aspect-[16/7]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={getTemporaryImageUrl(meta.seed)}

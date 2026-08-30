@@ -32,7 +32,9 @@
     "mock:cleanup": "node scripts/cleanup-mock-products.mjs --write",
     "bunjang:preowned:check": "node scripts/import-bunjang-preowned.mjs",
     "bunjang:preowned:import": "node scripts/import-bunjang-preowned.mjs --write",
-    "bunjang:preowned:verify": "node scripts/verify-bunjang-preowned.mjs"
+    "bunjang:preowned:verify": "node scripts/verify-bunjang-preowned.mjs",
+    "sold:import:check": "node scripts/import-sold-products.mjs",
+    "sold:import": "node scripts/import-sold-products.mjs --write"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",

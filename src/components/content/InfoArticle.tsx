@@ -2,7 +2,7 @@ import type { InfoDoc } from "@/data/pageContent";
 
 export function InfoArticle({ doc }: { doc: InfoDoc }) {
   return (
-    <div className="container py-10 md:py-14">
+    <div className="container min-w-0 py-6 md:py-14">
       <div className="mx-auto max-w-3xl">
         <header>
           <h1 className="font-serif text-2xl font-semibold tracking-tight text-foreground md:text-3xl">

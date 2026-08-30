@@ -136,11 +136,10 @@ export const homeSectionMeta: HomeSectionMeta[] = [
       ],
     },
     slots: [
+      { key: "under-200", label: "20만원 이하", hint: "입문 가격대", limit: 8, visibleOnHome: 4 },
       { key: "under-500", label: "50만원 이하", hint: "입문 가격대", limit: 8, visibleOnHome: 4 },
-      { key: "from-500-1500", label: "50~150만원", hint: "선물·첫 명품", limit: 8, visibleOnHome: 4 },
-      { key: "from-1500-3000", label: "150~300만원", hint: "데일리 라인", limit: 8, visibleOnHome: 4 },
-      { key: "from-3000-5000", label: "300~500만원", hint: "소장 가치", limit: 8, visibleOnHome: 4 },
-      { key: "from-5000", label: "500만원 이상", hint: "하이엔드", limit: 8, visibleOnHome: 4 },
+      { key: "under-1000", label: "100만원 이하", hint: "데일리 라인", limit: 8, visibleOnHome: 4 },
+      { key: "from-1500", label: "150만원 이상", hint: "소장 가치", limit: 8, visibleOnHome: 4 },
     ],
   },
   {

@@ -44,7 +44,7 @@ export default async function SellGuidePage({
       <InfoArticle doc={guide.doc} />
 
       <div className="container pb-14">
-        <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 rounded-2xl bg-foreground p-8 text-center text-background">
+        <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 rounded-2xl bg-foreground p-5 text-center text-background sm:p-8">
           <p className="text-base font-semibold">
             지금 바로 내 명품 시세를 확인해보세요
           </p>

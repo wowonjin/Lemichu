@@ -63,17 +63,14 @@ export function PriceBandSection({
 
   return (
     <section className="bg-background" aria-labelledby="price-band-heading">
-      <div className="container py-12 md:py-16">
-        <Reveal className="flex items-start justify-between gap-4">
+      <div className="container home-section">
+        <Reveal className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2
-              id="price-band-heading"
-              className="text-[24px] font-bold leading-[1.3] tracking-tight text-foreground md:text-[30px]"
-            >
+            <h2 id="price-band-heading" className="home-title">
               <span className="block">예산만 정하면,</span>
               <span className="block">명품은 골라드릴게요</span>
             </h2>
-            <p className="mt-2 text-[14px] leading-6 text-[#8B8B8B] dark:text-muted-foreground md:text-[15px]">
+            <p className="home-desc">
               원하는 가격대를 선택해 부담 없이 둘러보세요.
             </p>
           </div>
@@ -81,7 +78,7 @@ export function PriceBandSection({
           {moreHref ? (
             <Link
               href={moreHref}
-              className="mt-1.5 inline-flex shrink-0 items-center text-[13px] font-medium text-[#8B8B8B] transition-colors hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground md:text-[14px]"
+              className="home-more mt-1"
             >
               전체보기
               <ChevronRight className="size-4" />
@@ -93,7 +90,7 @@ export function PriceBandSection({
           <div
             role="tablist"
             aria-label="가격대"
-            className="mt-7 flex flex-wrap gap-2 md:mt-8"
+            className="mt-5 flex flex-wrap gap-1.5 md:mt-8 md:gap-2"
           >
             {tabs.map((tab) => {
               const selected = tab.id === active.id;
@@ -131,7 +128,7 @@ export function PriceBandSection({
               animate="visible"
               exit={{ opacity: 0 }}
               variants={panelStagger}
-              className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 md:mt-8 md:grid-cols-4 md:gap-x-5"
+              className="home-product-grid"
             >
               {products.map((product) => (
                 <motion.div key={product.id} variants={reduceMotion ? undefined : panelItem}>

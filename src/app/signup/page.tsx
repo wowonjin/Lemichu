@@ -104,13 +104,13 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="h-full overflow-hidden bg-background">
+    <div className="min-w-0 overflow-x-hidden bg-background lg:h-full lg:overflow-hidden">
       <AuthSplitLayout>
-          <h1 className="text-center text-[2rem] font-bold leading-none tracking-tight text-foreground">
+          <h1 className="text-center text-[1.5rem] font-bold leading-none tracking-tight text-foreground sm:text-[2rem]">
             회원가입
           </h1>
 
-          <div className="mt-7">
+          <div className="mt-6 sm:mt-7">
             <SocialLoginButtons
               mode="signup"
               disabled={isSubmitting}
@@ -118,13 +118,13 @@ export default function SignupPage() {
             />
           </div>
 
-          <div className="my-6 flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground sm:my-6 sm:gap-4">
             <span className="h-px flex-1 bg-border" />
             이메일로 가입
             <span className="h-px flex-1 bg-border" />
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex min-w-0 flex-col gap-3.5 sm:gap-4">
             <label className="grid gap-2 text-sm font-bold text-foreground">
               이름
               <input
@@ -132,7 +132,7 @@ export default function SignupPage() {
                 type="text"
                 required
                 placeholder="이름"
-                className="h-12 rounded-md border border-border bg-background px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30"
+                className="h-11 w-full min-w-0 rounded-md border border-border bg-background px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30 sm:h-12"
               />
             </label>
             <label className="grid gap-2 text-sm font-bold text-foreground">
@@ -142,7 +142,7 @@ export default function SignupPage() {
                 type="email"
                 required
                 placeholder="이메일"
-                className="h-12 rounded-md border border-border bg-background px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30"
+                className="h-11 w-full min-w-0 rounded-md border border-border bg-background px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30 sm:h-12"
               />
             </label>
             <label className="grid gap-2 text-sm font-bold text-foreground">
@@ -155,7 +155,7 @@ export default function SignupPage() {
                 autoComplete="tel"
                 placeholder="010-1234-5678"
                 pattern="[0-9\\-\\s]{10,13}"
-                className="h-12 rounded-md border border-border bg-background px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30"
+                className="h-11 w-full min-w-0 rounded-md border border-border bg-background px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30 sm:h-12"
               />
             </label>
             <label className="grid gap-2 text-sm font-bold text-foreground">
@@ -166,7 +166,7 @@ export default function SignupPage() {
                 required
                 placeholder="비밀번호 입력"
                 minLength={6}
-                className="h-12 rounded-md border border-border bg-background px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30"
+                className="h-11 w-full min-w-0 rounded-md border border-border bg-background px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30 sm:h-12"
               />
             </label>
             <label className="grid gap-2 text-sm font-bold text-foreground">
@@ -177,7 +177,7 @@ export default function SignupPage() {
                 required
                 placeholder="비밀번호 재입력"
                 minLength={6}
-                className="h-12 rounded-md border border-border bg-background px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30"
+                className="h-11 w-full min-w-0 rounded-md border border-border bg-background px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30 sm:h-12"
               />
             </label>
 
@@ -221,13 +221,13 @@ export default function SignupPage() {
               type="submit"
               size="lg"
               disabled={isSubmitting}
-              className="mt-2 h-12 w-full rounded-md text-base font-bold"
+              className="mt-2 h-11 w-full rounded-md text-base font-bold sm:h-12"
             >
               {isSubmitting ? "가입 처리 중..." : "회원가입"}
             </Button>
           </form>
 
-          <p className="mt-7 text-center text-sm text-muted-foreground">
+          <p className="mt-6 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-center text-sm text-muted-foreground sm:mt-7">
             이미 계정이 있으신가요?{" "}
             <Link
               href="/login"

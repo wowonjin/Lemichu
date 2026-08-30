@@ -5,7 +5,7 @@ import { unstable_cache } from "next/cache";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { getDiscountRate } from "@/lib/formatPrice";
 import { getHomeCategoryItems } from "@/lib/homeCatalog";
-import { getPublishedHomeCategories } from "@/lib/home-categories-server";
+import { getAllHomeCategories } from "@/lib/home-categories-server";
 import { buildHomeMerchandising } from "@/lib/home-merchandising";
 import { getHomeSectionSlotMap } from "@/lib/home-sections-server";
 import { getProductSignalMap } from "@/lib/product-signals-server";
@@ -124,7 +124,10 @@ export function storeProductToProduct(product: ProductDoc): Product {
     href: `/product/${product.id}`,
     stockQuantity,
     variants,
-    availability: getProductAvailabilityFromVariants(variants, product.stockQuantity),
+    availability:
+      product.availability === "sold"
+        ? "sold"
+        : getProductAvailabilityFromVariants(variants, product.stockQuantity),
     createdAt: toMillis(product.createdAt) || undefined,
   };
 }
@@ -151,7 +154,7 @@ async function loadRegisteredProducts(): Promise<Product[]> {
 
 const getCachedRegisteredProducts = unstable_cache(
   loadRegisteredProducts,
-  ["catalog-registered-products-v5"],
+  ["catalog-registered-products-v6"],
   { revalidate: 30, tags: ["products"] }
 );
 
@@ -206,7 +209,7 @@ const getHomeMerchandising = cache(async () => {
 export const getHomePageData = cache(async () => {
   const [merch, categories] = await Promise.all([
     getHomeMerchandising(),
-    getPublishedHomeCategories(),
+    getAllHomeCategories(),
   ]);
 
   return {

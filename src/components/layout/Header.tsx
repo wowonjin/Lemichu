@@ -21,30 +21,33 @@ import { useToast } from "@/components/ui/toast";
 
 const gnb: {
   label: string;
+  mobileLabel?: string;
   href: string;
   filter?: CatalogFilterId;
   kakao?: boolean;
 }[] = [
   { label: "신규입고", href: catalogFilterHref("new"), filter: "new" },
   { label: "명품가방", href: catalogFilterHref("bags"), filter: "bags" },
-  { label: "지갑·카드지갑", href: catalogFilterHref("wallets"), filter: "wallets" },
-  { label: "내 명품 판매하기", href: getKakaoChatUrl(), kakao: true },
+  { label: "지갑·카드지갑", mobileLabel: "지갑", href: catalogFilterHref("wallets"), filter: "wallets" },
+  { label: "내 명품 판매하기", mobileLabel: "판매하기", href: getKakaoChatUrl(), kakao: true },
 ];
 
 const headerIconClassName =
-  "group relative grid size-10 place-items-center rounded-md text-foreground transition-colors hover:bg-secondary";
+  "group relative grid size-9 place-items-center rounded-md text-foreground transition-colors hover:bg-secondary md:size-10";
 
 function HeaderIconLink({
   href,
   label,
+  className,
   children,
 }: {
   href: string;
   label: string;
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <Link href={href} aria-label={label} className={headerIconClassName}>
+    <Link href={href} aria-label={label} className={cn(headerIconClassName, className)}>
       {children}
       <HoverTooltip label={label} />
     </Link>
@@ -85,9 +88,9 @@ function HeaderGnbLinks({
       {gnb.map((item) => {
         const active = isGnbActive(item, pathname, filter);
         const className = cn(
-          "inline-flex shrink-0 items-center text-sm transition-colors",
+          "inline-flex shrink-0 items-center text-[13px] transition-colors md:text-sm",
           item.kakao
-            ? "h-7 rounded-md bg-[#FEE500] px-2.5 font-semibold text-[#191919] hover:opacity-90"
+            ? "h-7 rounded-md bg-[#FEE500] px-2 font-semibold text-[#191919] hover:opacity-90 md:px-2.5"
             : active
               ? "font-semibold text-foreground hover:text-foreground"
               : "font-medium text-foreground/80 hover:text-foreground"
@@ -101,16 +104,36 @@ function HeaderGnbLinks({
               target="_blank"
               rel="noopener noreferrer"
               onClick={openSellKakao}
-              className={className}
+              className={cn(className, "relative shadow-sm md:mb-1 md:self-end")}
             >
-              {item.label}
+              <span className="mr-1 inline-flex items-center rounded-full bg-[#191919] px-1.5 py-px text-[8px] font-semibold leading-none tracking-tight text-white md:hidden">
+                당일현금
+              </span>
+              <span
+                aria-hidden
+                className="pointer-events-none absolute left-1/2 top-0 z-10 hidden -translate-x-1/2 -translate-y-[90%] md:block"
+              >
+                <span className="relative inline-flex items-center overflow-hidden rounded-full bg-[#191919] px-2 py-[3px] text-[9px] font-semibold leading-none tracking-tight text-white">
+                  당일 현금
+                  <span className="sell-badge-shimmer pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+                </span>
+                <span className="sell-badge-twinkle pointer-events-none absolute -left-1.5 -top-1 text-[8px] leading-none text-[#FEE500]">
+                  ✦
+                </span>
+                <span className="sell-badge-twinkle sell-badge-twinkle-delay pointer-events-none absolute -right-1.5 -bottom-0.5 text-[7px] leading-none text-white">
+                  ✦
+                </span>
+              </span>
+              <span className="md:hidden">{item.mobileLabel ?? item.label}</span>
+              <span className="hidden md:inline">{item.label}</span>
             </a>
           );
         }
 
         return (
           <Link key={item.href} href={item.href} className={className}>
-            {item.label}
+            <span className="md:hidden">{item.mobileLabel ?? item.label}</span>
+            <span className="hidden md:inline">{item.label}</span>
           </Link>
         );
       })}
@@ -154,6 +177,7 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
   const activeMenu = categoryMenu.find((tab) => tab.label === activeTab) ?? categoryMenu[0];
   const canAccessAdmin = isAdminUser(authUser) && authUser.email.toLowerCase() === ADMIN_EMAIL;
   const loginHref = getLoginHref(pathname);
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
   const closeMenu = () => setIsMenuOpen(false);
   const closeSearch = () => setIsSearchOpen(false);
   const closeAccountMenu = () => setIsAccountOpen(false);
@@ -276,33 +300,41 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
 
   return (
     <>
-      <header ref={headerRef} className="relative sticky top-0 z-50 w-full bg-background">
-        {pathname === "/login" || pathname === "/signup" ? null : <HeaderEventBanner />}
+      <header ref={headerRef} className="relative sticky top-0 z-50 w-full min-w-0 shrink-0 overflow-x-hidden bg-background pt-[env(safe-area-inset-top)]">
+        {isAuthPage ? null : <HeaderEventBanner />}
         <div className={cn("relative", isSearchOpen && "z-20")}>
-        <div className="container">
+        <div className="container min-w-0">
           {/* Top row */}
-          <div className="flex h-16 items-center justify-between gap-4">
+          <div
+            className={cn(
+              "flex min-w-0 items-center justify-between",
+              isAuthPage ? "h-12 gap-2 sm:h-14 sm:gap-3 md:h-16 md:gap-4" : "h-12 gap-2 md:h-16 md:gap-4"
+            )}
+          >
             {/* Left: logo + 전체/중고 toggle */}
-            <div className="flex items-center gap-3">
-              <Link href="/" aria-label="LEMICHU 홈">
+            <div className={cn("flex min-w-0 items-center", isAuthPage ? "gap-2 sm:gap-3" : "gap-2 md:gap-3")}>
+              <Link href="/" aria-label="LEMICHU 홈" className="shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/logo.png" alt="LEMICHU" className="h-5 w-auto dark:invert md:h-6" />
               </Link>
+              {isAuthPage ? null : (
               <Suspense
                 fallback={
-                  <div className="relative grid grid-cols-2 items-center rounded-md bg-secondary p-0.5 text-xs font-semibold">
+                  <div className="relative grid grid-cols-2 items-center rounded-md bg-secondary p-0.5 text-[11px] font-semibold md:text-xs">
                     <span className="absolute inset-y-0.5 right-0.5 w-[calc(50%-2px)] rounded-md bg-foreground" />
-                    <span className="relative z-10 rounded-md px-2.5 py-1 text-center text-muted-foreground">전체</span>
-                    <span className="relative z-10 rounded-md px-2.5 py-1 text-center text-background">중고</span>
+                    <span className="relative z-10 rounded-md px-1.5 py-0.5 text-center text-muted-foreground md:px-2.5 md:py-1">전체</span>
+                    <span className="relative z-10 rounded-md px-1.5 py-0.5 text-center text-background md:px-2.5 md:py-1">중고</span>
                   </div>
                 }
               >
                 <ModeToggle />
               </Suspense>
+              )}
             </div>
 
             {/* Right: search + auth / logged-in actions */}
-            <nav className="flex items-center gap-1 md:gap-2">
+            <nav className={cn("flex shrink-0 items-center", isAuthPage ? "gap-0.5 sm:gap-1 md:gap-2" : "gap-0.5 md:gap-2")}>
+              {isAuthPage ? null : (
               <button
                 type="button"
                 aria-label={isSearchOpen ? "검색 닫기" : "찾기"}
@@ -312,45 +344,58 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
                 className={cn(headerIconClassName, isSearchOpen && "bg-secondary")}
               >
                 {isSearchOpen ? (
-                  <X className="size-5" strokeWidth={1.8} />
+                  <X className="size-[18px] md:size-5" strokeWidth={1.8} />
                 ) : (
-                  <Search className="size-5" strokeWidth={1.8} />
+                  <Search className="size-[18px] md:size-5" strokeWidth={1.8} />
                 )}
                 {isSearchOpen ? null : <HoverTooltip label="찾기" />}
               </button>
+              )}
               {authUser ? (
                 <>
-                  <HeaderIconLink href="/my" label="찜">
+                  <HeaderIconLink href="/my" label="찜" className="hidden md:grid">
                     <Heart className="size-5" strokeWidth={1.8} />
                   </HeaderIconLink>
-                  <HeaderIconLink href="/my" label="담기">
+                  <HeaderIconLink href="/my" label="담기" className="hidden md:grid">
                     <ShoppingBag className="size-5" strokeWidth={1.8} />
                   </HeaderIconLink>
-                  <AccountMenu
-                    user={authUser}
-                    canAccessAdmin={canAccessAdmin}
-                    isOpen={isAccountOpen}
-                    menuRef={accountMenuRef}
-                    onToggle={() => {
-                      setIsMenuOpen(false);
-                      setIsSearchOpen(false);
-                      setIsAccountOpen((open) => !open);
-                    }}
-                    onClose={closeAccountMenu}
-                    onLogout={handleLogout}
-                  />
+                  <div className="hidden md:block">
+                    <AccountMenu
+                      user={authUser}
+                      canAccessAdmin={canAccessAdmin}
+                      isOpen={isAccountOpen}
+                      menuRef={accountMenuRef}
+                      onToggle={() => {
+                        setIsMenuOpen(false);
+                        setIsSearchOpen(false);
+                        setIsAccountOpen((open) => !open);
+                      }}
+                      onClose={closeAccountMenu}
+                      onLogout={handleLogout}
+                    />
+                  </div>
                 </>
               ) : (
                 <>
                   <Link
                     href={loginHref}
-                    className="inline-flex h-9 items-center rounded-md px-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary md:h-10 md:px-4"
+                    className={cn(
+                      "inline-flex items-center rounded-md font-semibold text-foreground transition-colors hover:bg-secondary",
+                      isAuthPage
+                        ? "h-8 px-2 text-[13px] sm:h-9 sm:px-3 sm:text-sm md:h-10 md:px-4"
+                        : "h-8 px-2 text-[13px] md:h-10 md:px-4 md:text-sm"
+                    )}
                   >
                     로그인
                   </Link>
                   <Link
                     href="/signup"
-                    className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 md:h-10 md:px-4"
+                    className={cn(
+                      "inline-flex items-center rounded-md bg-primary font-semibold text-primary-foreground transition-colors hover:bg-primary/90",
+                      isAuthPage
+                        ? "h-8 px-2 text-[13px] sm:h-9 sm:px-3 sm:text-sm md:h-10 md:px-4"
+                        : "hidden h-9 px-3 text-sm md:inline-flex md:h-10 md:px-4"
+                    )}
                   >
                     회원가입
                   </Link>
@@ -372,7 +417,8 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
         </Suspense>
         </div>
 
-        <div className="container">
+        {isAuthPage ? null : (
+        <div className="container min-w-0">
           <div
             className={cn(
               "grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -380,7 +426,7 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
             )}
           >
             <div className="overflow-hidden">
-              <nav className="flex h-11 items-center gap-5 overflow-x-auto no-scrollbar md:gap-7">
+              <nav className="flex h-11 items-center gap-3.5 overflow-x-auto border-t border-border/70 pr-1 no-scrollbar md:h-12 md:gap-7 md:border-t-0">
                 <button
                   type="button"
                   aria-label={isMenuOpen ? "전체 메뉴 닫기" : "전체 메뉴 열기"}
@@ -391,7 +437,7 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
                     setIsSearchOpen(false);
                     setIsMenuOpen((open) => !open);
                   }}
-                  className="-ml-1 grid size-9 shrink-0 place-items-center rounded-md text-foreground transition-colors hover:bg-secondary"
+                  className="-ml-1 grid size-8 shrink-0 place-items-center rounded-md text-foreground transition-colors hover:bg-secondary md:size-9"
                 >
                   {isMenuOpen ? (
                     <X className="size-5" strokeWidth={1.8} />
@@ -406,7 +452,9 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
             </div>
           </div>
         </div>
+        )}
 
+        {isAuthPage ? null : (
         <div
           id="global-category-menu"
           role="dialog"
@@ -461,7 +509,7 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
                     })}
                   </nav>
 
-                  <div className="py-5 md:py-6">
+                  <div className="py-4 md:py-6">
                     <Link
                       href={categoryHref(activeMenu.label)}
                       onClick={closeMenu}
@@ -511,6 +559,7 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
             </div>
           </div>
         </div>
+        )}
       </header>
 
       <div

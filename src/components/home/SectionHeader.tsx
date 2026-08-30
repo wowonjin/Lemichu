@@ -18,25 +18,25 @@ export function SectionHeader({
   className?: string;
 }) {
   return (
-    <div className={cn("flex items-end justify-between gap-4", className)}>
-      <div className="space-y-1.5">
+    <div className={cn("flex items-end justify-between gap-3", className)}>
+      <div className="min-w-0 space-y-1">
         {eyebrow ? (
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-gold">
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-gold md:text-xs">
             {eyebrow}
           </p>
         ) : null}
-        <h2 className="text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+        <h2 className="home-title">
           {title}
         </h2>
         {description ? (
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="home-desc">{description}</p>
         ) : null}
       </div>
 
       {moreHref ? (
         <Link
           href={moreHref}
-          className="group hidden shrink-0 items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:inline-flex"
+          className="home-more group"
         >
           {moreLabel}
           <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />

@@ -63,7 +63,7 @@ export function ProductCard({
       transition={{ type: "spring", stiffness: 300, damping: 26 }}
       className={cn("group relative flex flex-col", className)}
     >
-      <Link href={product.href} className="flex flex-col gap-3">
+      <Link href={product.href} className="flex flex-col gap-2 md:gap-3">
         <div
           className={cn(
             "relative aspect-square w-full overflow-hidden border border-transparent bg-muted",
@@ -79,10 +79,10 @@ export function ProductCard({
               {imageBadges}
             </div>
 
-            {unavailable ? (
-              <div className="absolute inset-0 grid place-items-center bg-background/70">
+            {unavailable && availability !== "sold" ? (
+              <div className="absolute inset-0 z-[8] grid place-items-center bg-background/70">
                 <span className="bg-foreground px-3 py-1 text-xs font-semibold text-background">
-                  {availability === "sold" ? "판매 완료" : "품절"}
+                  품절
                 </span>
               </div>
             ) : null}
@@ -90,7 +90,7 @@ export function ProductCard({
         </div>
 
         <div className="flex flex-col gap-2">
-          <div className="text-sm font-semibold tracking-tight text-foreground">
+          <div className="text-[13px] font-semibold tracking-tight text-foreground md:text-sm">
             {product.brand}
           </div>
 

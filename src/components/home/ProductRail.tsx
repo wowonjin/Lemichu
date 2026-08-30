@@ -24,10 +24,10 @@ export function ProductRail({
   };
 
   return (
-    <section className="container py-10 md:py-14">
+    <section className="container home-section">
       <SectionHeader title={title} moreHref={moreHref} />
 
-      <div className="relative mt-6">
+      <div className="relative mt-5 md:mt-6">
         {/* arrows (desktop) */}
         <button
           type="button"
@@ -48,13 +48,13 @@ export function ProductRail({
 
         <div
           ref={trackRef}
-          className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 no-scrollbar"
+          className="flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 no-scrollbar md:gap-4"
         >
           {products.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
-              className="w-[44%] shrink-0 snap-start sm:w-[30%] md:w-[22%] lg:w-[18%] xl:w-[15.5%]"
+              className="w-[46%] shrink-0 snap-start sm:w-[30%] md:w-[22%] lg:w-[18%] xl:w-[15.5%]"
             />
           ))}
         </div>

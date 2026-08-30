@@ -8,6 +8,7 @@ export const CATALOG_FILTERS = [
   { id: "new", label: "신규입고" },
   { id: "bags", label: "명품가방" },
   { id: "wallets", label: "지갑·카드지갑" },
+  { id: "sale", label: "SALE" },
 ] as const;
 
 export type CatalogFilterId = (typeof CATALOG_FILTERS)[number]["id"];
@@ -16,7 +17,7 @@ const NEW_ARRIVAL_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 const NEW_ARRIVAL_FALLBACK_COUNT = 24;
 
 export function parseCatalogFilter(value: string | null | undefined): CatalogFilterId {
-  if (value === "new" || value === "bags" || value === "wallets") return value;
+  if (value === "new" || value === "bags" || value === "wallets" || value === "sale") return value;
   return "all";
 }
 
@@ -40,6 +41,10 @@ export function isWalletProduct(product: Product) {
   return getProductKind(product) === "wallet";
 }
 
+export function isSaleProduct(product: Product) {
+  return typeof product.discountRate === "number" && product.discountRate > 0;
+}
+
 export function isNewArrivalProduct(product: Product, now = Date.now()) {
   return typeof product.createdAt === "number" && product.createdAt > 0
     ? now - product.createdAt <= NEW_ARRIVAL_WINDOW_MS
@@ -54,6 +59,7 @@ export function filterCatalogProducts(
   if (filter === "all") return products;
   if (filter === "bags") return products.filter(isBagProduct);
   if (filter === "wallets") return products.filter(isWalletProduct);
+  if (filter === "sale") return products.filter(isSaleProduct);
 
   const recent = products.filter((product) => isNewArrivalProduct(product, now));
   if (recent.length >= 8) return recent;

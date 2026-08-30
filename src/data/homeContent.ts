@@ -58,12 +58,7 @@ export const audiencePicks: {
   },
 ];
 
-export type PriceBandId =
-  | "under-500"
-  | "from-500-1500"
-  | "from-1500-3000"
-  | "from-3000-5000"
-  | "from-5000";
+export type PriceBandId = "under-200" | "under-500" | "under-1000" | "from-1500";
 
 export const priceBands: {
   id: PriceBandId;
@@ -76,47 +71,36 @@ export const priceBands: {
   preOwnedOnly?: boolean;
 }[] = [
   {
+    id: "under-200",
+    label: "20만원 이하",
+    shortLabel: "20만원 이하",
+    rangeLabel: "20만원 이하",
+    hint: "부담 없이 시작하기 좋은 명품",
+    maxPrice: 200000,
+  },
+  {
     id: "under-500",
     label: "50만원 이하",
     shortLabel: "50만원 이하",
     rangeLabel: "50만원 이하",
-    hint: "부담 없이 시작하기 좋은 명품",
+    hint: "입문으로 많이 고르는 구간",
     maxPrice: 500000,
   },
   {
-    id: "from-500-1500",
-    label: "50~150만원",
-    shortLabel: "50~150만원",
-    rangeLabel: "50~150만원",
-    hint: "선물과 첫 명품으로 많이 고르는 구간",
-    minPrice: 500001,
-    maxPrice: 1500000,
+    id: "under-1000",
+    label: "100만원 이하",
+    shortLabel: "100만원 이하",
+    rangeLabel: "100만원 이하",
+    hint: "데일리로 쓰기 좋은 라인",
+    maxPrice: 1000000,
   },
   {
-    id: "from-1500-3000",
-    label: "150~300만원",
-    shortLabel: "150~300만원",
-    rangeLabel: "150~300만원",
-    hint: "데일리로 오래 쓸 수 있는 라인",
-    minPrice: 1500001,
-    maxPrice: 3000000,
-  },
-  {
-    id: "from-3000-5000",
-    label: "300~500만원",
-    shortLabel: "300~500만원",
-    rangeLabel: "300~500만원",
+    id: "from-1500",
+    label: "150만원 이상",
+    shortLabel: "150만원 이상",
+    rangeLabel: "150만원 이상",
     hint: "소장 가치를 보기 시작하는 구간",
-    minPrice: 3000001,
-    maxPrice: 4999999,
-  },
-  {
-    id: "from-5000",
-    label: "500만원 이상",
-    shortLabel: "500만원 이상",
-    rangeLabel: "500만원 이상",
-    hint: "클래식과 하이엔드 피스",
-    minPrice: 5000000,
+    minPrice: 1500000,
   },
 ];
 

@@ -55,7 +55,7 @@ export function ProductVariantPurchaseProvider({
 }) {
   const purchasableVariants = useMemo(() => getPurchasableVariants(product), [product]);
   const [selectedVariantId, setSelectedVariantId] = useState(
-    purchasableVariants.length === 1 ? purchasableVariants[0]?.id ?? "" : ""
+    purchasableVariants[0]?.id ?? ""
   );
   const [paymentMethod, setPaymentMethod] = useState<TossCheckoutMethod>("TRANSFER");
   const [usePoints, setUsePoints] = useState(false);

@@ -6,10 +6,12 @@ export function findBrandByName(name: string) {
   if (!target) return undefined;
 
   return brands.find((brand) => {
+    const aliases = (brand.aliases ?? []).map((alias) => alias.toLowerCase());
     return (
       brand.name.toLowerCase() === target ||
       brand.wordmark.toLowerCase() === target ||
-      brand.id.replace(/-/g, " ") === target
+      brand.id.replace(/-/g, " ") === target ||
+      aliases.includes(target)
     );
   });
 }

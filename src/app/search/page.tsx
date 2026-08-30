@@ -3,6 +3,7 @@ import { CustomerPageShell } from "@/components/layout/CustomerPage";
 import { SearchTab } from "@/components/search/SearchTab";
 import { getCatalogProducts } from "@/lib/catalog";
 import { filterProductsByCategoryMenu } from "@/lib/categoryMenu";
+import { sortProductsByAvailability } from "@/lib/productAvailability";
 import { searchProducts } from "@/lib/productFilter";
 import { getSearchDiscovery } from "@/lib/search/discovery";
 
@@ -31,9 +32,11 @@ export default async function SearchPage({
     hasQuery ? Promise.resolve(undefined) : getSearchDiscovery(),
   ]);
   const results = hasQuery
-    ? tab || category || item
-      ? filterProductsByCategoryMenu(catalogProducts, { tab, category, item })
-      : searchProducts([q], catalogProducts, { usedOnly })
+    ? sortProductsByAvailability(
+        tab || category || item
+          ? filterProductsByCategoryMenu(catalogProducts, { tab, category, item })
+          : searchProducts([q], catalogProducts, { usedOnly })
+      )
     : [];
 
   const breadcrumb = [tab, category, item].filter(Boolean).join(" › ");

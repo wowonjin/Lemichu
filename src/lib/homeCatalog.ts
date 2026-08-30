@@ -1,4 +1,4 @@
-import type { HomeCategoryContent } from "@/data/homeCategories";
+import type { HomeCategoryContent, HomeCategoryId } from "@/data/homeCategories";
 import { filterByCategory } from "@/lib/productFilter";
 import type { Product } from "@/types/product";
 
@@ -41,14 +41,39 @@ export function pickHeroProducts(products: Product[]): Product[] {
   return uniqueById([wallet, bag, watch, jewelry].filter((product): product is Product => Boolean(product))).slice(0, 4);
 }
 
+const HOME_QUICK_BAR: Array<HomeCategoryItem & { sourceId?: HomeCategoryId }> = [
+  {
+    id: "bags-clutch",
+    sourceId: "women-bags",
+    label: "가방*클러치",
+    href: "/products?filter=bags",
+    imageSrc: "/category-images/cat-women-bags-cut.png",
+  },
+  {
+    id: "wallets-card",
+    sourceId: "wallets",
+    label: "지갑*카드지갑",
+    href: "/products?filter=wallets",
+    imageSrc: "/category-images/cat-wallets-cut.png",
+  },
+  {
+    id: "sale",
+    label: "SALE",
+    href: "/products?filter=sale",
+    imageSrc: "",
+  },
+];
+
 export function getHomeCategoryItems(categories: HomeCategoryContent[]): HomeCategoryItem[] {
-  return [...categories]
-    .filter((item) => item.visible)
-    .sort((a, b) => a.order - b.order)
-    .map((item) => ({
+  const byId = new Map(categories.map((item) => [item.id, item]));
+
+  return HOME_QUICK_BAR.map(({ sourceId, ...item }) => {
+    const stored = sourceId ? byId.get(sourceId) : undefined;
+    return {
       id: item.id,
       label: item.label,
       href: item.href,
-      imageSrc: item.imageSrc,
-    }));
+      imageSrc: stored?.imageSrc || item.imageSrc,
+    };
+  });
 }

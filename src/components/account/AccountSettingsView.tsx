@@ -262,7 +262,7 @@ export function AccountSettingsView() {
               return (
                 <div
                   key={row.key}
-                  className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-3 py-4 first:pt-0 last:pb-0 md:grid-cols-[160px_minmax(0,1fr)]"
+                  className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-2 py-4 first:pt-0 last:pb-0 sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-3 md:grid-cols-[160px_minmax(0,1fr)]"
                 >
                   {content}
                 </div>
@@ -274,7 +274,7 @@ export function AccountSettingsView() {
                 key={row.key}
                 type="button"
                 onClick={row.onClick}
-                className="grid w-full grid-cols-[120px_minmax(0,1fr)] items-center gap-3 py-4 text-left first:pt-0 last:pb-0 transition-opacity hover:opacity-70 md:grid-cols-[160px_minmax(0,1fr)]"
+                className="grid w-full grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-2 py-4 text-left first:pt-0 last:pb-0 transition-opacity hover:opacity-70 sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-3 md:grid-cols-[160px_minmax(0,1fr)]"
               >
                 {content}
               </button>

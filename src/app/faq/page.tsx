@@ -12,7 +12,7 @@ export default function FaqPage() {
     <CustomerPageShell className="bg-background font-sans">
       <section>
         <div className="flex flex-col gap-3 pb-2 md:flex-row md:items-end md:justify-between">
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="mt-2 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
             자주 묻는 질문
           </h1>
         </div>

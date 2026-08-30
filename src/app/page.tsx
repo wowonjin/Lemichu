@@ -1,5 +1,6 @@
 import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { CategoryQuickBar } from "@/components/home/CategoryQuickBar";
+import { TopBrandSection } from "@/components/home/TopBrandSection";
 import { TimeSaleSection } from "@/components/home/TimeSaleSection";
 import { RankingSection } from "@/components/home/RankingSection";
 import { AudiencePickSection } from "@/components/home/AudiencePickSection";
@@ -8,6 +9,7 @@ import { TrendPickSection } from "@/components/home/TrendPickSection";
 import { TrustEvidenceSection } from "@/components/home/TrustEvidenceSection";
 import { SellTradeCTA } from "@/components/home/SellTradeCTA";
 import { HomeFaqSection } from "@/components/home/HomeFaqSection";
+import { PurchaseReviewGallery } from "@/components/reviews/PurchaseReviewGallery";
 import { getHomePageData } from "@/lib/catalog";
 import { getPublishedHeroSlides } from "@/lib/hero-slides-server";
 
@@ -29,6 +31,7 @@ export default async function HomePage() {
     <>
       <HeroCarousel slides={heroSlides} />
       <CategoryQuickBar items={categoryItems} />
+      <TopBrandSection />
       <TimeSaleSection products={timeSaleProducts} endsAt={timeSaleEndsAt} />
       <RankingSection rankedProducts={rankedProducts} rankedTabs={rankedTabs} />
       <AudiencePickSection
@@ -40,6 +43,7 @@ export default async function HomePage() {
       <PriceBandSection tabs={priceBandTabs} moreHref="/products" />
       <TrendPickSection stories={trendStories} />
       <TrustEvidenceSection />
+      <PurchaseReviewGallery />
       <SellTradeCTA />
       <HomeFaqSection />
     </>

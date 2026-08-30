@@ -106,61 +106,37 @@ export function FloatingQuickButtons() {
   };
 
   return (
-    <>
-      <div className="fixed right-3 top-1/2 z-50 hidden -translate-y-1/2 flex-col items-end gap-2 md:right-5 md:flex">
-        {quickButtons.map((button) => (
-          <div key={button.href} className="group flex items-center gap-2.5">
-            <Tooltip label={button.label} />
-            <Link
-              href={button.href}
-              aria-label={button.label}
-              className={`${sideButtonClassName} size-[58px]`}
-            >
-              <SideIcon src={button.src} label={button.label} size={72} />
-            </Link>
-          </div>
-        ))}
-        <div className="group flex items-center gap-2.5">
-          <Tooltip label="카카오톡 문의" />
-          <KakaoInquiryButton
-            sizeClassName="size-[58px]"
-            buttonClassName={sideButtonClassName}
-          />
-        </div>
-        <div className="group flex items-center gap-2.5">
-          <Tooltip label="맨위로" />
-          <button
-            type="button"
-            aria-label="맨위로"
-            onClick={scrollToTop}
-            className={`${sideButtonClassName} size-[58px]`}
-          >
-            <TopIcon />
-          </button>
-        </div>
-      </div>
-
-      <div className="fixed bottom-20 right-2.5 z-40 flex flex-col items-end gap-1.5 md:hidden">
-        {quickButtons.map((button) => (
+    <div className="fixed right-3 top-1/2 z-50 hidden -translate-y-1/2 flex-col items-end gap-2 md:right-5 md:flex">
+      {quickButtons.map((button) => (
+        <div key={button.href} className="group flex items-center gap-2.5">
+          <Tooltip label={button.label} />
           <Link
-            key={button.href}
             href={button.href}
             aria-label={button.label}
-            className={`group ${sideButtonClassName} size-12`}
+            className={`${sideButtonClassName} size-[58px]`}
           >
-            <SideIcon src={button.src} label={button.label} size={60} />
+            <SideIcon src={button.src} label={button.label} size={72} />
           </Link>
-        ))}
-        <KakaoInquiryButton sizeClassName="size-12" buttonClassName={sideButtonClassName} />
+        </div>
+      ))}
+      <div className="group flex items-center gap-2.5">
+        <Tooltip label="카카오톡 문의" />
+        <KakaoInquiryButton
+          sizeClassName="size-[58px]"
+          buttonClassName={sideButtonClassName}
+        />
+      </div>
+      <div className="group flex items-center gap-2.5">
+        <Tooltip label="맨위로" />
         <button
           type="button"
           aria-label="맨위로"
           onClick={scrollToTop}
-          className={`group ${sideButtonClassName} size-12`}
+          className={`${sideButtonClassName} size-[58px]`}
         >
           <TopIcon />
         </button>
       </div>
-    </>
+    </div>
   );
 }

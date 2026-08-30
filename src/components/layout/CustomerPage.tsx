@@ -9,8 +9,8 @@ export function CustomerPageShell({
   className?: string;
 }) {
   return (
-    <div className={cn("bg-background", className)}>
-      <div className="container py-8 md:py-12">{children}</div>
+    <div className={cn("min-w-0 overflow-x-hidden bg-background", className)}>
+      <div className="container min-w-0 py-5 md:py-12">{children}</div>
     </div>
   );
 }
@@ -31,16 +31,16 @@ export function CustomerPageHero({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-[2rem] border border-border bg-background shadow-[0_24px_70px_rgba(15,23,42,0.08)]",
+        "overflow-hidden rounded-2xl border border-border bg-background shadow-[0_24px_70px_rgba(15,23,42,0.08)] md:rounded-[2rem]",
         className
       )}
     >
-      <div className="grid gap-8 p-6 md:grid-cols-[1.1fr_0.9fr] md:p-10">
-        <div>
+      <div className="grid gap-6 p-4 sm:p-6 md:grid-cols-[1.1fr_0.9fr] md:gap-8 md:p-10">
+        <div className="min-w-0">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-gold">
             {eyebrow}
           </p>
-          <h1 className="mt-4 text-balance font-serif text-3xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl">
+          <h1 className="mt-3 text-balance font-serif text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl md:mt-4 md:text-5xl">
             {title}
           </h1>
           {description ? (
@@ -65,7 +65,7 @@ export function CustomerSection({
   return (
     <section
       className={cn(
-        "rounded-[1.75rem] border border-border bg-background p-5 shadow-sm md:p-6",
+        "rounded-2xl border border-border bg-background p-4 shadow-sm md:rounded-[1.75rem] md:p-6",
         className
       )}
     >

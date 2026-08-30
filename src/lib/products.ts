@@ -10,7 +10,7 @@ import {
 import { firestoreDb, isFirebaseConfigured } from "@/lib/firebase";
 import type { NaverProductInput } from "@/lib/naver/types";
 import type { ProductImageAsset } from "@/lib/product-images";
-import type { ConditionGrade, ProductVariant } from "@/types/product";
+import type { ConditionGrade, ProductAvailability, ProductVariant } from "@/types/product";
 
 export type NaverSyncStatus = "synced" | "failed" | "skipped";
 
@@ -51,6 +51,7 @@ export type StoreProduct = {
   condition?: ConditionGrade;
   todayShip?: boolean;
   overseasShipping?: boolean;
+  availability?: ProductAvailability;
   naverSync: NaverSyncInfo;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;

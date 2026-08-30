@@ -35,7 +35,7 @@ export default async function EventPostPage({ params }: { params: Params }) {
 
   return (
     <article className="bg-background">
-      <div className="container py-8 md:py-12">
+      <div className="container min-w-0 py-5 md:py-12">
         <div className="mx-auto max-w-3xl">
           <div className="flex flex-wrap items-center justify-center gap-2 text-center text-xs font-medium text-muted-foreground md:text-sm">
             <span>{event.period}</span>
@@ -45,7 +45,7 @@ export default async function EventPostPage({ params }: { params: Params }) {
             <span>{event.badge}</span>
           </div>
 
-          <h1 className="mt-5 text-center font-serif text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl">
+          <h1 className="mt-4 text-center font-serif text-2xl font-semibold leading-tight tracking-tight text-foreground sm:mt-5 sm:text-4xl md:text-5xl">
             {event.doc.title}
           </h1>
 

@@ -247,12 +247,12 @@ export function SellTradeCTA() {
 
   return (
     <section id="sell-quote" className="bg-[#F7F7F7] dark:bg-muted">
-      <div className="container py-12 md:py-16">
+      <div className="container home-section">
         <Reveal className="mx-auto max-w-[760px] text-center">
-          <h2 className="text-[24px] font-bold leading-[1.3] tracking-tight text-foreground md:text-[30px]">
+          <h2 className="home-title">
             사진 한 장이면, 지금 팔 수 있는 가격을 알려드려요
           </h2>
-          <p className="mx-auto mt-2 max-w-[520px] text-[14px] leading-6 text-[#8B8B8B] dark:text-muted-foreground md:text-[15px]">
+          <p className="home-desc mx-auto max-w-[520px]">
             브랜드와 상품을 확인해 예상 판매가를 빠르게 안내해드려요.
           </p>
         </Reveal>
@@ -260,7 +260,7 @@ export function SellTradeCTA() {
         <Stagger
           stagger={0.12}
           delay={0.08}
-          className="mx-auto mt-7 grid max-w-[880px] items-stretch gap-3 md:mt-8 md:grid-cols-2 md:gap-4"
+          className="mx-auto mt-5 grid max-w-[880px] items-stretch gap-3 md:mt-8 md:grid-cols-2 md:gap-4"
         >
           <StaggerItem variant="left" className="min-w-0">
             <input
@@ -294,7 +294,7 @@ export function SellTradeCTA() {
                 applyFile(event.dataTransfer.files?.[0]);
               }}
               className={cn(
-                "flex h-full min-h-[300px] cursor-pointer flex-col items-center justify-center rounded-md bg-white px-6 py-8 text-center transition-colors dark:bg-card md:min-h-[360px]",
+                "flex h-full min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-md bg-white px-5 py-6 text-center transition-colors dark:bg-card md:min-h-[360px] md:px-6 md:py-8",
                 dragging && "bg-[#F3F3F3] dark:bg-secondary",
                 !photoUrl && !dragging && "hover:bg-[#FBFBFB] dark:hover:bg-secondary/60"
               )}
@@ -324,7 +324,7 @@ export function SellTradeCTA() {
                   >
                     <Camera className="size-6" strokeWidth={1.6} />
                   </span>
-                  <span className="mt-4 text-[18px] font-bold tracking-tight text-foreground md:text-[20px]">
+                  <span className="mt-3 text-[16px] font-bold tracking-tight text-foreground md:mt-4 md:text-[20px]">
                     사진 올리기
                   </span>
                   <span className="mt-1.5 text-[13px] leading-5 text-[#8B8B8B] dark:text-muted-foreground">
@@ -341,7 +341,7 @@ export function SellTradeCTA() {
           <StaggerItem variant="right">
           <aside
             aria-label="시세 안내 예시"
-            className="flex min-h-[300px] flex-col overflow-hidden rounded-md bg-white dark:bg-card md:min-h-[360px]"
+            className="flex min-h-[240px] flex-col overflow-hidden rounded-md bg-white dark:bg-card md:min-h-[360px]"
           >
             <div className="relative aspect-[4/3] bg-[#EEECEA] dark:bg-secondary">
               <Image

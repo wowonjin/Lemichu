@@ -9,6 +9,7 @@ import { ProductInquiryChat } from "@/components/product/ProductInquiryChat";
 import { WishlistToggleButton } from "@/components/product/WishlistToggleButton";
 import { productActionIconClassName } from "@/components/product/productActionStyles";
 import { useBankTransferPurchase } from "@/components/product/useBankTransferPurchase";
+import { isSoldProduct } from "@/components/product/SoldOutOverlay";
 import { getPurchaseButtonLabel } from "@/lib/formatPrice";
 import { BANK_TRANSFER_ACCOUNT } from "@/lib/bank-transfer";
 import type { Product } from "@/types/product";
@@ -47,7 +48,7 @@ export function ProductPurchaseBar({
   const notice = message || cartMessage;
 
   return (
-    <div className="fixed inset-x-0 bottom-16 z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur md:hidden">
+    <div className="fixed inset-x-0 bottom-[var(--mobile-bottom-nav-offset)] z-40 border-t border-border bg-background px-4 py-3 md:hidden">
       <div className="flex items-center gap-2">
         <WishlistToggleButton product={product} appearance="boxed" />
         <button
@@ -60,6 +61,14 @@ export function ProductPurchaseBar({
         </button>
         <ProductInquiryChat product={product} appearance="boxed" />
 
+        {isSoldProduct(product) ? (
+          <a
+            href={`/search?q=${encodeURIComponent(product.brand)}`}
+            className="inline-flex h-auto min-h-12 min-w-0 flex-1 items-center justify-center rounded-md bg-foreground px-3 py-2 text-[13px] font-semibold text-background"
+          >
+            비슷한 상품 보기
+          </a>
+        ) : (
         <Button
           variant="buy"
           size="lg"
@@ -75,8 +84,9 @@ export function ProductPurchaseBar({
             }
           )}
         </Button>
+        )}
       </div>
-      <p className="mt-2 text-center text-[11px] font-medium text-muted-foreground">
+      <p className="mt-2 truncate text-center text-[11px] font-medium text-muted-foreground">
         {notice
           ? notice
           : `${BANK_TRANSFER_ACCOUNT.methodLabel} · ${BANK_TRANSFER_ACCOUNT.bankName} ${BANK_TRANSFER_ACCOUNT.accountHolder}`}

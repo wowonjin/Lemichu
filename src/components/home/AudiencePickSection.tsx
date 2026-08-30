@@ -78,27 +78,17 @@ export function AudiencePickSection({
 
   return (
     <section className="bg-background" aria-labelledby="audience-heading">
-      <div className="container py-12 md:py-16">
-        <Reveal className="flex items-start justify-between gap-4">
+      <div className="container home-section">
+        <Reveal className="flex items-start justify-between gap-3">
           <div className="min-w-0 max-w-[640px]">
-            <h2
-              id="audience-heading"
-              className="text-[24px] font-bold leading-[1.3] tracking-tight text-foreground md:text-[30px]"
-            >
+            <h2 id="audience-heading" className="home-title">
               {title}
             </h2>
-            {description ? (
-              <p className="mt-2 text-[14px] leading-6 text-[#8B8B8B] dark:text-muted-foreground md:text-[15px]">
-                {description}
-              </p>
-            ) : null}
+            {description ? <p className="home-desc">{description}</p> : null}
           </div>
 
           {moreHref ? (
-            <Link
-              href={moreHref}
-              className="mt-1.5 inline-flex shrink-0 items-center text-[13px] font-medium text-[#8B8B8B] transition-colors hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground md:text-[14px]"
-            >
+            <Link href={moreHref} className="home-more mt-1">
               전체보기
               <ChevronRight className="size-4" />
             </Link>
@@ -109,7 +99,7 @@ export function AudiencePickSection({
           <div
             role="tablist"
             aria-label="상황별 큐레이션"
-            className="mt-7 grid grid-cols-2 gap-2.5 md:mt-8 md:grid-cols-4 md:gap-3"
+            className="mt-5 grid grid-cols-2 gap-2 md:mt-8 md:grid-cols-4 md:gap-3"
           >
             {tabs.map((tab) => {
               const selected = tab.id === active.id;
@@ -123,13 +113,13 @@ export function AudiencePickSection({
                   aria-controls={`${tabPrefix}-panel`}
                   onClick={() => setTabId(tab.id)}
                   className={cn(
-                    "rounded-md px-4 py-4 text-left transition-colors duration-200 md:min-h-[112px] md:px-6 md:py-6",
+                    "rounded-md px-3 py-3 text-left transition-colors duration-200 md:min-h-[112px] md:px-6 md:py-6",
                     selected
                       ? "bg-foreground text-background"
                       : "bg-[#F7F7F7] text-foreground hover:bg-[#F0F0F0] dark:bg-muted dark:hover:bg-secondary"
                   )}
                 >
-                  <span className="block text-[15px] font-bold leading-5 tracking-tight md:text-[17px]">
+                  <span className="block text-[13px] font-bold leading-5 tracking-tight md:text-[17px]">
                     {tab.shortLabel ?? tab.label}
                   </span>
                   {tab.audience ? (
@@ -161,7 +151,7 @@ export function AudiencePickSection({
               animate="visible"
               exit={{ opacity: 0 }}
               variants={panelStagger}
-              className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 md:mt-8 md:grid-cols-4 md:gap-x-5 md:gap-y-0"
+              className="home-product-grid md:gap-y-0"
             >
               {products.map((product) => (
                 <motion.div key={product.id} variants={reduceMotion ? undefined : panelItem}>

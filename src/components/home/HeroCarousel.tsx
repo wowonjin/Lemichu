@@ -92,7 +92,7 @@ export function HeroCarousel({ slides = fallbackSlides }: { slides?: HeroSlide[]
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
     >
-      <div className="relative h-[360px] overflow-hidden md:h-[480px] lg:h-[560px]">
+      <div className="relative aspect-[4/5] overflow-hidden sm:aspect-auto sm:h-[420px] md:h-[480px] lg:h-[560px]">
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={slide.id}
@@ -135,20 +135,20 @@ export function HeroCarousel({ slides = fallbackSlides }: { slides?: HeroSlide[]
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.55, delay: 0.14, ease }}
-                className={cn("max-w-lg", dark ? "text-background" : "text-foreground")}
+                className={cn("max-w-[15.5rem] md:max-w-lg", dark ? "text-background" : "text-foreground")}
               >
-                <h2 className="text-3xl font-semibold leading-tight tracking-tight md:text-5xl">
+                <h2 className="text-[22px] font-semibold leading-[1.25] tracking-tight md:text-5xl md:leading-tight">
                   {slide.title}
                 </h2>
                 <p
                   className={cn(
-                    "mt-4 max-w-md text-sm leading-relaxed md:text-base",
+                    "mt-2.5 max-w-md text-[13px] leading-5 md:mt-4 md:text-base md:leading-relaxed",
                     dark ? "text-background/75" : "text-muted-foreground"
                   )}
                 >
                   {slide.subtitle}
                 </p>
-                <Button asChild size="lg" variant={dark ? "gold" : "default"} className="mt-7">
+                <Button asChild variant={dark ? "gold" : "default"} className="mt-5 h-10 px-5 text-[13px] md:mt-7 md:h-12 md:px-8 md:text-base">
                   <Link href={slide.ctaHref}>
                     {slide.ctaLabel}
                     <ArrowRight />
@@ -160,7 +160,7 @@ export function HeroCarousel({ slides = fallbackSlides }: { slides?: HeroSlide[]
         </AnimatePresence>
 
         <motion.div
-          className="absolute inset-x-0 bottom-5 z-20 flex items-center justify-center gap-2 md:bottom-7"
+          className="absolute inset-x-0 bottom-3.5 z-20 flex items-center justify-center gap-1.5 md:bottom-7 md:gap-2"
           initial={reduceMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.35, ease }}

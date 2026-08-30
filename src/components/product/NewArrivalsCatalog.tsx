@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { RotateCcw, SlidersHorizontal, X } from "lucide-react";
+import { Check, RotateCcw, SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import {
@@ -12,6 +12,7 @@ import {
   filterCatalogProducts,
   type CatalogFilterId,
 } from "@/lib/catalogFilters";
+import { isOnSaleProduct, sortProductsByAvailability } from "@/lib/productAvailability";
 import type { Product } from "@/types/product";
 
 const priceRanges = [
@@ -42,6 +43,7 @@ export function NewArrivalsCatalog({
   title?: string;
 }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [onSaleOnly, setOnSaleOnly] = useState(false);
   const [brandFilter, setBrandFilter] = useState("전체");
   const [deliveryFilter, setDeliveryFilter] = useState<DeliveryFilter>("전체");
   const [priceRangeId, setPriceRangeId] = useState<PriceRangeId>("all");
@@ -76,12 +78,14 @@ export function NewArrivalsCatalog({
   }, [products]);
 
   const filteredProducts = useMemo(() => {
-    return collectionProducts.filter((product) => {
+    const matched = collectionProducts.filter((product) => {
+      if (onSaleOnly && !isOnSaleProduct(product)) return false;
       if (brandFilter !== "전체" && product.brand !== brandFilter) return false;
       if (deliveryFilter !== "전체" && product.deliveryBadge !== deliveryFilter) return false;
       return matchesPrice(product, priceRangeId);
     });
-  }, [brandFilter, collectionProducts, deliveryFilter, priceRangeId]);
+    return sortProductsByAvailability(matched);
+  }, [brandFilter, collectionProducts, deliveryFilter, onSaleOnly, priceRangeId]);
 
   const activeFilterCount = [
     brandFilter !== "전체",
@@ -113,7 +117,7 @@ export function NewArrivalsCatalog({
   return (
     <section>
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground">{heading}</h2>
+        <h2 className="text-xl font-semibold tracking-tight text-foreground md:text-2xl">{heading}</h2>
         <div className="flex gap-1 overflow-x-auto no-scrollbar md:flex-wrap md:justify-end">
           {CATALOG_FILTERS.map((item) => (
             <Link
@@ -140,36 +144,59 @@ export function NewArrivalsCatalog({
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <p className="text-[13px] text-[#8B8B8B] dark:text-muted-foreground">
+      <div className="mt-4 flex min-w-0 flex-wrap items-center justify-between gap-2">
+        <p className="min-w-0 text-[13px] text-[#8B8B8B] dark:text-muted-foreground">
           총 <span className="font-medium text-foreground">{filteredProducts.length}</span>개 상품
         </p>
-        <button
-          type="button"
-          aria-expanded={isFilterOpen}
-          onClick={() => setIsFilterOpen((current) => !current)}
-          className={cn(
-            "inline-flex h-9 items-center gap-1.5 rounded-md border px-3 text-[13px] font-semibold transition-colors",
-            isFilterOpen || activeFilterCount > 0
-              ? "border-foreground bg-foreground text-background"
-              : "border-[#E5E5E5] bg-background text-foreground hover:border-foreground dark:border-border"
-          )}
-        >
-          <SlidersHorizontal className="size-3.5" />
-          필터
-          {activeFilterCount > 0 ? (
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            aria-pressed={onSaleOnly}
+            onClick={() => setOnSaleOnly((current) => !current)}
+            className={cn(
+              "inline-flex h-9 items-center gap-1.5 rounded-md border px-3 text-[13px] font-semibold transition-colors",
+              onSaleOnly
+                ? "border-foreground bg-foreground text-background"
+                : "border-[#E5E5E5] bg-background text-foreground hover:border-foreground dark:border-border"
+            )}
+          >
             <span
               className={cn(
-                "grid size-4 place-items-center rounded-full text-[10px] font-bold leading-none",
-                isFilterOpen || activeFilterCount > 0
-                  ? "bg-background text-foreground"
-                  : "bg-foreground text-background"
+                "grid size-3.5 place-items-center rounded-[3px] border",
+                onSaleOnly ? "border-background bg-background text-foreground" : "border-current"
               )}
             >
-              {activeFilterCount}
+              {onSaleOnly ? <Check className="size-2.5" strokeWidth={3} /> : null}
             </span>
-          ) : null}
-        </button>
+            판매중만 보기
+          </button>
+          <button
+            type="button"
+            aria-expanded={isFilterOpen}
+            onClick={() => setIsFilterOpen((current) => !current)}
+            className={cn(
+              "inline-flex h-9 items-center gap-1.5 rounded-md border px-3 text-[13px] font-semibold transition-colors",
+              isFilterOpen || activeFilterCount > 0
+                ? "border-foreground bg-foreground text-background"
+                : "border-[#E5E5E5] bg-background text-foreground hover:border-foreground dark:border-border"
+            )}
+          >
+            <SlidersHorizontal className="size-3.5" />
+            필터
+            {activeFilterCount > 0 ? (
+              <span
+                className={cn(
+                  "grid size-4 place-items-center rounded-full text-[10px] font-bold leading-none",
+                  isFilterOpen || activeFilterCount > 0
+                    ? "bg-background text-foreground"
+                    : "bg-foreground text-background"
+                )}
+              >
+                {activeFilterCount}
+              </span>
+            ) : null}
+          </button>
+        </div>
       </div>
 
       {isFilterOpen ? (
@@ -250,13 +277,23 @@ export function NewArrivalsCatalog({
         ) : (
           <div className="grid min-h-52 place-items-center rounded-md border border-dashed border-border px-6 text-center">
             <div>
-              <p className="text-sm font-medium text-foreground">조건에 맞는 상품이 없습니다.</p>
+              <p className="text-sm font-medium text-foreground">
+                {onSaleOnly && activeFilterCount === 0
+                  ? "지금 판매 중인 상품이 없습니다."
+                  : "조건에 맞는 상품이 없습니다."}
+              </p>
               <button
                 type="button"
-                onClick={resetFilters}
+                onClick={() => {
+                  if (onSaleOnly && activeFilterCount === 0) {
+                    setOnSaleOnly(false);
+                    return;
+                  }
+                  resetFilters();
+                }}
                 className="mt-3 text-[13px] font-semibold text-foreground underline-offset-4 hover:underline"
               >
-                필터 초기화
+                {onSaleOnly && activeFilterCount === 0 ? "전체 상품 보기" : "필터 초기화"}
               </button>
             </div>
           </div>

@@ -201,9 +201,9 @@ export function BankTransferDepositDialog({
           </div>
 
           <div className="mt-4 flex items-end justify-between gap-3">
-            <div>
+            <div className="min-w-0">
               <p className="text-[12px] font-medium text-[#8B95A1]">계좌번호</p>
-              <p className="mt-1 text-[20px] font-bold tracking-[-0.03em] text-[#191F28]">
+              <p className="mt-1 break-all text-[18px] font-bold tracking-[-0.03em] text-[#191F28] sm:text-[20px]">
                 {formattedAccount}
               </p>
             </div>

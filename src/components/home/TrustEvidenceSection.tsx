@@ -28,15 +28,12 @@ function ReviewStars({ value }: { value: number }) {
 export function TrustEvidenceSection() {
   return (
     <section className="bg-background" aria-labelledby="trust-evidence-heading">
-      <div className="container py-12 md:py-16">
+      <div className="container home-section">
         <Reveal className="max-w-[640px]">
-          <h2
-            id="trust-evidence-heading"
-            className="text-[24px] font-bold leading-[1.3] tracking-tight text-foreground md:text-[30px]"
-          >
+          <h2 id="trust-evidence-heading" className="home-title">
             보이지 않는 부분까지 확인하고 보내드려요
           </h2>
-          <p className="mt-2 text-[14px] leading-6 text-[#8B8B8B] dark:text-muted-foreground md:text-[15px]">
+          <p className="home-desc">
             정품 여부부터 구성품과 컨디션까지, 출고 전 직접 확인합니다.
           </p>
         </Reveal>
@@ -45,7 +42,7 @@ export function TrustEvidenceSection() {
           as="ul"
           stagger={0.08}
           delay={0.08}
-          className="mt-7 grid grid-cols-2 gap-2.5 md:mt-8 md:gap-3 lg:grid-cols-4"
+          className="mt-5 grid grid-cols-2 gap-2 md:mt-8 md:gap-3 lg:grid-cols-4"
         >
           {inspectionEvidence.map((item) => (
             <StaggerItem key={item.id} as="li" variant="up">
@@ -59,8 +56,8 @@ export function TrustEvidenceSection() {
                     className="scale-[1.08] object-cover transition-transform duration-500 ease-out group-hover:scale-[1.14]"
                   />
                 </div>
-                <div className="px-3.5 pb-4 pt-3 md:px-4 md:pb-5">
-                  <h3 className="flex items-center gap-1.5 text-[15px] font-semibold tracking-tight text-foreground">
+                <div className="px-3 pb-3.5 pt-2.5 md:px-4 md:pb-5 md:pt-3">
+                  <h3 className="flex items-center gap-1.5 text-[13px] font-semibold tracking-tight text-foreground md:text-[15px]">
                     {item.title}
                     <Check className="size-3.5 text-gold" strokeWidth={2.6} aria-hidden />
                     <span className="sr-only">검수 완료</span>
@@ -75,9 +72,9 @@ export function TrustEvidenceSection() {
         </Stagger>
 
         {homePurchaseReviews.length > 0 ? (
-        <div className="mt-12 md:mt-16">
+        <div className="mt-8 md:mt-16">
           <Reveal>
-            <h3 className="text-[18px] font-bold tracking-tight text-foreground md:text-[20px]">
+            <h3 className="text-[16px] font-bold tracking-tight text-foreground md:text-[20px]">
               구매 인증 후기
             </h3>
           </Reveal>

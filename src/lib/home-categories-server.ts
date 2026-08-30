@@ -28,8 +28,12 @@ const getCachedHomeCategories = unstable_cache(loadHomeCategories, ["home-catego
   tags: ["home-categories"],
 });
 
+export const getAllHomeCategories = cache(async () => {
+  return getCachedHomeCategories();
+});
+
 export const getPublishedHomeCategories = cache(async () => {
-  const categories = await getCachedHomeCategories();
+  const categories = await getAllHomeCategories();
   return categories.filter((category) => category.visible);
 });
 

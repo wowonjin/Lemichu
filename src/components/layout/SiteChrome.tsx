@@ -32,12 +32,30 @@ export function SiteChrome({
     const { body } = document;
     const previousHtmlOverflow = html.style.overflow;
     const previousBodyOverflow = body.style.overflow;
-    html.style.overflow = "hidden";
-    body.style.overflow = "hidden";
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
+
+    const syncOverflow = () => {
+      if (desktopQuery.matches) {
+        html.style.overflow = "hidden";
+        body.style.overflow = "hidden";
+        return;
+      }
+
+      html.style.overflow = "";
+      html.style.overflowX = "hidden";
+      body.style.overflow = "";
+      body.style.overflowX = "hidden";
+    };
+
+    syncOverflow();
+    desktopQuery.addEventListener("change", syncOverflow);
 
     return () => {
+      desktopQuery.removeEventListener("change", syncOverflow);
       html.style.overflow = previousHtmlOverflow;
+      html.style.overflowX = "";
       body.style.overflow = previousBodyOverflow;
+      body.style.overflowX = "";
     };
   }, [isAuthPage]);
 
@@ -48,11 +66,19 @@ export function SiteChrome({
   return (
     <ToastProvider>
       <WishlistProvider>
-        <div className={isAuthPage ? "flex h-svh flex-col overflow-hidden" : undefined}>
+        <div
+          className={
+            isAuthPage
+              ? "min-w-0 overflow-x-hidden lg:flex lg:h-svh lg:flex-col lg:overflow-hidden"
+              : "min-w-0 overflow-x-hidden"
+          }
+        >
           <Header categoryMenu={categoryMenu} />
           <main
             className={
-              isAuthPage ? "min-h-0 flex-1 overflow-hidden" : "min-h-screen pb-16 md:pb-0"
+              isAuthPage
+                ? "min-w-0 overflow-x-hidden lg:min-h-0 lg:flex-1 lg:overflow-hidden"
+                : "min-h-screen min-w-0 overflow-x-hidden"
             }
           >
             {children}

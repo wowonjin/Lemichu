@@ -56,7 +56,7 @@ function Countdown({ endsAt }: { endsAt: string }) {
     <div className="flex flex-col items-center gap-2">
       <p className="text-sm font-medium text-muted-foreground">오늘 자정 종료</p>
       <div
-        className="flex items-center justify-center gap-2 font-serif text-2xl font-semibold tabular-nums text-foreground md:text-3xl"
+        className="flex items-center justify-center gap-1.5 font-serif text-xl font-semibold tabular-nums text-foreground md:gap-2 md:text-3xl"
         aria-live="off"
       >
         <span>{pad(hours)}</span>
@@ -96,7 +96,7 @@ function SaleCard({ product }: { product: TimeSaleProduct }) {
           </ProductPreviewMedia>
         </div>
 
-        <div className="space-y-1.5 bg-foreground px-4 py-3 text-background">
+        <div className="space-y-1 bg-foreground px-3 py-2.5 text-background md:space-y-1.5 md:px-4 md:py-3">
           <div className="flex items-baseline justify-between gap-2">
             <p className="truncate text-sm font-semibold">{product.brand}</p>
             {rate ? <span className="shrink-0 text-sm font-bold text-[#F04452]">{rate}%</span> : null}
@@ -143,9 +143,9 @@ export function TimeSaleSection({
 
   return (
     <section className="bg-background">
-      <div className="container py-10 md:py-14">
+      <div className="container home-section">
         <Reveal className="text-center">
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          <h2 className="home-title">
             오늘의 타임세일
           </h2>
           <div className="mt-3">
@@ -153,7 +153,7 @@ export function TimeSaleSection({
           </div>
         </Reveal>
 
-        <div className="relative mt-8">
+        <div className="relative mt-5 md:mt-8">
           <button
             type="button"
             aria-label="이전"
@@ -178,13 +178,13 @@ export function TimeSaleSection({
             <Stagger
               stagger={0.08}
               delay={0.08}
-              className="flex snap-x snap-mandatory gap-4 pb-1"
+              className="flex snap-x snap-mandatory gap-2 pb-1 md:gap-4"
             >
               {saleProducts.map((product) => (
                 <StaggerItem
                   key={product.id}
                   variant="scale"
-                  className="w-[78%] shrink-0 snap-start sm:w-[calc((100%_-_1rem)/2)] lg:w-[calc((100%_-_3rem)/4)]"
+                  className="w-[46%] shrink-0 snap-start sm:w-[calc((100%_-_1rem)/2)] lg:w-[calc((100%_-_3rem)/4)]"
                 >
                   <SaleCard product={product} />
                 </StaggerItem>

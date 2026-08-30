@@ -22,7 +22,7 @@ const nextConfig = {
       { source: "/new-arrivals", destination: "/products?filter=new", permanent: true },
       { source: "/ranking", destination: "/products", permanent: true },
       { source: "/threads", destination: "/products", permanent: true },
-      { source: "/sale", destination: "/products", permanent: true },
+      { source: "/sale", destination: "/products?filter=sale", permanent: true },
       { source: "/promotions", destination: "/products", permanent: true },
       { source: "/pre-owned", destination: "/products", permanent: true },
     ];

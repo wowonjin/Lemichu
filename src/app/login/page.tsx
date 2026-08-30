@@ -154,10 +154,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="h-full overflow-hidden bg-background">
+    <div className="min-w-0 overflow-x-hidden bg-background lg:h-full lg:overflow-hidden">
       <AuthSplitLayout>
           <div>
-            <h1 className="text-center text-[2rem] font-bold leading-none tracking-tight text-foreground">
+            <h1 className="text-center text-[1.5rem] font-bold leading-none tracking-tight text-foreground sm:text-[2rem]">
               로그인
             </h1>
             {redirectPath.startsWith("/my/wishlist") ? (
@@ -167,7 +167,7 @@ export default function LoginPage() {
             ) : null}
           </div>
 
-          <div className="mt-8">
+          <div className="mt-6 sm:mt-8">
             <SocialLoginButtons
               mode="login"
               disabled={isSubmitting}
@@ -175,13 +175,13 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="my-6 flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground sm:my-6 sm:gap-4">
             <span className="h-px flex-1 bg-border" />
             또는 이메일로 계속
             <span className="h-px flex-1 bg-border" />
           </div>
 
-          <form onSubmit={handleEmailLogin} className="flex flex-col gap-4">
+          <form onSubmit={handleEmailLogin} className="flex min-w-0 flex-col gap-3.5 sm:gap-4">
             <label className="grid gap-2 text-sm font-bold text-foreground">
               이메일
               <input
@@ -190,12 +190,12 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="h-12 rounded-md border border-border bg-secondary/60 px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30"
+                className="h-11 w-full min-w-0 rounded-md border border-border bg-secondary/60 px-4 text-base font-medium outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30 sm:h-12"
               />
             </label>
             <label className="grid gap-2 text-sm font-bold text-foreground">
               비밀번호
-              <span className="flex h-12 items-center rounded-md border border-border bg-secondary/60 px-4 transition-colors focus-within:border-foreground/30">
+              <span className="flex h-11 w-full min-w-0 items-center rounded-md border border-border bg-secondary/60 px-4 transition-colors focus-within:border-foreground/30 sm:h-12">
                 <input
                   type={showPassword ? "text" : "password"}
                   required
@@ -215,7 +215,7 @@ export default function LoginPage() {
               </span>
             </label>
 
-            <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-sm text-muted-foreground">
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -243,13 +243,13 @@ export default function LoginPage() {
               type="submit"
               size="lg"
               disabled={isSubmitting}
-              className="mt-2 h-12 w-full rounded-md text-base font-bold"
+              className="mt-2 h-11 w-full rounded-md text-base font-bold sm:h-12"
             >
               {isSubmitting ? "로그인 중..." : "로그인"}
             </Button>
           </form>
 
-          <p className="mt-7 text-center text-sm text-muted-foreground">
+          <p className="mt-6 pb-2 text-center text-sm text-muted-foreground sm:mt-7">
             아직 회원이 아니신가요?{" "}
             <Link
               href="/signup"

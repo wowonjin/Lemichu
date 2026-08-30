@@ -13,6 +13,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/cn";
 import { getPlaceholderGradient, isRealImage } from "@/lib/placeholder";
 import { ConditionBadge } from "@/components/product/ProductBadge";
+import { SoldOutOverlay, isSoldProduct } from "@/components/product/SoldOutOverlay";
 import type { Product } from "@/types/product";
 
 function uniqueImages(images: string[]) {
@@ -106,6 +107,10 @@ export function ProductImageGallery({
               style={{ backgroundImage: getPlaceholderGradient(`${product.id}-${activeIndex}`) }}
             />
           )}
+
+          {isSoldProduct(product) ? (
+            <SoldOutOverlay badgeClassName="size-[104px] text-[15px] md:size-[120px] md:text-[16px]" />
+          ) : null}
 
           {canNavigate ? (
             <>

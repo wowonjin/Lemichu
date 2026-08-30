@@ -160,14 +160,14 @@ export function HeaderEventBanner({ previewSettings }: { previewSettings?: Heade
         <div
           role="region"
           aria-label="이벤트 안내"
-          className="container relative flex h-10 items-center justify-center md:h-11"
+          className="container relative flex h-9 items-center justify-center md:h-11"
         >
           {slides.length > 1 ? (
             <button
               type="button"
               aria-label="이전 안내"
               onClick={() => goTo((currentIndex) => currentIndex - 1)}
-              className={cn(controlClassName, "absolute left-0")}
+              className={cn(controlClassName, "absolute left-0 hidden md:grid")}
             >
               <ChevronLeft className="size-4" strokeWidth={2} />
             </button>
@@ -176,13 +176,13 @@ export function HeaderEventBanner({ previewSettings }: { previewSettings?: Heade
           <Link
             href={current.href}
             className={cn(
-              "flex w-full min-w-0 items-center justify-center gap-1.5 px-11 text-center transition-opacity duration-150 active:opacity-70 md:px-14",
+              "flex w-full min-w-0 items-center justify-center gap-1.5 px-8 text-center transition-opacity duration-150 active:opacity-70 md:px-14",
               visible ? "opacity-100" : "opacity-0"
             )}
           >
             {current.badge ? (
               <span
-                className="inline-flex h-5 shrink-0 items-center rounded-md px-2 text-[11px] font-bold leading-none tracking-tight"
+                className="inline-flex h-4 shrink-0 items-center rounded-md px-1.5 text-[10px] font-bold leading-none tracking-tight md:h-5 md:px-2 md:text-[11px]"
                 style={{
                   backgroundColor: theme.badgeBackground,
                   color: theme.badgeText,
@@ -191,7 +191,7 @@ export function HeaderEventBanner({ previewSettings }: { previewSettings?: Heade
                 {current.badge}
               </span>
             ) : null}
-            <span className="truncate text-[13px] font-medium md:text-sm">{current.text}</span>
+            <span className="truncate text-[12px] font-medium md:text-sm">{current.text}</span>
             <ChevronRight className="size-4 shrink-0 opacity-35" strokeWidth={2} />
           </Link>
 
@@ -201,7 +201,7 @@ export function HeaderEventBanner({ previewSettings }: { previewSettings?: Heade
                 type="button"
                 aria-label="다음 안내"
                 onClick={() => goTo((currentIndex) => currentIndex + 1)}
-                className={controlClassName}
+                className={cn(controlClassName, "hidden md:grid")}
               >
                 <ChevronRight className="size-4" strokeWidth={2} />
               </button>

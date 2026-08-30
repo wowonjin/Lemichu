@@ -33,23 +33,23 @@ export default function SellPage() {
       <section>
         <div className="grid gap-8 border-b border-border pb-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
           <div>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground md:text-5xl">
+            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl md:text-5xl">
               내 명품 판매하기
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground md:text-base">
               사진과 상태가 담긴 상세 시세를 확인하고, 검수 후 판매와 정산을 진행할 수 있습니다.
               복잡한 서류보다 접수와 진행 상태를 명확하게 볼 수 있도록 구성했습니다.
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-col gap-2 sm:mt-7 sm:flex-row sm:flex-wrap sm:gap-3">
               <Link
                 href="/sell/estimate"
-                className="inline-flex h-12 items-center justify-center bg-foreground px-6 text-sm font-semibold text-background transition-colors hover:bg-foreground/85"
+                className="inline-flex h-11 w-full items-center justify-center bg-foreground px-6 text-sm font-semibold text-background transition-colors hover:bg-foreground/85 sm:h-12 sm:w-auto"
               >
                 시세 확인하기
               </Link>
               <Link
                 href="/sell/guide"
-                className="inline-flex h-12 items-center justify-center border border-border px-6 text-sm font-semibold text-foreground transition-colors hover:border-foreground"
+                className="inline-flex h-11 w-full items-center justify-center border border-border px-6 text-sm font-semibold text-foreground transition-colors hover:border-foreground sm:h-12 sm:w-auto"
               >
                 판매 절차 보기
               </Link>

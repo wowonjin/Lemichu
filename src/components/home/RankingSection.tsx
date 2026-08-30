@@ -117,39 +117,28 @@ export function RankingSection({
 
   return (
     <section className="bg-background" aria-labelledby="ranking-heading">
-      <div className="container py-12 md:py-16">
-        <Reveal className="flex items-start justify-between gap-4">
+      <div className="container home-section">
+        <Reveal className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2
-              id="ranking-heading"
-              className="text-[24px] font-bold leading-[1.3] tracking-tight text-foreground md:text-[30px]"
-            >
+            <h2 id="ranking-heading" className="home-title">
               지금 많이 보고 있어요
             </h2>
-            <p className="mt-2 text-[14px] leading-6 text-[#8B8B8B] dark:text-muted-foreground md:text-[15px]">
+            <p className="home-desc">
               실시간 관심 상품을 확인해보세요
             </p>
           </div>
 
-          <div className="flex shrink-0 flex-col items-end gap-1 pt-1.5">
-            <p className="text-[13px] font-medium tabular-nums tracking-tight text-[#8B8B8B] dark:text-muted-foreground">
-              실시간 관심 집계
-            </p>
-            <Link
-              href="/products"
-              className="inline-flex items-center text-[13px] font-medium text-[#8B8B8B] transition-colors hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground md:text-[14px]"
-            >
-              전체보기
-              <ChevronRight className="size-4" />
-            </Link>
-          </div>
+          <Link href="/products" className="home-more mt-1">
+            전체보기
+            <ChevronRight className="size-4" />
+          </Link>
         </Reveal>
 
         <Reveal delay={0.08} variant="soft">
           <div
             role="tablist"
             aria-label="랭킹 카테고리"
-            className="mt-7 flex items-end gap-6 md:mt-8"
+            className="mt-5 flex items-end gap-5 md:mt-8 md:gap-6"
           >
             {tabs.map((item) => {
               const selected = tab === item.id;
@@ -163,7 +152,7 @@ export function RankingSection({
                   aria-controls={`${tabPrefix}-panel`}
                   onClick={() => setTab(item.id)}
                   className={cn(
-                    "relative pb-2 text-[15px] font-semibold transition-colors md:text-[16px]",
+                    "relative pb-2 text-[14px] font-semibold transition-colors md:text-[16px]",
                     selected
                       ? "text-foreground"
                       : "text-[#8B8B8B] hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
@@ -194,7 +183,7 @@ export function RankingSection({
               animate="visible"
               exit={{ opacity: 0 }}
               variants={panelStagger}
-              className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 md:mt-8 md:grid-cols-4 md:gap-x-5"
+              className="home-product-grid"
             >
               {products.map((product, index) => (
                 <motion.div key={product.id} variants={reduceMotion ? undefined : panelItem}>

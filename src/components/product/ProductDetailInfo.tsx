@@ -101,7 +101,7 @@ function SpecList({
       {rows.map((row) => (
         <div
           key={`${row.label}-${row.value}`}
-          className="grid grid-cols-[88px_minmax(0,1fr)] gap-4 py-3 text-[13px] sm:grid-cols-[120px_minmax(0,1fr)]"
+          className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-3 py-3 text-[13px] sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-4"
         >
           <dt
             className={

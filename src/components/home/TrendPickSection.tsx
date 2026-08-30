@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { CatalogImage } from "@/components/product/CatalogImage";
+import { SoldOutOverlay, isSoldProduct } from "@/components/product/SoldOutOverlay";
 import { Reveal, Stagger, StaggerItem } from "@/components/home/section-motion";
 import { cn } from "@/lib/cn";
 import { formatPrice, getDiscountRate } from "@/lib/formatPrice";
@@ -51,6 +52,7 @@ function ProductImage({
           imageClassName
         )}
       />
+      {isSoldProduct(product) ? <SoldOutOverlay /> : null}
     </div>
   );
 }
@@ -90,10 +92,10 @@ function EditorialCard({ story }: { story: TrendStory }) {
           ) : null}
         </div>
 
-        <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.2em] text-[#B0B0B0] dark:text-muted-foreground">
+        <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.2em] text-[#B0B0B0] dark:text-muted-foreground md:mt-4">
           {story.editorialLabel}
         </p>
-        <h3 className="mt-2 text-[18px] font-semibold leading-6 tracking-tight text-foreground md:text-[20px]">
+        <h3 className="mt-1.5 text-[16px] font-semibold leading-6 tracking-tight text-foreground md:mt-2 md:text-[20px]">
           {story.title}
         </h3>
         <p className="mt-1.5 truncate text-[13px] leading-5 text-[#8B8B8B] dark:text-muted-foreground">
@@ -116,48 +118,40 @@ export function TrendPickSection({ stories }: { stories: TrendStory[] }) {
   if (stories.length === 0) return null;
 
   return (
-    <section className="bg-background pb-12 md:pb-16" aria-labelledby="trend-heading">
-      <div className="container pt-12 md:pt-16">
-        <Reveal className="flex items-start justify-between gap-4">
+    <section className="bg-background pb-8 md:pb-16" aria-labelledby="trend-heading">
+      <div className="container pt-8 md:pt-16">
+        <Reveal className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2
-              id="trend-heading"
-              className="text-[24px] font-bold leading-[1.3] tracking-tight text-foreground md:text-[30px]"
-            >
+            <h2 id="trend-heading" className="home-title">
               요즘 자주 보이는 명품만 모았어요
             </h2>
-            <p className="mt-2 text-[14px] leading-6 text-[#8B8B8B] dark:text-muted-foreground md:text-[15px]">
+            <p className="home-desc">
               이번 주 눈에 띄는 스타일과 제품을 에디터가 골랐어요.
             </p>
           </div>
 
-          <div className="flex shrink-0 flex-col items-end gap-1 pt-1.5">
-            <p className="text-[13px] font-medium tabular-nums tracking-tight text-[#8B8B8B] dark:text-muted-foreground">
-              이번 주 셀렉션 · {getThisWeekLabel()}
-            </p>
-            <Link
-              href="/magazine"
-              className="inline-flex items-center text-[13px] font-medium text-[#8B8B8B] transition-colors hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground md:text-[14px]"
-            >
-              전체보기
-              <ChevronRight className="size-4" />
-            </Link>
-          </div>
+          <Link href="/magazine" className="home-more mt-1">
+            전체보기
+            <ChevronRight className="size-4" />
+          </Link>
         </Reveal>
+        <p className="mt-1 hidden text-[13px] font-medium tabular-nums tracking-tight text-[#8B8B8B] dark:text-muted-foreground md:block">
+          이번 주 셀렉션 · {getThisWeekLabel()}
+        </p>
       </div>
 
-      <div className="mt-6 md:mt-8 lg:container">
+      <div className="mt-5 md:mt-8 lg:container">
         <div className="overflow-x-auto px-4 py-1 no-scrollbar lg:overflow-visible lg:px-0">
           <Stagger
             stagger={0.1}
             delay={0.08}
-            className="flex gap-5 snap-x snap-mandatory lg:grid lg:grid-cols-3 lg:gap-8"
+            className="flex snap-x snap-mandatory gap-3 lg:grid lg:grid-cols-3 lg:gap-8"
           >
             {stories.map((story) => (
               <StaggerItem
                 key={story.id}
                 variant="up"
-                className="w-[min(300px,78vw)] shrink-0 snap-start lg:w-auto"
+                className="w-[min(260px,72vw)] shrink-0 snap-start lg:w-auto"
               >
                 <EditorialCard story={story} />
               </StaggerItem>

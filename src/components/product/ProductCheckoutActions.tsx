@@ -10,6 +10,7 @@ import { ProductInquiryChat } from "@/components/product/ProductInquiryChat";
 import { WishlistToggleButton } from "@/components/product/WishlistToggleButton";
 import { productActionStackClassName } from "@/components/product/productActionStyles";
 import { useBankTransferPurchase } from "@/components/product/useBankTransferPurchase";
+import { isSoldProduct } from "@/components/product/SoldOutOverlay";
 import { getPurchaseButtonLabel } from "@/lib/formatPrice";
 import type { Product } from "@/types/product";
 
@@ -39,7 +40,7 @@ export function ProductCheckoutActions({ product }: { product: Product }) {
 
   return (
     <div className="pt-4">
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
         <WishlistToggleButton product={product} appearance="stack" />
         <button
           type="button"
@@ -52,9 +53,19 @@ export function ProductCheckoutActions({ product }: { product: Product }) {
         </button>
         <ProductInquiryChat product={product} appearance="stack" />
       </div>
+      {isSoldProduct(product) ? (
+        <a
+          href={`/search?q=${encodeURIComponent(product.brand)}`}
+          className="mt-3 inline-flex h-14 w-full items-center justify-center rounded-md bg-foreground px-4 text-[14px] font-semibold text-background md:text-[15px]"
+        >
+          비슷한 상품 보기
+        </a>
+      ) : (
       <div className="mt-3">
         <PaymentMethodPicker />
       </div>
+      )}
+      {isSoldProduct(product) ? null : (
       <Button
         variant="buy"
         size="lg"
@@ -70,7 +81,8 @@ export function ProductCheckoutActions({ product }: { product: Product }) {
           }
         )}
       </Button>
-      {!canPurchase && !notice ? (
+      )}
+      {!canPurchase && !notice && !isSoldProduct(product) ? (
         <p className="mt-3 text-center text-xs font-medium text-[#8B8B8B] dark:text-muted-foreground">
           {requiresVariantSelection
             ? "구매할 색상과 사이즈를 선택해주세요."

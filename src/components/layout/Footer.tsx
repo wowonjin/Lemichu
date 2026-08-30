@@ -1,4 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/cn";
 import { getKakaoChatUrl } from "@/lib/kakao-inquiry";
 
 const columns = [
@@ -42,69 +47,189 @@ const companyFacts = [
 
 const FTC_BIZ_URL = "https://www.ftc.go.kr/bizCommPop.do?wrkr_no=1421702111";
 
-function FactDivider() {
+function FooterLink({ href, children }: { href: string; children: string }) {
+  const className =
+    "text-[13px] leading-5 text-muted-foreground transition-colors hover:text-foreground md:text-sm";
+
+  if (href === "kakao") {
+    return (
+      <a href={getKakaoChatUrl()} target="_blank" rel="noopener noreferrer" className={className}>
+        {children}
+      </a>
+    );
+  }
+
   return (
-    <span aria-hidden className="mx-2.5 select-none text-border">
-      ·
-    </span>
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  );
+}
+
+function FooterAccordion() {
+  const [open, setOpen] = useState<string | null>(null);
+
+  return (
+    <nav aria-label="푸터 메뉴" className="border-t border-border/70 md:hidden">
+      {columns.map((col) => {
+        const expanded = open === col.title;
+        const panelId = `footer-${col.title}`;
+
+        return (
+          <div key={col.title} className="border-b border-border/70">
+            <button
+              type="button"
+              aria-expanded={expanded}
+              aria-controls={panelId}
+              onClick={() => setOpen(expanded ? null : col.title)}
+              className="flex h-12 w-full items-center justify-between text-left"
+            >
+              <span className="text-[14px] font-semibold tracking-tight text-foreground">
+                {col.title}
+              </span>
+              <ChevronDown
+                className={cn(
+                  "size-4 text-muted-foreground transition-transform duration-200",
+                  expanded && "rotate-180"
+                )}
+              />
+            </button>
+            <div id={panelId} hidden={!expanded} className="pb-3.5">
+              <ul className="space-y-2.5">
+                {col.links.map((link) => (
+                  <li key={link.href}>
+                    <FooterLink href={link.href}>{link.label}</FooterLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
+
+function CustomerService() {
+  return (
+    <div>
+      <p className="text-[13px] font-semibold tracking-tight text-foreground md:text-sm">
+        고객센터
+      </p>
+      <a
+        href="mailto:lemichu@naver.com"
+        className="mt-2 block text-[15px] font-medium tracking-tight text-foreground transition-colors hover:text-gold md:mt-3 md:text-sm md:font-normal md:text-muted-foreground md:hover:text-foreground"
+      >
+        lemichu@naver.com
+      </a>
+
+      <dl className="mt-3 space-y-1 text-[12px] leading-5 text-muted-foreground md:mt-5 md:space-y-1.5 md:text-xs md:leading-relaxed">
+        <div className="flex gap-3">
+          <dt className="w-14 shrink-0 text-muted-foreground/70">운영시간</dt>
+          <dd>평일 10:00 – 18:00</dd>
+        </div>
+        <div className="flex gap-3">
+          <dt className="w-14 shrink-0 text-muted-foreground/70">점심시간</dt>
+          <dd>12:30 – 13:30</dd>
+        </div>
+      </dl>
+
+      <a
+        href={getKakaoChatUrl()}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-md bg-[#FEE500] text-[13px] font-semibold text-[#191919] transition-opacity hover:opacity-90 md:mt-5 md:h-9 md:w-auto md:px-3.5"
+      >
+        카카오톡 상담
+      </a>
+    </div>
+  );
+}
+
+function CompanyFacts() {
+  return (
+    <>
+      <dl className="space-y-1.5 text-[11px] leading-5 text-muted-foreground md:hidden">
+        {companyFacts.map((fact) => (
+          <div key={fact.label} className="flex gap-3">
+            <dt className="w-[5.25rem] shrink-0 text-muted-foreground/60">{fact.label}</dt>
+            <dd>
+              {fact.value}
+              {fact.label === "사업자등록번호" ? (
+                <a
+                  href={FTC_BIZ_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-1.5 underline underline-offset-2 transition-colors hover:text-foreground"
+                >
+                  사업자정보확인
+                </a>
+              ) : null}
+            </dd>
+          </div>
+        ))}
+        <div className="flex gap-3">
+          <dt className="w-[5.25rem] shrink-0 text-muted-foreground/60">사업장 소재지</dt>
+          <dd>서울시 상봉로 23길 11, 804호</dd>
+        </div>
+      </dl>
+
+      <div className="hidden space-y-1 text-[11px] leading-6 text-muted-foreground md:block">
+        <p className="flex flex-wrap items-center">
+          {companyFacts.map((fact, index) => (
+            <span key={fact.label} className="inline-flex items-center">
+              {index > 0 ? (
+                <span aria-hidden className="mx-2.5 select-none text-border">
+                  ·
+                </span>
+              ) : null}
+              <span className="text-muted-foreground/65">{fact.label}</span>
+              <span className="ml-1.5">{fact.value}</span>
+              {fact.label === "사업자등록번호" ? (
+                <a
+                  href={FTC_BIZ_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-1.5 underline underline-offset-2 transition-colors hover:text-foreground"
+                >
+                  사업자정보확인
+                </a>
+              ) : null}
+            </span>
+          ))}
+        </p>
+        <p>
+          <span className="text-muted-foreground/65">사업장 소재지</span>
+          <span className="ml-1.5">서울시 상봉로 23길 11, 804호</span>
+        </p>
+      </div>
+    </>
   );
 }
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-sand">
-      <div className="container py-12 md:py-14">
-        <div className="flex flex-col gap-12 md:flex-row md:items-start md:justify-between">
+    <footer className="border-t border-border bg-sand pb-[var(--mobile-bottom-nav-offset)] md:pb-0">
+      <div className="container min-w-0 py-8 md:py-14">
+        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-12">
           <div className="max-w-sm">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="LEMICHU" className="h-6 w-auto dark:invert" />
-
-            <div className="mt-8">
-              <p className="text-sm font-semibold text-foreground">고객센터</p>
-              <a
-                href="mailto:lemichu@naver.com"
-                className="mt-3 block text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                lemichu@naver.com
-              </a>
-
-              <dl className="mt-5 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
-                <div className="flex gap-3">
-                  <dt className="w-[3.25rem] shrink-0 text-muted-foreground/70">운영시간</dt>
-                  <dd>평일 10:00 – 18:00</dd>
-                </div>
-                <div className="flex gap-3">
-                  <dt className="w-[3.25rem] shrink-0 text-muted-foreground/70">점심시간</dt>
-                  <dd>12:30 – 13:30</dd>
-                </div>
-              </dl>
+            <img src="/logo.png" alt="LEMICHU" className="h-5 w-auto dark:invert md:h-6" />
+            <div className="mt-5 md:mt-8">
+              <CustomerService />
             </div>
           </div>
 
-          <nav className="grid grid-cols-3 gap-x-10 sm:gap-x-14 md:gap-x-16 lg:gap-x-20">
+          <FooterAccordion />
+
+          <nav aria-label="푸터 메뉴" className="hidden grid-cols-3 gap-x-14 md:grid lg:gap-x-20">
             {columns.map((col) => (
               <div key={col.title}>
                 <h3 className="text-sm font-semibold text-foreground">{col.title}</h3>
                 <ul className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
                     <li key={link.href}>
-                      {link.href === "kakao" ? (
-                        <a
-                          href={getKakaoChatUrl()}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                          {link.label}
-                        </a>
-                      ) : (
-                        <Link
-                          href={link.href}
-                          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                          {link.label}
-                        </Link>
-                      )}
+                      <FooterLink href={link.href}>{link.label}</FooterLink>
                     </li>
                   ))}
                 </ul>
@@ -113,57 +238,34 @@ export function Footer() {
           </nav>
         </div>
 
-        <div className="mt-12 border-t border-border/60 pt-6">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <nav className="flex items-center gap-3 text-[13px]">
-              <Link
-                href="/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold text-foreground transition-colors hover:text-gold"
-              >
-                개인정보 처리방침
-              </Link>
-              <span aria-hidden className="h-3 w-px bg-border" />
-              <Link
-                href="/terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                이용약관
-              </Link>
-            </nav>
-            <p className="text-[11px] text-muted-foreground/80">
-              © 2026 LEMICHU. All rights reserved.
-            </p>
+        <div className="mt-8 border-t border-border/70 pt-5 md:mt-12 md:pt-6">
+          <nav className="flex items-center gap-3 text-[12px] md:text-[13px]">
+            <Link
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-foreground transition-colors hover:text-gold"
+            >
+              개인정보 처리방침
+            </Link>
+            <span aria-hidden className="h-3 w-px bg-border" />
+            <Link
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              이용약관
+            </Link>
+          </nav>
+
+          <div className="mt-4">
+            <CompanyFacts />
           </div>
 
-          <div className="mt-4 space-y-1 text-[11px] leading-6 text-muted-foreground">
-            <p className="flex flex-wrap items-center">
-              {companyFacts.map((fact, index) => (
-                <span key={fact.label} className="inline-flex items-center">
-                  {index > 0 ? <FactDivider /> : null}
-                  <span className="text-muted-foreground/65">{fact.label}</span>
-                  <span className="ml-1.5">{fact.value}</span>
-                  {fact.label === "사업자등록번호" ? (
-                    <a
-                      href={FTC_BIZ_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ml-1.5 underline underline-offset-2 transition-colors hover:text-foreground"
-                    >
-                      사업자정보확인
-                    </a>
-                  ) : null}
-                </span>
-              ))}
-            </p>
-            <p>
-              <span className="text-muted-foreground/65">사업장 소재지</span>
-              <span className="ml-1.5">서울시 상봉로 23길 11, 804호</span>
-            </p>
-          </div>
+          <p className="mt-5 text-[11px] text-muted-foreground/70">
+            © 2026 LEMICHU. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

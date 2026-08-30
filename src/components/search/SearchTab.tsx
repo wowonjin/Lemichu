@@ -42,7 +42,7 @@ export function SearchTab({
 
   return (
     <section className="min-h-[calc(100vh-160px)] bg-background">
-      <div className="container py-8 md:py-10">
+      <div className="container min-w-0 py-5 md:py-10">
         <form onSubmit={submit} className="relative mx-auto max-w-3xl">
           <Search className="pointer-events-none absolute left-0 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
           <input
