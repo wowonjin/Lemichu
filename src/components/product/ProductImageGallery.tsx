@@ -47,7 +47,8 @@ export function ProductImageGallery({
 
   useEffect(() => {
     const node = thumbnailRefs.current[activeIndex];
-    if (!node || node.offsetParent === null) return;
+    const rail = node?.closest("[data-thumbnail-rail]");
+    if (!node || !rail || node.offsetParent === null) return;
     node.scrollIntoView({
       block: "nearest",
       inline: "nearest",
@@ -55,7 +56,7 @@ export function ProductImageGallery({
   }, [activeIndex]);
 
   return (
-    <div className="grid gap-4 md:grid-cols-[auto_minmax(0,1fr)]">
+    <div className="grid min-w-0 max-w-full gap-4 md:grid-cols-[auto_minmax(0,1fr)]">
       <ThumbnailRail imageCount={galleryImages.length}>
         {galleryImages.map((imageUrl, index) => (
           <ThumbnailButton
@@ -73,9 +74,9 @@ export function ProductImageGallery({
         ))}
       </ThumbnailRail>
 
-      <div>
+      <div className="min-w-0 max-w-full">
         <div
-          className="group relative aspect-[4/3] overflow-hidden rounded-md bg-[#F4F5F7] dark:bg-muted md:aspect-square md:rounded-none"
+          className="group relative -mx-4 aspect-square overflow-hidden bg-[#F4F5F7] dark:bg-muted md:mx-0 md:rounded-none"
           onKeyDown={(event) => {
             if (!canNavigate) return;
             if (event.key === "ArrowLeft") {
@@ -96,14 +97,12 @@ export function ProductImageGallery({
           ) : null}
 
           {isRealImage(activeImage) ? (
-            <div className="absolute inset-0 flex items-center justify-center p-6 md:p-8">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={activeImage}
-                alt={`${product.brand} ${product.name}`}
-                className="min-h-0 min-w-0 max-h-full max-w-full object-contain"
-              />
-            </div>
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={activeImage}
+              alt={`${product.brand} ${product.name}`}
+              className="absolute inset-0 !h-full !w-full object-contain object-center"
+            />
           ) : (
             <div
               className="absolute inset-0"
@@ -254,6 +253,7 @@ function ThumbnailRail({
     <div className="hidden md:flex md:items-start md:gap-1.5">
       <div
         ref={listRef}
+        data-thumbnail-rail
         className="no-scrollbar w-[76px] max-h-[min(36rem,70vh)] overflow-y-auto overscroll-contain"
       >
         <div ref={contentRef} className="space-y-3">

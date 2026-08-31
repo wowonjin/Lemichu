@@ -19,7 +19,7 @@ export function getDiscountAmount(price: number, retailPrice?: number): number {
 export function getPurchaseButtonLabel(
   price: number,
   retailPrice?: number,
-  options?: { purchasing?: boolean; needsOption?: boolean }
+  options?: { purchasing?: boolean; needsOption?: boolean; compact?: boolean }
 ): string {
   if (options?.purchasing) return "결제 준비 중...";
 
@@ -27,8 +27,10 @@ export function getPurchaseButtonLabel(
   const discountAmount = getDiscountAmount(price, retailPrice);
 
   if (discountAmount >= 1000) {
-    return `${formatPriceWithUnit(discountAmount)} 지금 할인받고 구매하기`;
+    return options?.compact
+      ? `${formatPriceWithUnit(discountAmount)} 할인 구매`
+      : `${formatPriceWithUnit(discountAmount)} 지금 할인받고 구매하기`;
   }
-  if (options?.needsOption) return "옵션 선택하고 구매하기";
-  return `${salePrice} 지금 구매하기`;
+  if (options?.needsOption) return options?.compact ? "옵션 선택" : "옵션 선택하고 구매하기";
+  return options?.compact ? `${salePrice} 구매하기` : `${salePrice} 지금 구매하기`;
 }

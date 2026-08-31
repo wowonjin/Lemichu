@@ -138,7 +138,7 @@ function CustomerService() {
         href={getKakaoChatUrl()}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-md bg-[#FEE500] text-[13px] font-semibold text-[#191919] transition-opacity hover:opacity-90 md:mt-5 md:h-9 md:w-auto md:px-3.5"
+        className="mt-4 flex h-11 w-full items-center justify-center bg-[#FEE500] text-[13px] font-semibold text-[#191919] transition-opacity hover:opacity-90 max-md:-mx-4 max-md:w-[calc(100%+2rem)] md:mt-5 md:inline-flex md:h-9 md:w-auto md:rounded-md md:px-3.5"
       >
         카카오톡 상담
       </a>
@@ -212,7 +212,7 @@ export function Footer() {
     <footer className="border-t border-border bg-sand pb-[var(--mobile-bottom-nav-offset)] md:pb-0">
       <div className="container min-w-0 py-8 md:py-14">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-12">
-          <div className="max-w-sm">
+          <div className="md:max-w-sm">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="LEMICHU" className="h-5 w-auto dark:invert md:h-6" />
             <div className="mt-5 md:mt-8">

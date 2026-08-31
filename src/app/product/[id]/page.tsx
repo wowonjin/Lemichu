@@ -22,6 +22,7 @@ import { ProductAdminEditor } from "@/components/product/ProductAdminEditor";
 import { KakaoChannelBanner } from "@/components/product/KakaoChannelBanner";
 import { ProductDetailImageStack } from "@/components/product/ProductDetailImageStack";
 import { ProductDetailInfo } from "@/components/product/ProductDetailInfo";
+import { ProductDetailSectionNav } from "@/components/product/ProductDetailSectionNav";
 import { ProductPurchaseInfo } from "@/components/product/ProductPurchaseInfo";
 import { ProductImageGallery } from "@/components/product/ProductImageGallery";
 import { ProductShareButton } from "@/components/product/ProductShareButton";
@@ -122,7 +123,7 @@ export default async function ProductDetailPage({
   const sold = isSoldProduct(product);
 
   return (
-    <div className="bg-background pb-[calc(7rem+var(--mobile-bottom-nav-offset))] md:pb-0">
+    <div className="min-w-0 overflow-x-clip bg-background pb-[calc(7rem+var(--mobile-bottom-nav-offset))] md:pb-0">
       <RecentlyViewedTracker productId={product.id} />
       <ProductAdminEditor product={product} />
       <div className="container min-w-0 py-4 md:py-10">
@@ -139,16 +140,16 @@ export default async function ProductDetailPage({
         </nav>
 
         <ProductVariantPurchaseProvider key={product.id} product={product}>
-        <section className="grid gap-10 py-6 md:py-8 lg:grid-cols-[minmax(0,58%)_minmax(380px,1fr)] lg:items-start lg:gap-14">
+        <section className="grid min-w-0 gap-10 py-6 md:py-8 lg:grid-cols-[minmax(0,58%)_minmax(380px,1fr)] lg:items-start lg:gap-14">
           <div
             id="product-images"
-            className="scroll-mt-[calc(var(--header-height)+1rem)]"
+            className="min-w-0 max-w-full scroll-mt-[calc(var(--header-height)+1rem)]"
           >
             <ProductImageGallery product={product} images={galleryImages} />
           </div>
 
-          <div className="lg:sticky lg:top-[calc(var(--header-height)+1.5rem)] lg:row-span-2 lg:self-start">
-            <aside>
+          <div className="min-w-0 max-w-full lg:sticky lg:top-[calc(var(--header-height)+1.5rem)] lg:row-span-2 lg:self-start">
+            <aside className="min-w-0">
               <div className="pb-5">
                 <Link
                   href={`/search?q=${encodeURIComponent(product.brand)}`}
@@ -224,25 +225,7 @@ export default async function ProductDetailPage({
           </div>
 
           <div className="min-w-0">
-            <nav className="sticky top-[var(--header-height)] z-30 -mx-4 border-b border-[#EEEEEE] bg-background px-4 dark:border-border lg:mx-0 lg:px-0">
-              <div className="flex h-12 gap-5 overflow-x-auto text-[13px] font-semibold no-scrollbar md:h-14 md:gap-7 md:text-[14px]">
-                {[
-                  ["#product-images", "상품 이미지"],
-                  ["#detail", "상품정보"],
-                  ["#delivery", "배송/반품"],
-                  ["#reviews", "구매 고객 후기"],
-                  ["#faq", "FAQ"],
-                ].map(([href, label]) => (
-                  <a
-                    key={href}
-                    href={href}
-                    className="flex shrink-0 items-center border-b-2 border-transparent text-[#8B8B8B] transition-colors hover:border-foreground hover:text-foreground dark:text-muted-foreground"
-                  >
-                    {label}
-                  </a>
-                ))}
-              </div>
-            </nav>
+            <ProductDetailSectionNav />
 
             <section
               id="detail"
@@ -320,12 +303,12 @@ export default async function ProductDetailPage({
             </section>
 
             <div className="scroll-mt-[calc(var(--header-height)+3.5rem)]">
-              <PurchaseReviewGallery className="overflow-hidden rounded-2xl" />
+              <PurchaseReviewGallery className="scroll-mt-[calc(var(--header-height)+3.5rem)] overflow-hidden rounded-2xl" />
             </div>
 
             <section
               id="faq"
-              className="scroll-mt-[calc(var(--header-height)+3.5rem)] pb-4"
+              className="scroll-mt-[calc(var(--header-height)+3.5rem)] pb-4 pt-10 md:pt-14"
             >
               <ProductFaq />
             </section>

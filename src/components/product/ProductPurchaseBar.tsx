@@ -11,7 +11,6 @@ import { productActionIconClassName } from "@/components/product/productActionSt
 import { useBankTransferPurchase } from "@/components/product/useBankTransferPurchase";
 import { isSoldProduct } from "@/components/product/SoldOutOverlay";
 import { getPurchaseButtonLabel } from "@/lib/formatPrice";
-import { BANK_TRANSFER_ACCOUNT } from "@/lib/bank-transfer";
 import type { Product } from "@/types/product";
 
 /**
@@ -74,23 +73,24 @@ export function ProductPurchaseBar({
           size="lg"
           disabled={!canPurchase}
           onClick={openDeposit}
-          className="h-auto min-h-12 min-w-0 flex-1 px-3 py-2 text-[13px] font-semibold leading-tight"
+          className="h-auto min-h-12 min-w-0 flex-1 whitespace-normal px-2.5 py-2 text-[13px] font-semibold leading-tight"
         >
           {getPurchaseButtonLabel(
             payablePrice,
             pointsToUse > 0 ? undefined : product.retailPrice,
             {
+              compact: true,
               needsOption: !canPurchase && requiresVariantSelection,
             }
           )}
         </Button>
         )}
       </div>
-      <p className="mt-2 truncate text-center text-[11px] font-medium text-muted-foreground">
-        {notice
-          ? notice
-          : `${BANK_TRANSFER_ACCOUNT.methodLabel} · ${BANK_TRANSFER_ACCOUNT.bankName} ${BANK_TRANSFER_ACCOUNT.accountHolder}`}
-      </p>
+      {notice ? (
+        <p className="mt-2 truncate text-center text-[11px] font-medium text-muted-foreground">
+          {notice}
+        </p>
+      ) : null}
       <GuestMemberPurchaseDialog
         open={authOpen}
         onClose={closePurchase}

@@ -36,9 +36,9 @@ export function ProductPurchaseInfo({
         <div className="overflow-hidden">
           <dl className="space-y-3 pt-4 text-[13px]">
             {rows.map(([label, value]) => (
-              <div key={label} className="grid grid-cols-[4.25rem_minmax(0,1fr)] gap-2 sm:grid-cols-[76px_minmax(0,1fr)] sm:gap-3">
+              <div key={label} className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-2 sm:grid-cols-[76px_minmax(0,1fr)] sm:gap-3">
                 <dt className="text-[#8B8B8B] dark:text-muted-foreground">{label}</dt>
-                <dd className="min-w-0 font-medium leading-5 text-foreground">{value}</dd>
+                <dd className="min-w-0 break-keep font-medium leading-5 text-foreground">{value}</dd>
               </div>
             ))}
           </dl>

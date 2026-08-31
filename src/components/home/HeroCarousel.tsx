@@ -86,13 +86,13 @@ export function HeroCarousel({ slides = fallbackSlides }: { slides?: HeroSlide[]
 
   return (
     <section
-      className="group relative overflow-hidden bg-background"
+      className="group relative overflow-x-clip overflow-y-hidden bg-background"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
     >
-      <div className="relative aspect-[4/5] overflow-hidden sm:aspect-auto sm:h-[420px] md:h-[480px] lg:h-[560px]">
+      <div className="relative h-[min(70vw,20rem)] overflow-hidden sm:h-[420px] md:h-[480px] lg:h-[560px]">
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={slide.id}
@@ -108,7 +108,7 @@ export function HeroCarousel({ slides = fallbackSlides }: { slides?: HeroSlide[]
             <motion.img
               src={slide.image}
               alt=""
-              className="absolute inset-0 h-full w-full object-cover object-[center_45%]"
+              className="absolute inset-0 h-full w-full object-cover object-[center_38%] md:object-[center_45%]"
               draggable={false}
               initial={reduceMotion ? false : { scale: 1.08 }}
               animate={{ scale: 1 }}
@@ -137,18 +137,18 @@ export function HeroCarousel({ slides = fallbackSlides }: { slides?: HeroSlide[]
                 transition={{ duration: 0.55, delay: 0.14, ease }}
                 className={cn("max-w-[15.5rem] md:max-w-lg", dark ? "text-background" : "text-foreground")}
               >
-                <h2 className="text-[22px] font-semibold leading-[1.25] tracking-tight md:text-5xl md:leading-tight">
+                <h2 className="text-[20px] font-semibold leading-[1.28] tracking-tight md:text-5xl md:leading-tight">
                   {slide.title}
                 </h2>
                 <p
                   className={cn(
-                    "mt-2.5 max-w-md text-[13px] leading-5 md:mt-4 md:text-base md:leading-relaxed",
+                    "mt-2 max-w-md text-[13px] leading-5 md:mt-4 md:text-base md:leading-relaxed",
                     dark ? "text-background/75" : "text-muted-foreground"
                   )}
                 >
                   {slide.subtitle}
                 </p>
-                <Button asChild variant={dark ? "gold" : "default"} className="mt-5 h-10 px-5 text-[13px] md:mt-7 md:h-12 md:px-8 md:text-base">
+                <Button asChild variant={dark ? "gold" : "default"} className="mt-4 h-10 px-5 text-[13px] md:mt-7 md:h-12 md:px-8 md:text-base">
                   <Link href={slide.ctaHref}>
                     {slide.ctaLabel}
                     <ArrowRight />

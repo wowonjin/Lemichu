@@ -69,16 +69,16 @@ export function SiteChrome({
         <div
           className={
             isAuthPage
-              ? "min-w-0 overflow-x-hidden lg:flex lg:h-svh lg:flex-col lg:overflow-hidden"
-              : "min-w-0 overflow-x-hidden"
+              ? "min-w-0 overflow-x-clip lg:flex lg:h-svh lg:flex-col lg:overflow-hidden"
+              : "min-w-0 overflow-x-clip"
           }
         >
           <Header categoryMenu={categoryMenu} />
           <main
             className={
               isAuthPage
-                ? "min-w-0 overflow-x-hidden lg:min-h-0 lg:flex-1 lg:overflow-hidden"
-                : "min-h-screen min-w-0 overflow-x-hidden"
+                ? "min-w-0 overflow-x-clip lg:min-h-0 lg:flex-1 lg:overflow-hidden"
+                : "min-h-screen min-w-0 overflow-x-clip"
             }
           >
             {children}

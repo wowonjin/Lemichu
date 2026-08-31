@@ -39,7 +39,7 @@ export function ProductCheckoutActions({ product }: { product: Product }) {
   const notice = message || cartMessage;
 
   return (
-    <div className="pt-4">
+    <div className="hidden min-w-0 pt-4 md:block">
       <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
         <WishlistToggleButton product={product} appearance="stack" />
         <button
@@ -71,7 +71,7 @@ export function ProductCheckoutActions({ product }: { product: Product }) {
         size="lg"
         disabled={!canPurchase}
         onClick={openDeposit}
-        className="mt-3 h-14 w-full px-4 text-[14px] font-semibold leading-tight md:text-[15px]"
+        className="mt-3 h-14 w-full min-w-0 max-w-full px-4 text-[14px] font-semibold leading-tight md:text-[15px]"
       >
         {getPurchaseButtonLabel(
           payablePrice,

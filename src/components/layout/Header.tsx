@@ -72,56 +72,60 @@ function HeaderGnbLinks({
 }) {
   return (
     <>
-      {gnb.map((item) => {
-        const active = isGnbActive(item, pathname, filter);
-        const className = cn(
-          "inline-flex shrink-0 items-center text-[13px] transition-colors md:text-sm",
-          item.highlight
-            ? "h-8 rounded-full bg-[#FEE500] px-2.5 font-semibold text-[#191919] hover:opacity-90 md:h-7 md:rounded-md md:px-2.5"
-            : active
-              ? "font-semibold text-foreground hover:text-foreground"
-              : "font-medium text-foreground/80 hover:text-foreground"
-        );
-
-        if (item.highlight) {
+      {gnb
+        .filter((item) => !item.highlight)
+        .map((item) => {
+          const active = isGnbActive(item, pathname, filter);
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={cn(className, "relative shadow-sm md:mb-1 md:self-end")}
+              className={cn(
+                "inline-flex items-center whitespace-nowrap text-[12px] transition-colors md:text-sm",
+                active
+                  ? "font-semibold text-foreground hover:text-foreground"
+                  : "font-medium text-foreground/80 hover:text-foreground"
+              )}
             >
-              <span className="mr-1.5 inline-flex items-center rounded-full bg-[#191919] px-1.5 py-[3px] text-[8px] font-semibold leading-none tracking-tight text-[#FEE500] md:hidden">
-                당일현금
-              </span>
-              <span
-                aria-hidden
-                className="pointer-events-none absolute left-1/2 top-0 z-10 hidden -translate-x-1/2 -translate-y-[90%] md:block"
-              >
-                <span className="relative inline-flex items-center overflow-hidden rounded-full bg-[#191919] px-2 py-[3px] text-[9px] font-semibold leading-none tracking-tight text-white">
-                  당일 현금
-                  <span className="sell-badge-shimmer pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-                </span>
-                <span className="sell-badge-twinkle pointer-events-none absolute -left-1.5 -top-1 text-[8px] leading-none text-[#FEE500]">
-                  ✦
-                </span>
-                <span className="sell-badge-twinkle sell-badge-twinkle-delay pointer-events-none absolute -right-1.5 -bottom-0.5 text-[7px] leading-none text-white">
-                  ✦
-                </span>
-              </span>
               <span className="md:hidden">{item.mobileLabel ?? item.label}</span>
               <span className="hidden md:inline">{item.label}</span>
             </Link>
           );
-        }
-
-        return (
-          <Link key={item.href} href={item.href} className={className}>
-            <span className="md:hidden">{item.mobileLabel ?? item.label}</span>
-            <span className="hidden md:inline">{item.label}</span>
-          </Link>
-        );
-      })}
+        })}
     </>
+  );
+}
+
+function HeaderSellLink() {
+  const item = gnb.find((entry) => entry.highlight);
+  if (!item) return null;
+
+  return (
+    <Link
+      href={item.href}
+      className="relative inline-flex h-7 min-w-max shrink-0 items-center whitespace-nowrap rounded-full bg-[#FEE500] px-2 text-[12px] font-semibold text-[#191919] shadow-sm hover:opacity-90 md:mb-1 md:h-7 md:self-end md:rounded-md md:px-2.5 md:text-sm"
+    >
+      <span className="mr-1 inline-flex items-center rounded-full bg-[#191919] px-1.5 py-[3px] text-[8px] font-semibold leading-none tracking-tight text-[#FEE500] md:hidden">
+        당일현금
+      </span>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-0 z-10 hidden -translate-x-1/2 -translate-y-[90%] md:block"
+      >
+        <span className="relative inline-flex items-center overflow-hidden rounded-full bg-[#191919] px-2 py-[3px] text-[9px] font-semibold leading-none tracking-tight text-white">
+          당일 현금
+          <span className="sell-badge-shimmer pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+        </span>
+        <span className="sell-badge-twinkle pointer-events-none absolute -left-1.5 -top-1 text-[8px] leading-none text-[#FEE500]">
+          ✦
+        </span>
+        <span className="sell-badge-twinkle sell-badge-twinkle-delay pointer-events-none absolute -right-1.5 -bottom-0.5 text-[7px] leading-none text-white">
+          ✦
+        </span>
+      </span>
+      <span className="md:hidden">{item.mobileLabel ?? item.label}</span>
+      <span className="hidden md:inline">{item.label}</span>
+    </Link>
   );
 }
 
@@ -284,7 +288,7 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
 
   return (
     <>
-      <header ref={headerRef} className="relative sticky top-0 z-50 w-full min-w-0 shrink-0 overflow-x-hidden bg-background pt-[env(safe-area-inset-top)]">
+      <header ref={headerRef} className="relative sticky top-0 z-50 w-full min-w-0 shrink-0 overflow-x-clip bg-background pt-[env(safe-area-inset-top)]">
         {isAuthPage ? null : <HeaderEventBanner />}
         <div className={cn("relative", isSearchOpen && "z-20")}>
         <div className="container min-w-0">
@@ -402,15 +406,15 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
         </div>
 
         {isAuthPage ? null : (
-        <div className="container min-w-0">
+        <div className="container min-w-0 max-md:px-3">
           <div
             className={cn(
               "grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
               isSearchOpen ? "grid-rows-[0fr]" : "grid-rows-[1fr]"
             )}
           >
-            <div className="overflow-hidden">
-              <nav className="flex h-11 items-center gap-3.5 overflow-x-auto border-t border-border/70 pr-1 no-scrollbar md:h-12 md:gap-7 md:border-t-0">
+            <div className="min-w-0 overflow-hidden">
+              <nav className="flex h-11 w-full min-w-0 items-center overflow-y-hidden border-t border-border/70 md:h-12 md:gap-7 md:border-t-0">
                 <button
                   type="button"
                   aria-label={isMenuOpen ? "전체 메뉴 닫기" : "전체 메뉴 열기"}
@@ -429,9 +433,12 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
                     <Menu className="size-5" strokeWidth={1.8} />
                   )}
                 </button>
-                <Suspense fallback={<HeaderGnbLinks pathname={pathname} />}>
-                  <HeaderGnb />
-                </Suspense>
+                <div className="flex min-w-0 flex-1 items-center justify-start gap-3 overflow-hidden px-1.5 md:contents md:overflow-visible md:px-0 md:gap-7">
+                  <Suspense fallback={<HeaderGnbLinks pathname={pathname} />}>
+                    <HeaderGnb />
+                  </Suspense>
+                </div>
+                <HeaderSellLink />
               </nav>
             </div>
           </div>
@@ -466,7 +473,7 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
                 </div>
               ) : (
                 <>
-                  <nav className="flex h-11 items-center gap-2.5 overflow-x-auto border-b border-border/60 no-scrollbar">
+                  <nav className="flex h-11 items-center gap-2.5 overflow-x-auto overflow-y-hidden border-b border-border/60 no-scrollbar">
                     {categoryMenu.map((tab) => {
                       const isActive = tab.label === activeTab;
 
