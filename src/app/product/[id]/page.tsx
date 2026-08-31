@@ -20,6 +20,7 @@ import {
 import { RecentlyViewedTracker } from "@/components/account/RecentlyViewedTracker";
 import { ProductAdminEditor } from "@/components/product/ProductAdminEditor";
 import { KakaoChannelBanner } from "@/components/product/KakaoChannelBanner";
+import { ProductDetailImageStack } from "@/components/product/ProductDetailImageStack";
 import { ProductDetailInfo } from "@/components/product/ProductDetailInfo";
 import { ProductPurchaseInfo } from "@/components/product/ProductPurchaseInfo";
 import { ProductImageGallery } from "@/components/product/ProductImageGallery";
@@ -257,7 +258,13 @@ export default async function ProductDetailPage({
               </div>
 
               <ProductDetailInfo product={product} sizeGuide={options.sizeGuide} />
+              <ProductDetailImageStack
+                images={galleryImages}
+                alt={`${product.brand} ${product.name}`}
+              />
             </section>
+
+            <ProductBuyNotice />
 
             <section
               id="delivery"
@@ -312,8 +319,8 @@ export default async function ProductDetailPage({
               </div>
             </section>
 
-            <div className="-mx-4 scroll-mt-[calc(var(--header-height)+3.5rem)] md:mx-0">
-              <PurchaseReviewGallery className="md:rounded-xl" />
+            <div className="scroll-mt-[calc(var(--header-height)+3.5rem)]">
+              <PurchaseReviewGallery className="overflow-hidden rounded-2xl" />
             </div>
 
             <section
@@ -322,8 +329,6 @@ export default async function ProductDetailPage({
             >
               <ProductFaq />
             </section>
-
-            <ProductBuyNotice />
           </div>
         </section>
         <ProductPurchaseBar product={product} />

@@ -75,7 +75,7 @@ export function ProductImageGallery({
 
       <div>
         <div
-          className="group relative -mx-4 overflow-hidden bg-[#F7F7F7] dark:bg-muted md:mx-0 md:aspect-square"
+          className="group relative aspect-[4/3] overflow-hidden rounded-md bg-[#F4F5F7] dark:bg-muted md:aspect-square md:rounded-none"
           onKeyDown={(event) => {
             if (!canNavigate) return;
             if (event.key === "ArrowLeft") {
@@ -96,15 +96,17 @@ export function ProductImageGallery({
           ) : null}
 
           {isRealImage(activeImage) ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={activeImage}
-              alt={`${product.brand} ${product.name}`}
-              className="mx-auto block h-auto max-h-[85vh] w-full max-w-full object-contain md:h-full md:max-h-none"
-            />
+            <div className="absolute inset-0 flex items-center justify-center p-6 md:p-8">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={activeImage}
+                alt={`${product.brand} ${product.name}`}
+                className="min-h-0 min-w-0 max-h-full max-w-full object-contain"
+              />
+            </div>
           ) : (
             <div
-              className="h-full w-full"
+              className="absolute inset-0"
               style={{ backgroundImage: getPlaceholderGradient(`${product.id}-${activeIndex}`) }}
             />
           )}

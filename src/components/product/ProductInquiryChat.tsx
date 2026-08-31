@@ -159,8 +159,9 @@ export function ProductInquiryChat({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={handleSendToKakao}
-                  className="flex h-12 items-center justify-center rounded-md bg-[#FEE500] text-sm font-semibold text-[#191919] transition-opacity hover:opacity-90"
+                  className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#FEE500] text-sm font-semibold text-[#191919] transition-opacity hover:opacity-90 active:scale-[0.99]"
                 >
+                  <KakaoTalkIcon className="size-5" />
                   카카오톡으로 문의하기
                 </a>
                 <p className="text-center text-[11px] leading-5 text-muted-foreground">

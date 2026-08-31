@@ -16,20 +16,18 @@ import { AccountMenu } from "./AccountMenu";
 import { HeaderEventBanner } from "./HeaderEventBanner";
 import { ModeToggle } from "./ModeToggle";
 import { catalogFilterHref, parseCatalogFilter, type CatalogFilterId } from "@/lib/catalogFilters";
-import { buildSellInquiryMessage, copyTextToClipboard, getKakaoChatUrl } from "@/lib/kakao-inquiry";
-import { useToast } from "@/components/ui/toast";
 
 const gnb: {
   label: string;
   mobileLabel?: string;
   href: string;
   filter?: CatalogFilterId;
-  kakao?: boolean;
+  highlight?: boolean;
 }[] = [
   { label: "신규입고", href: catalogFilterHref("new"), filter: "new" },
   { label: "명품가방", href: catalogFilterHref("bags"), filter: "bags" },
   { label: "지갑·카드지갑", mobileLabel: "지갑", href: catalogFilterHref("wallets"), filter: "wallets" },
-  { label: "내 명품 판매하기", mobileLabel: "판매하기", href: getKakaoChatUrl(), kakao: true },
+  { label: "내 명품 판매하기", mobileLabel: "판매하기", href: "/sell", highlight: true },
 ];
 
 const headerIconClassName =
@@ -72,41 +70,27 @@ function HeaderGnbLinks({
   pathname: string;
   filter?: ReturnType<typeof parseCatalogFilter>;
 }) {
-  const { toast } = useToast();
-
-  const openSellKakao = () => {
-    const copied = copyTextToClipboard(buildSellInquiryMessage());
-    toast(
-      copied
-        ? "판매 문의 문구가 복사되었습니다. 카카오톡에 붙여넣어 보내주세요."
-        : "카카오톡에서 명품 판매하기로 문의드린다고 남겨주세요."
-    );
-  };
-
   return (
     <>
       {gnb.map((item) => {
         const active = isGnbActive(item, pathname, filter);
         const className = cn(
           "inline-flex shrink-0 items-center text-[13px] transition-colors md:text-sm",
-          item.kakao
-            ? "h-7 rounded-md bg-[#FEE500] px-2 font-semibold text-[#191919] hover:opacity-90 md:px-2.5"
+          item.highlight
+            ? "h-8 rounded-full bg-[#FEE500] px-2.5 font-semibold text-[#191919] hover:opacity-90 md:h-7 md:rounded-md md:px-2.5"
             : active
               ? "font-semibold text-foreground hover:text-foreground"
               : "font-medium text-foreground/80 hover:text-foreground"
         );
 
-        if (item.kakao) {
+        if (item.highlight) {
           return (
-            <a
+            <Link
               key={item.href}
               href={item.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={openSellKakao}
               className={cn(className, "relative shadow-sm md:mb-1 md:self-end")}
             >
-              <span className="mr-1 inline-flex items-center rounded-full bg-[#191919] px-1.5 py-px text-[8px] font-semibold leading-none tracking-tight text-white md:hidden">
+              <span className="mr-1.5 inline-flex items-center rounded-full bg-[#191919] px-1.5 py-[3px] text-[8px] font-semibold leading-none tracking-tight text-[#FEE500] md:hidden">
                 당일현금
               </span>
               <span
@@ -126,7 +110,7 @@ function HeaderGnbLinks({
               </span>
               <span className="md:hidden">{item.mobileLabel ?? item.label}</span>
               <span className="hidden md:inline">{item.label}</span>
-            </a>
+            </Link>
           );
         }
 

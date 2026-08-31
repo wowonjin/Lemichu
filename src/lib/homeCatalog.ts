@@ -1,5 +1,4 @@
 import type { HomeCategoryContent, HomeCategoryId } from "@/data/homeCategories";
-import { getKakaoChatUrl } from "@/lib/kakao-inquiry";
 import { filterByCategory } from "@/lib/productFilter";
 import type { Product } from "@/types/product";
 
@@ -73,7 +72,7 @@ const HOME_QUICK_BAR: Array<HomeCategoryItem & { sourceId?: HomeCategoryId }> = 
   {
     id: "sell",
     label: "내 명품*판매하기",
-    href: getKakaoChatUrl(),
+    href: "/sell",
     imageSrc: "",
   },
 ];
