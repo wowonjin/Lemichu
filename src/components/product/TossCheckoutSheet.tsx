@@ -63,7 +63,7 @@ export function TossCheckoutSheet({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16, scale: 0.98 }}
               transition={{ type: "spring", stiffness: 380, damping: 32 }}
-              className="pointer-events-auto relative flex w-full max-w-[400px] flex-col overflow-hidden rounded-t-[24px] bg-white text-[#191F28] shadow-[0_24px_64px_rgba(15,23,42,0.16),0_4px_16px_rgba(15,23,42,0.08)] md:rounded-[24px] md:ring-1 md:ring-black/10"
+              className="pointer-events-auto relative flex w-full max-h-[min(92dvh,760px)] max-w-[400px] flex-col overflow-y-auto overflow-x-hidden rounded-t-[24px] bg-white text-[#191F28] shadow-[0_24px_64px_rgba(15,23,42,0.16),0_4px_16px_rgba(15,23,42,0.08)] md:rounded-[24px] md:ring-1 md:ring-black/10"
             >
               {children}
             </motion.section>

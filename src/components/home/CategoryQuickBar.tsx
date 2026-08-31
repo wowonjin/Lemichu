@@ -26,31 +26,43 @@ export function CategoryQuickBar({ items }: { items: HomeCategoryItem[] }) {
           as="ul"
           stagger={0.05}
           delay={0.04}
-          className="mx-auto grid max-w-sm grid-cols-3 justify-items-center gap-3 md:max-w-lg md:gap-8"
+          className="mx-auto grid max-w-md grid-cols-5 justify-items-center gap-1 md:max-w-2xl md:gap-4"
         >
-          {items.map((item) => (
-            <StaggerItem key={item.id} as="li">
-              <Link href={item.href} className="group flex w-[4.25rem] flex-col items-center gap-2 md:w-24 md:gap-2.5">
-                <span className="relative grid size-14 place-items-center overflow-hidden rounded-md bg-[#f4f6f8] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:bg-[#e8ecf0] md:size-20">
-                  {item.imageSrc ? (
-                    <Image
-                      src={item.imageSrc}
-                      alt=""
-                      fill
-                      sizes="80px"
-                      unoptimized
-                      className="object-contain p-2.5 transition-transform duration-300 group-hover:scale-[1.04] md:p-3"
-                    />
-                  ) : (
-                    <span className="text-[13px] font-bold tracking-[0.04em] text-[#F04452] md:text-base">
-                      SALE
-                    </span>
-                  )}
-                </span>
-                <CategoryLabel label={item.label} />
-              </Link>
-            </StaggerItem>
-          ))}
+          {items.map((item) => {
+            const external = item.href.startsWith("http");
+            return (
+              <StaggerItem key={item.id} as="li">
+                <Link
+                  href={item.href}
+                  target={external ? "_blank" : undefined}
+                  rel={external ? "noopener noreferrer" : undefined}
+                  className="group flex w-[3.4rem] flex-col items-center gap-1.5 md:w-20 md:gap-2.5"
+                >
+                  <span className="relative grid size-12 place-items-center overflow-hidden rounded-md bg-[#f4f6f8] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:bg-[#e8ecf0] md:size-16">
+                    {item.imageSrc ? (
+                      <Image
+                        src={item.imageSrc}
+                        alt=""
+                        fill
+                        sizes="64px"
+                        unoptimized
+                        className="object-contain p-1.5 transition-transform duration-300 group-hover:scale-[1.04] md:p-2.5"
+                      />
+                    ) : item.id === "sale" ? (
+                      <span className="text-[11px] font-bold tracking-[0.04em] text-[#F04452] md:text-sm">
+                        SALE
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-bold text-foreground md:text-sm">
+                        판매
+                      </span>
+                    )}
+                  </span>
+                  <CategoryLabel label={item.label} />
+                </Link>
+              </StaggerItem>
+            );
+          })}
         </Stagger>
       </div>
     </section>

@@ -164,6 +164,10 @@ function preOwnedOnly(products: Product[]) {
   return products.filter((product) => product.isPreOwned);
 }
 
+function availableForStorefront(products: Product[]) {
+  return products.filter((product) => product.availability !== "sold");
+}
+
 /** All registered products, including hidden new arrivals. Used for PDP and checkout. */
 export const getRegisteredProducts = cache(async () => {
   return fetchRegisteredProducts();
@@ -171,7 +175,7 @@ export const getRegisteredProducts = cache(async () => {
 
 /** Storefront listings. Temporarily used-only so 전체 shows pre-owned products. */
 export const getCatalogProducts = cache(async () => {
-  return preOwnedOnly(await fetchRegisteredProducts());
+  return availableForStorefront(preOwnedOnly(await fetchRegisteredProducts()));
 });
 
 export const getHeaderCategoryMenu = cache(async () => {

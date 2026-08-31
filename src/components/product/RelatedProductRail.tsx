@@ -75,14 +75,14 @@ export function RelatedProductRail({
   if (products.length === 0) return null;
 
   return (
-    <section className="pb-12 md:pb-16">
+    <section id="similar-products" className="scroll-mt-[calc(var(--header-height)+1rem)] pb-12 md:pb-16">
       <div className="flex items-end justify-between gap-4">
         <div className="min-w-0">
           <h2 className="text-[24px] font-bold leading-[1.3] tracking-tight text-foreground md:text-[30px]">
-            함께 보면 좋은 상품
+            비슷한 상품 보기
           </h2>
           <p className="mt-2 text-[14px] leading-6 text-[#8B8B8B] dark:text-muted-foreground md:text-[15px]">
-            같은 브랜드와 인기 상품을 함께 확인해 보세요.
+            비슷한 컨디션과 같은 브랜드 상품을 함께 확인해 보세요.
           </p>
         </div>
         <Link

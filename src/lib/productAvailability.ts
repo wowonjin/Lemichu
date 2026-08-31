@@ -5,6 +5,10 @@ export function isOnSaleProduct(product: Product) {
   return getProductAvailability(product) === "available";
 }
 
+export function excludeSoldProducts<T extends Product>(products: T[]) {
+  return products.filter((product) => getProductAvailability(product) !== "sold");
+}
+
 export function sortProductsByAvailability<T extends Product>(products: T[]) {
   return [...products].sort((left, right) => {
     const rank = (item: Product) => {

@@ -63,7 +63,7 @@ export function ProductPurchaseBar({
 
         {isSoldProduct(product) ? (
           <a
-            href={`/search?q=${encodeURIComponent(product.brand)}`}
+            href="#similar-products"
             className="inline-flex h-auto min-h-12 min-w-0 flex-1 items-center justify-center rounded-md bg-foreground px-3 py-2 text-[13px] font-semibold text-background"
           >
             비슷한 상품 보기

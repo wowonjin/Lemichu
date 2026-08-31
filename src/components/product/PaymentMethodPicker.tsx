@@ -5,6 +5,8 @@ import { cn } from "@/lib/cn";
 import { formatPriceWithUnit } from "@/lib/formatPrice";
 import type { TossCheckoutMethod } from "@/lib/points";
 
+export const SHOW_PAYMENT_METHOD_PICKER = false;
+
 const METHODS: Array<{
   id: TossCheckoutMethod;
   label: string;
@@ -17,6 +19,8 @@ const METHODS: Array<{
 
 export function PaymentMethodPicker({ compact = false }: { compact?: boolean }) {
   const { expectedEarn, paymentMethod, selectPaymentMethod } = useProductVariantPurchase();
+
+  if (!SHOW_PAYMENT_METHOD_PICKER) return null;
 
   return (
     <div className={compact ? "space-y-1.5" : "space-y-2"}>

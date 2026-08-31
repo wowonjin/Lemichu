@@ -5,6 +5,7 @@ import { Copy, X } from "lucide-react";
 import { TossCheckoutSheet } from "@/components/product/TossCheckoutSheet";
 import { useToast } from "@/components/ui/toast";
 import { useAuthUser } from "@/hooks/useAuthUser";
+import { normalizePhoneNumber } from "@/lib/auth";
 import {
   BANK_TRANSFER_ACCOUNT,
   formatBankAccountNumber,
@@ -12,7 +13,28 @@ import {
 import { submitBankTransferOrder } from "@/lib/bank-transfer-order";
 import { formatPriceWithUnit } from "@/lib/formatPrice";
 import { copyTextToClipboard } from "@/lib/kakao-inquiry";
+import { fetchMyProfile } from "@/lib/member-account-client";
 import { publishPointsChanged } from "@/lib/points";
+
+const emptyDelivery = {
+  recipientName: "",
+  phone: "",
+  postalCode: "",
+  address1: "",
+  address2: "",
+};
+
+function formatPhoneInput(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length < 4) return digits;
+  if (digits.length === 10) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  if (digits.length < 8) {
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  }
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
 
 export function BankTransferDepositDialog({
   open,
@@ -40,25 +62,62 @@ export function BankTransferDepositDialog({
   optionLabel?: string;
 }) {
   const { toast } = useToast();
-  const { isLoggedIn } = useAuthUser();
+  const { isLoggedIn, user } = useAuthUser();
   const [copied, setCopied] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [depositorName, setDepositorName] = useState("");
+  const [delivery, setDelivery] = useState(emptyDelivery);
   const [createdOrder, setCreatedOrder] = useState<{
     orderId: string;
     payablePrice: number;
     depositDueAt?: string;
   } | null>(null);
   const formattedAccount = formatBankAccountNumber(BANK_TRANSFER_ACCOUNT.accountNumber);
+  const canSubmit =
+    Boolean(depositorName.trim()) &&
+    Boolean(delivery.recipientName.trim()) &&
+    Boolean(normalizePhoneNumber(delivery.phone)) &&
+    Boolean(delivery.address1.trim());
 
   useEffect(() => {
     if (!open) {
       setCopied(false);
       setSubmitting(false);
       setDepositorName("");
+      setDelivery(emptyDelivery);
       setCreatedOrder(null);
+      return;
     }
-  }, [open]);
+
+    if (!isLoggedIn) return;
+
+    let cancelled = false;
+    fetchMyProfile()
+      .then((profile) => {
+        if (cancelled) return;
+        const saved = profile.addresses?.find((item) => item.isDefault) ?? profile.addresses?.[0];
+        setDelivery({
+          recipientName: saved?.name || profile.name || user?.name || "",
+          phone: formatPhoneInput(saved?.phone || profile.phone || user?.phone || ""),
+          postalCode: saved?.postalCode || "",
+          address1: saved?.address1 || "",
+          address2: saved?.address2 || "",
+        });
+        setDepositorName((current) => current || saved?.name || profile.name || user?.name || "");
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setDelivery((current) => ({
+          ...current,
+          recipientName: current.recipientName || user?.name || "",
+          phone: current.phone || formatPhoneInput(user?.phone || ""),
+        }));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, isLoggedIn, user?.name, user?.phone]);
 
   const copyAccount = () => {
     const ok = copyTextToClipboard(BANK_TRANSFER_ACCOUNT.accountNumber);
@@ -76,6 +135,18 @@ export function BankTransferDepositDialog({
       toast("입금자명을 입력해주세요.");
       return;
     }
+    if (!delivery.recipientName.trim()) {
+      toast("받는 분 이름을 입력해주세요.");
+      return;
+    }
+    if (!normalizePhoneNumber(delivery.phone)) {
+      toast("휴대전화번호를 숫자 10~11자리로 입력해주세요.");
+      return;
+    }
+    if (!delivery.address1.trim()) {
+      toast("배송 주소를 입력해주세요.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -84,6 +155,13 @@ export function BankTransferDepositDialog({
         variantId,
         usePoints,
         depositorName,
+        delivery: {
+          recipientName: delivery.recipientName.trim(),
+          phone: delivery.phone.trim(),
+          postalCode: delivery.postalCode.trim() || undefined,
+          address1: delivery.address1.trim(),
+          address2: delivery.address2.trim() || undefined,
+        },
       });
       publishPointsChanged();
       toast(
@@ -161,20 +239,80 @@ export function BankTransferDepositDialog({
         </div>
 
         {!createdOrder ? (
-          <label className="mt-3 block rounded-[16px] border border-[#E5E8EB] px-5 py-4">
-            <span className="text-[13px] font-semibold text-[#4E5968]">입금자명</span>
-            <input
-              value={depositorName}
-              onChange={(event) => setDepositorName(event.target.value)}
-              maxLength={40}
-              autoComplete="name"
-              placeholder="실제 송금할 계좌의 예금주명"
-              className="mt-2 h-11 w-full rounded-[10px] bg-[#F2F4F6] px-3 text-[15px] font-semibold text-[#191F28] outline-none placeholder:font-normal placeholder:text-[#B0B8C1]"
-            />
-            <span className="mt-2 block text-[12px] leading-5 text-[#8B95A1]">
-              띄어쓰기까지 동일해야 자동으로 입금 확인됩니다.
-            </span>
-          </label>
+          <div className="mt-3 space-y-3">
+            <label className="block rounded-[16px] border border-[#E5E8EB] px-5 py-4">
+              <span className="text-[13px] font-semibold text-[#4E5968]">입금자명</span>
+              <input
+                value={depositorName}
+                onChange={(event) => setDepositorName(event.target.value)}
+                maxLength={40}
+                autoComplete="name"
+                placeholder="실제 송금할 계좌의 예금주명"
+                className="mt-2 h-11 w-full rounded-[10px] bg-[#F2F4F6] px-3 text-[15px] font-semibold text-[#191F28] outline-none placeholder:font-normal placeholder:text-[#B0B8C1]"
+              />
+              <span className="mt-2 block text-[12px] leading-5 text-[#8B95A1]">
+                띄어쓰기까지 동일해야 자동으로 입금 확인됩니다.
+              </span>
+            </label>
+
+            <div className="rounded-[16px] border border-[#E5E8EB] px-5 py-4">
+              <p className="text-[13px] font-semibold text-[#4E5968]">배송 정보</p>
+              <p className="mt-1 text-[12px] leading-5 text-[#8B95A1]">
+                상품을 받으실 주소와 연락처를 입력해 주세요.
+              </p>
+              <div className="mt-3 space-y-3">
+                <CheckoutField
+                  label="받는 분"
+                  value={delivery.recipientName}
+                  onChange={(value) => setDelivery((current) => ({ ...current, recipientName: value }))}
+                  maxLength={40}
+                  autoComplete="name"
+                  placeholder="받는 분 이름"
+                />
+                <CheckoutField
+                  label="휴대전화번호"
+                  value={delivery.phone}
+                  onChange={(value) =>
+                    setDelivery((current) => ({ ...current, phone: formatPhoneInput(value) }))
+                  }
+                  maxLength={13}
+                  autoComplete="tel"
+                  inputMode="numeric"
+                  placeholder="010-1234-5678"
+                />
+                <CheckoutField
+                  label="우편번호"
+                  value={delivery.postalCode}
+                  onChange={(value) =>
+                    setDelivery((current) => ({
+                      ...current,
+                      postalCode: value.replace(/\D/g, "").slice(0, 5),
+                    }))
+                  }
+                  maxLength={5}
+                  autoComplete="postal-code"
+                  inputMode="numeric"
+                  placeholder="우편번호"
+                />
+                <CheckoutField
+                  label="주소"
+                  value={delivery.address1}
+                  onChange={(value) => setDelivery((current) => ({ ...current, address1: value }))}
+                  maxLength={120}
+                  autoComplete="street-address"
+                  placeholder="기본 주소"
+                />
+                <CheckoutField
+                  label="상세주소"
+                  value={delivery.address2}
+                  onChange={(value) => setDelivery((current) => ({ ...current, address2: value }))}
+                  maxLength={80}
+                  autoComplete="address-line2"
+                  placeholder="동/호수 등"
+                />
+              </div>
+            </div>
+          </div>
         ) : (
           <div className="mt-3 rounded-[16px] border border-[#E5E8EB] px-5 py-4">
             <div className="mb-4 rounded-[12px] bg-[#E8F3FF] px-4 py-3">
@@ -241,7 +379,7 @@ export function BankTransferDepositDialog({
         ) : (
           <button
             type="button"
-            disabled={submitting || !depositorName.trim()}
+            disabled={submitting || !canSubmit}
             onClick={() => void confirmOrder()}
             className="flex h-14 w-full items-center justify-center rounded-[16px] bg-[#3182F6] text-[17px] font-semibold text-white transition-colors hover:bg-[#1B64DA] disabled:opacity-50"
           >
@@ -250,5 +388,38 @@ export function BankTransferDepositDialog({
         )}
       </div>
     </TossCheckoutSheet>
+  );
+}
+
+function CheckoutField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  maxLength,
+  autoComplete,
+  inputMode,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  maxLength: number;
+  autoComplete?: string;
+  inputMode?: "numeric";
+}) {
+  return (
+    <label className="block">
+      <span className="text-[12px] font-semibold text-[#4E5968]">{label}</span>
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        maxLength={maxLength}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
+        placeholder={placeholder}
+        className="mt-1.5 h-11 w-full rounded-[10px] bg-[#F2F4F6] px-3 text-[15px] font-semibold text-[#191F28] outline-none placeholder:font-normal placeholder:text-[#B0B8C1]"
+      />
+    </label>
   );
 }

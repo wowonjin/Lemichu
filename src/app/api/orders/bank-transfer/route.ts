@@ -13,6 +13,8 @@ import {
   toOrderItemSnapshot,
 } from "@/lib/checkout";
 import { FirebaseAuthError, getAdminDb, requireFirebaseUser } from "@/lib/firebase-admin";
+import type { CheckoutDeliveryInput } from "@/lib/bank-transfer-order";
+import type { OrderDeliveryInfo } from "@/lib/orders";
 import {
   BANK_TRANSFER_POINT_RATE,
   calculatePurchasePoints,
@@ -38,6 +40,42 @@ function getDepositDueAt() {
   return Timestamp.fromMillis(Date.now() + hours * 60 * 60 * 1000);
 }
 
+function readString(value: unknown, max = 120) {
+  return typeof value === "string" ? value.trim().slice(0, max) : "";
+}
+
+function normalizeDeliveryPhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 10) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  if (digits.length === 11) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  }
+  return "";
+}
+
+function parseCheckoutDelivery(value: unknown): OrderDeliveryInfo | { error: string } {
+  const input = value && typeof value === "object" ? (value as CheckoutDeliveryInput) : null;
+  const recipientName = readString(input?.recipientName, 40);
+  const address1 = readString(input?.address1, 120);
+  const address2 = readString(input?.address2, 80);
+  const postalCode = readString(input?.postalCode, 10);
+  const phone = normalizeDeliveryPhone(readString(input?.phone, 20));
+
+  if (!recipientName) return { error: "받는 분 이름을 입력해주세요." };
+  if (!phone) return { error: "휴대전화번호를 숫자 10~11자리로 입력해주세요." };
+  if (!address1) return { error: "배송 주소를 입력해주세요." };
+
+  return {
+    recipientName,
+    phone,
+    postalCode: postalCode || undefined,
+    address1,
+    address2: address2 || undefined,
+  };
+}
+
 function getErrorMessage(error: unknown) {
   const code = error instanceof Error ? error.message : "";
   if (code === "EMPTY_CHECKOUT_ITEMS") return "구매할 상품을 선택해주세요.";
@@ -57,6 +95,7 @@ export async function POST(req: Request) {
       variantId?: unknown;
       usePoints?: unknown;
       depositorName?: unknown;
+      delivery?: unknown;
     } | null;
 
     const productId = typeof body?.productId === "string" ? body.productId.trim() : "";
@@ -67,6 +106,13 @@ export async function POST(req: Request) {
     if (!isValidDepositorName(depositorName)) {
       return NextResponse.json(
         { ok: false, error: "INVALID_DEPOSITOR_NAME", message: "입금자명을 입력해주세요." },
+        { status: 400 }
+      );
+    }
+    const delivery = parseCheckoutDelivery(body?.delivery);
+    if ("error" in delivery) {
+      return NextResponse.json(
+        { ok: false, error: "INVALID_DELIVERY", message: delivery.error },
         { status: 400 }
       );
     }
@@ -112,6 +158,7 @@ export async function POST(req: Request) {
         amounts,
         source: "web-bank-transfer",
         orderNo: orderId,
+        delivery,
         payment: {
           provider: fullyPaidWithPoints ? "points" : "bank-transfer",
           method: paymentMethod,

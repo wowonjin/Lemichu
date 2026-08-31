@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { KakaoCsLink } from "@/components/account/KakaoCsLink";
 import { KoboyoIcon, type KoboyoIconName } from "@/components/icons/KoboyoIcon";
+import { ProductBuyNotice } from "@/components/product/ProductBuyNotice";
 import { ProductFaq } from "@/components/product/ProductFaq";
 import { RelatedProductRail } from "@/components/product/RelatedProductRail";
 import { ProductReviewHeaderStats } from "@/components/product/ProductReviewHeaderStats";
@@ -38,6 +39,7 @@ import { formatProductOptions } from "@/lib/productOptions";
 import { getReviewSummary } from "@/data/productReviews";
 import { listPublishedProductReviews } from "@/lib/reviews-admin";
 import { SOLD_OUT_NOTICE, isSoldProduct } from "@/components/product/SoldOutOverlay";
+import { getProductKind } from "@/lib/productKind";
 import type { Product } from "@/types/product";
 
 type Params = Promise<{ id: string }>;
@@ -47,14 +49,20 @@ const DOMESTIC_DELIVERY_COPY = [
   "평균 1~3일 이내 수령",
 ] as const;
 
-function getRecommendedProducts(products: Product[], productId: string, brand: string) {
+function getRecommendedProducts(products: Product[], product: Product) {
   const available = products.filter(
-    (item) => item.id !== productId && !isSoldProduct(item)
+    (item) => item.id !== product.id && !isSoldProduct(item)
   );
-  const sameBrand = available.filter((item) => item.brand === brand);
-  const others = available.filter((item) => item.brand !== brand);
+  const kind = getProductKind(product);
+  const sameBrand = (item: Product) => item.brand === product.brand;
+  const sameKind = (item: Product) => getProductKind(item) === kind;
 
-  return [...sameBrand, ...others].slice(0, 15);
+  const brandAndKind = available.filter((item) => sameBrand(item) && sameKind(item));
+  const kindOnly = available.filter((item) => !sameBrand(item) && sameKind(item));
+  const brandOnly = available.filter((item) => sameBrand(item) && !sameKind(item));
+  const others = available.filter((item) => !sameBrand(item) && !sameKind(item));
+
+  return [...brandAndKind, ...kindOnly, ...brandOnly, ...others].slice(0, 15);
 }
 
 export async function generateMetadata({
@@ -105,7 +113,7 @@ export default async function ProductDetailPage({
   }
 
   const catalogProducts = await getCatalogProducts();
-  const recommendedProducts = getRecommendedProducts(catalogProducts, product.id, product.brand);
+  const recommendedProducts = getRecommendedProducts(catalogProducts, product);
   const options = formatProductOptions(product);
   const productReviews = await listPublishedProductReviews(product.id);
   const reviewSummary = getReviewSummary(productReviews);
@@ -172,12 +180,12 @@ export default async function ProductDetailPage({
                     <p className="text-[14px] font-semibold leading-6 text-foreground">
                       {SOLD_OUT_NOTICE}
                     </p>
-                    <Link
-                      href={`/search?q=${encodeURIComponent(product.brand)}`}
+                    <a
+                      href="#similar-products"
                       className="mt-2 inline-flex text-[13px] font-semibold text-foreground underline-offset-4 hover:underline"
                     >
                       비슷한 상품 보기
-                    </Link>
+                    </a>
                   </div>
                 ) : null}
 
@@ -314,6 +322,8 @@ export default async function ProductDetailPage({
             >
               <ProductFaq />
             </section>
+
+            <ProductBuyNotice />
           </div>
         </section>
         <ProductPurchaseBar product={product} />

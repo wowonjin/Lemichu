@@ -1,4 +1,5 @@
 import type { HomeCategoryContent, HomeCategoryId } from "@/data/homeCategories";
+import { getKakaoChatUrl } from "@/lib/kakao-inquiry";
 import { filterByCategory } from "@/lib/productFilter";
 import type { Product } from "@/types/product";
 
@@ -43,6 +44,13 @@ export function pickHeroProducts(products: Product[]): Product[] {
 
 const HOME_QUICK_BAR: Array<HomeCategoryItem & { sourceId?: HomeCategoryId }> = [
   {
+    id: "new-arrivals",
+    sourceId: "today-ship",
+    label: "신규입고",
+    href: "/products?filter=new",
+    imageSrc: "/category-images/cat-today-ship-cut.png",
+  },
+  {
     id: "bags-clutch",
     sourceId: "women-bags",
     label: "가방*클러치",
@@ -60,6 +68,12 @@ const HOME_QUICK_BAR: Array<HomeCategoryItem & { sourceId?: HomeCategoryId }> = 
     id: "sale",
     label: "SALE",
     href: "/products?filter=sale",
+    imageSrc: "",
+  },
+  {
+    id: "sell",
+    label: "내 명품*판매하기",
+    href: getKakaoChatUrl(),
     imageSrc: "",
   },
 ];

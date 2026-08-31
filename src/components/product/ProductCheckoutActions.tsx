@@ -55,7 +55,7 @@ export function ProductCheckoutActions({ product }: { product: Product }) {
       </div>
       {isSoldProduct(product) ? (
         <a
-          href={`/search?q=${encodeURIComponent(product.brand)}`}
+          href="#similar-products"
           className="mt-3 inline-flex h-14 w-full items-center justify-center rounded-md bg-foreground px-4 text-[14px] font-semibold text-background md:text-[15px]"
         >
           비슷한 상품 보기

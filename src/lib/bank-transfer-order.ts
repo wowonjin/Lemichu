@@ -1,15 +1,25 @@
 import { getFirebaseIdToken } from "@/lib/auth";
 
+export type CheckoutDeliveryInput = {
+  recipientName: string;
+  phone: string;
+  postalCode?: string;
+  address1: string;
+  address2?: string;
+};
+
 export async function submitBankTransferOrder({
   productId,
   variantId,
   usePoints,
   depositorName,
+  delivery,
 }: {
   productId: string;
   variantId?: string;
   usePoints: boolean;
   depositorName: string;
+  delivery: CheckoutDeliveryInput;
 }) {
   const token = await getFirebaseIdToken();
   if (!token) {
@@ -22,7 +32,7 @@ export async function submitBankTransferOrder({
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ productId, variantId, usePoints, depositorName }),
+    body: JSON.stringify({ productId, variantId, usePoints, depositorName, delivery }),
   });
   const json = (await response.json().catch(() => ({}))) as {
     ok?: boolean;

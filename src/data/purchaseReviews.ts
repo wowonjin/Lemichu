@@ -15,7 +15,7 @@ export const purchaseReviews: PurchaseReview[] = [
     id: "review-margiela-woc",
     productName: "메종 마르지엘라 WOC 체인백",
     productHref: "/product/bunjang-423167746",
-    imageSrc: "https://media.bunjang.co.kr/product/423167746_1_1787288655_w900.jpg",
+    imageSrc: "/review-images/margiela-woc.png",
     author: "김****",
     date: "2026.08.22",
     rating: 5,

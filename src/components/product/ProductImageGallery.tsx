@@ -16,8 +16,9 @@ import { ConditionBadge } from "@/components/product/ProductBadge";
 import { SoldOutOverlay, isSoldProduct } from "@/components/product/SoldOutOverlay";
 import type { Product } from "@/types/product";
 
-function uniqueImages(images: string[]) {
-  return images.filter((url, index) => url && images.indexOf(url) === index);
+function galleryImagesFrom(images: string[], fallback: string) {
+  const raw = images.length ? images : [fallback];
+  return raw.filter((url) => Boolean(url));
 }
 
 export function ProductImageGallery({
@@ -29,7 +30,7 @@ export function ProductImageGallery({
   images: string[];
   children?: ReactNode;
 }) {
-  const galleryImages = uniqueImages(images.length ? images : [product.imageUrl]);
+  const galleryImages = galleryImagesFrom(images, product.imageUrl);
   const [activeIndex, setActiveIndex] = useState(0);
   const thumbnailRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const activeImage = galleryImages[activeIndex] ?? galleryImages[0];
@@ -74,7 +75,7 @@ export function ProductImageGallery({
 
       <div>
         <div
-          className="group relative -mx-4 aspect-square overflow-hidden bg-[#F7F7F7] dark:bg-muted md:mx-0"
+          className="group relative -mx-4 overflow-hidden bg-[#F7F7F7] dark:bg-muted md:mx-0 md:aspect-square"
           onKeyDown={(event) => {
             if (!canNavigate) return;
             if (event.key === "ArrowLeft") {
@@ -99,7 +100,7 @@ export function ProductImageGallery({
             <img
               src={activeImage}
               alt={`${product.brand} ${product.name}`}
-              className="h-full w-full object-contain"
+              className="mx-auto block h-auto max-h-[85vh] w-full max-w-full object-contain md:h-full md:max-h-none"
             />
           ) : (
             <div
