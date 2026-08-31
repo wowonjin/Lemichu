@@ -11,6 +11,8 @@ const SECTIONS = [
   { id: "faq", mobileLabel: "FAQ", label: "FAQ" },
 ] as const;
 
+type SectionId = (typeof SECTIONS)[number]["id"];
+
 function getStickyOffset() {
   const raw = getComputedStyle(document.documentElement).getPropertyValue("--header-height");
   const headerHeight = Number.parseFloat(raw) || 96;
@@ -21,7 +23,7 @@ function getStickyOffset() {
 
 function getActiveSectionId() {
   const offset = getStickyOffset();
-  let activeId = SECTIONS[0].id;
+  let activeId: SectionId = SECTIONS[0].id;
 
   for (const section of SECTIONS) {
     const element = document.getElementById(section.id);
@@ -35,7 +37,7 @@ function getActiveSectionId() {
 }
 
 export function ProductDetailSectionNav() {
-  const [activeId, setActiveId] = useState<string>(SECTIONS[0].id);
+  const [activeId, setActiveId] = useState<SectionId>(SECTIONS[0].id);
 
   useEffect(() => {
     let frame = 0;
