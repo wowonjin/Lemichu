@@ -32,8 +32,10 @@ const TEMP_ADMIN_UID = "temp-admin";
 export const AUTH_STORAGE_KEY = "lemichu-auth-user";
 export const AUTH_STATE_CHANGE = "lemichu-auth-change";
 
-function isTempAdminSession(user: AuthUser | null | undefined) {
-  return user?.uid === TEMP_ADMIN_UID && user.email?.toLowerCase() === ADMIN_EMAIL;
+function isTempAdminSession(user: AuthUser | null | undefined): user is AuthUser {
+  return Boolean(
+    user?.uid === TEMP_ADMIN_UID && user.email?.toLowerCase() === ADMIN_EMAIL
+  );
 }
 
 /** True only when member APIs (Firebase ID token) can actually be called. */
@@ -246,8 +248,21 @@ export function observeAuthUser(onChange: (user: AuthUser | null) => void) {
   const unsubscribe = onAuthStateChanged(activeFirebaseAuth, (user) => {
     const stored = readAuthUser();
     if (isTempAdminSession(stored)) {
-      if (user) {
+      // Keep the temp-admin Firebase session so production admin APIs can use
+      // a real ID token. Only sign out a different Firebase user.
+      if (user && user.uid !== TEMP_ADMIN_UID) {
         void firebaseSignOut(activeFirebaseAuth).catch(() => undefined);
+      }
+      if (user?.uid === TEMP_ADMIN_UID) {
+        onChange({
+          ...stored,
+          uid: TEMP_ADMIN_UID,
+          email: user.email || stored.email,
+          name: user.displayName || stored.name,
+          role: "admin",
+          provider: "email",
+        });
+        return;
       }
       onChange(stored);
       return;
@@ -353,6 +368,7 @@ async function tryTempAdminSignIn(email: string, password: string) {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "same-origin",
       body: JSON.stringify({ email, password }),
     });
 
@@ -360,8 +376,23 @@ async function tryTempAdminSignIn(email: string, password: string) {
       return null;
     }
 
-    const result = (await response.json()) as { user?: AuthUser };
-    return isTempAdminSession(result.user) ? result.user : null;
+    const result = (await response.json()) as {
+      user?: AuthUser;
+      customToken?: string | null;
+    };
+    if (!isTempAdminSession(result.user) || !result.user) {
+      return null;
+    }
+
+    if (result.customToken && isFirebaseConfigured && firebaseAuth) {
+      await withAuthTimeout(
+        signInWithCustomToken(firebaseAuth, result.customToken),
+        "tempAdminCustomToken"
+      );
+    }
+
+    persistAuthUser(result.user);
+    return result.user;
   } catch {
     return null;
   }
@@ -370,11 +401,6 @@ async function tryTempAdminSignIn(email: string, password: string) {
 export async function signInWithEmail(email: string, password: string) {
   const tempAdmin = await tryTempAdminSignIn(email, password);
   if (tempAdmin) {
-    if (isFirebaseConfigured && firebaseAuth) {
-      await firebaseSignOut(firebaseAuth).catch(() => undefined);
-    }
-
-    persistAuthUser(tempAdmin);
     return tempAdmin;
   }
 
@@ -501,6 +527,15 @@ export async function requestPasswordReset(email: string) {
 
 export async function signOut() {
   persistAuthUser(null);
+
+  try {
+    await fetch("/api/auth/temp-admin/logout", {
+      method: "POST",
+      credentials: "same-origin",
+    });
+  } catch {
+    // Cookie clear is best-effort.
+  }
 
   if (isFirebaseConfigured && firebaseAuth) {
     await firebaseSignOut(firebaseAuth);
