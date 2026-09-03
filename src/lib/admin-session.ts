@@ -19,23 +19,23 @@ function signPayload(payload: string) {
 }
 
 export function createAdminSessionValue(email: string) {
-  const normalizedEmail = email.trim().toLowerCase();
-  const expiresAt = Date.now() + SESSION_TTL_MS;
-  const payload = `${normalizedEmail}.${expiresAt}`;
+  const payload = Buffer.from(
+    JSON.stringify({
+      email: email.trim().toLowerCase(),
+      exp: Date.now() + SESSION_TTL_MS,
+    }),
+    "utf8"
+  ).toString("base64url");
   return `${payload}.${signPayload(payload)}`;
 }
 
 export function verifyAdminSessionValue(value: string | undefined | null): string | null {
   if (!value) return null;
-  const parts = value.split(".");
-  if (parts.length !== 3) return null;
-  const [email, expiresAtRaw, signature] = parts;
-  if (!email || !expiresAtRaw || !signature) return null;
+  const separator = value.lastIndexOf(".");
+  if (separator <= 0 || separator === value.length - 1) return null;
 
-  const expiresAt = Number(expiresAtRaw);
-  if (!Number.isFinite(expiresAt) || expiresAt < Date.now()) return null;
-
-  const payload = `${email}.${expiresAtRaw}`;
+  const payload = value.slice(0, separator);
+  const signature = value.slice(separator + 1);
   const expected = signPayload(payload);
   const left = Buffer.from(signature);
   const right = Buffer.from(expected);
@@ -43,7 +43,19 @@ export function verifyAdminSessionValue(value: string | undefined | null): strin
     return null;
   }
 
-  return email;
+  try {
+    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as {
+      email?: unknown;
+      exp?: unknown;
+    };
+    if (typeof parsed.email !== "string" || typeof parsed.exp !== "number") {
+      return null;
+    }
+    if (parsed.exp < Date.now()) return null;
+    return parsed.email.trim().toLowerCase();
+  } catch {
+    return null;
+  }
 }
 
 export function applyAdminSessionCookie(response: NextResponse, email: string) {

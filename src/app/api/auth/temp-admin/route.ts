@@ -12,31 +12,54 @@ function normalizeEmail(value: string | undefined) {
 
 async function createTempAdminCustomToken(email: string) {
   const auth = getAdminAuth();
+  let uid = TEMP_ADMIN_UID;
 
   try {
-    const existing = await auth.getUser(TEMP_ADMIN_UID);
-    if (existing.email?.toLowerCase() !== email || existing.disabled) {
+    const byEmail = await auth.getUserByEmail(email);
+    uid = byEmail.uid;
+    if (byEmail.disabled) {
+      await auth.updateUser(uid, { disabled: false, displayName: "관리자" });
+    }
+  } catch {
+    try {
+      await auth.getUser(TEMP_ADMIN_UID);
       await auth.updateUser(TEMP_ADMIN_UID, {
         email,
         emailVerified: true,
         displayName: "관리자",
         disabled: false,
       });
+      uid = TEMP_ADMIN_UID;
+    } catch {
+      try {
+        await auth.createUser({
+          uid: TEMP_ADMIN_UID,
+          email,
+          emailVerified: true,
+          displayName: "관리자",
+          disabled: false,
+        });
+        uid = TEMP_ADMIN_UID;
+      } catch {
+        // Last resort: let Firebase assign a uid if the preferred one is unavailable.
+        const created = await auth.createUser({
+          email,
+          emailVerified: true,
+          displayName: "관리자",
+          disabled: false,
+        });
+        uid = created.uid;
+      }
     }
-  } catch {
-    await auth.createUser({
-      uid: TEMP_ADMIN_UID,
-      email,
-      emailVerified: true,
-      displayName: "관리자",
-      disabled: false,
-    });
   }
 
-  return auth.createCustomToken(TEMP_ADMIN_UID, {
-    role: "admin",
-    provider: "email",
-  });
+  return {
+    uid,
+    customToken: await auth.createCustomToken(uid, {
+      role: "admin",
+      provider: "email",
+    }),
+  };
 }
 
 export async function POST(request: Request) {
@@ -62,18 +85,20 @@ export async function POST(request: Request) {
     );
   }
 
+  let uid = TEMP_ADMIN_UID;
   let customToken: string | null = null;
   try {
-    customToken = await createTempAdminCustomToken(normalizedEmail);
+    const created = await createTempAdminCustomToken(normalizedEmail);
+    uid = created.uid;
+    customToken = created.customToken;
   } catch {
-    // Firebase Admin may be unavailable in some local setups.
-    // Cookie session below still authorizes admin APIs in production.
+    // Firebase Admin may be unavailable. Cookie session still authorizes admin APIs.
     customToken = null;
   }
 
   const response = NextResponse.json({
     user: {
-      uid: TEMP_ADMIN_UID,
+      uid,
       name: "관리자",
       email: normalizedEmail,
       provider: "email",

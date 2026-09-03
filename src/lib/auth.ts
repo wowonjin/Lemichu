@@ -380,7 +380,7 @@ async function tryTempAdminSignIn(email: string, password: string) {
       user?: AuthUser;
       customToken?: string | null;
     };
-    if (!isTempAdminSession(result.user) || !result.user) {
+    if (!result.user || !isAdminUser(result.user)) {
       return null;
     }
 
@@ -391,8 +391,12 @@ async function tryTempAdminSignIn(email: string, password: string) {
       );
     }
 
-    persistAuthUser(result.user);
-    return result.user;
+    const nextUser: AuthUser = {
+      ...result.user,
+      role: "admin",
+    };
+    persistAuthUser(nextUser);
+    return nextUser;
   } catch {
     return null;
   }
