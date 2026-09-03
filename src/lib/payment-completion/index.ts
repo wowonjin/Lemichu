@@ -19,6 +19,7 @@ import { applyInventoryItems } from "@/lib/payment-completion/inventory";
 
 type CompletionOrder = {
   userId?: string;
+  isGuest?: boolean;
   status?: string;
   paymentMethod?: PaymentMethod;
   paymentStatus?: string;
@@ -98,7 +99,7 @@ export async function applyPaymentCompletionInTransaction({
     }
     throw new Error("ORDER_ALREADY_PAID");
   }
-  if (order.status !== "pending" || !order.userId) {
+  if (order.status !== "pending" || (!order.userId && order.isGuest !== true)) {
     throw new Error("ORDER_NOT_PAYABLE");
   }
 
@@ -120,12 +121,17 @@ export async function applyPaymentCompletionInTransaction({
         items,
         ref: db.collection("products").doc(productId),
       }));
-  const userRef = db.collection("users").doc(order.userId);
-  const earnLedgerRef = userRef.collection("pointLedger").doc(input.orderId);
+  const memberUserId = order.isGuest === true ? "" : String(order.userId || "");
+  const userRef = memberUserId
+    ? db.collection("users").doc(memberUserId)
+    : null;
+  const earnLedgerRef = userRef
+    ? userRef.collection("pointLedger").doc(input.orderId)
+    : null;
 
   const [productSnapshots, earnLedgerSnapshot] = await Promise.all([
     Promise.all(productEntries.map((entry) => tx.get(entry.ref))),
-    tx.get(earnLedgerRef),
+    earnLedgerRef ? tx.get(earnLedgerRef) : Promise.resolve(null),
   ]);
 
   const inventoryUpdates = productEntries.map((entry, index) => {
@@ -139,11 +145,14 @@ export async function applyPaymentCompletionInTransaction({
 
   const paymentMethodCode = toPaymentMethodCode(order, input.paymentMethod);
   const purchaseAmount = Number(order.expectedAmount ?? order.amounts?.finalTotal ?? 0);
-  const points = calculatePurchasePoints(purchaseAmount, input.paymentMethod);
+  const points = userRef
+    ? calculatePurchasePoints(purchaseAmount, input.paymentMethod)
+    : 0;
   const shouldGrantReward =
+    Boolean(userRef && earnLedgerRef) &&
     order.reward?.granted !== true &&
     order.reward?.reversed !== true &&
-    !earnLedgerSnapshot.exists;
+    earnLedgerSnapshot?.exists !== true;
   const paidAt = toPaidAt(input.paidAt);
 
   for (const { ref, update } of inventoryUpdates) {
@@ -153,7 +162,7 @@ export async function applyPaymentCompletionInTransaction({
     });
   }
 
-  if (shouldGrantReward && points > 0) {
+  if (userRef && earnLedgerRef && shouldGrantReward && points > 0) {
     tx.set(
       userRef,
       {

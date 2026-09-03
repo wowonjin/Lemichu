@@ -93,7 +93,7 @@ export function GuestMemberPurchaseDialog({
               비회원 구매하기
             </span>
             <span className="mt-0.5 block text-[13px] leading-5 text-[#8B95A1]">
-              로그인 없이 입금 계좌를 바로 확인해요
+              로그인 없이 주문/결제 화면으로 이동해요
             </span>
           </span>
           <ChevronRight className="size-5 shrink-0 text-[#D1D6DB]" strokeWidth={2} />

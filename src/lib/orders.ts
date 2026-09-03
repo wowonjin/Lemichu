@@ -7,6 +7,7 @@ import {
   where,
   type Timestamp,
 } from "firebase/firestore";
+import { toDateValue } from "@/lib/admin-serialize";
 import { firestoreDb, isFirebaseConfigured } from "@/lib/firebase";
 import type { AuthUser } from "@/lib/auth";
 import {
@@ -33,6 +34,8 @@ export type PaymentStatus =
   | "PAID"
   | "FAILED"
   | "CANCELLED";
+
+export type OrderTimestamp = Timestamp | string;
 
 export type CreateOrderInput = {
   user: AuthUser;
@@ -75,21 +78,27 @@ export type PurchaseOrder = {
   userId: string;
   userEmail: string;
   userName: string;
+  isGuest?: boolean;
   status: OrderStatus;
   paymentMethod?: PaymentMethod;
   paymentStatus?: PaymentStatus;
   expectedAmount?: number;
   depositorName?: string;
   depositorNameNormalized?: string;
-  depositDueAt?: Timestamp;
-  paidAt?: Timestamp;
+  depositDueAt?: OrderTimestamp;
+  paidAt?: OrderTimestamp;
   paymentReference?: string;
   itemCount: number;
   items: OrderItemSnapshot[];
   amounts: CheckoutAmounts;
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
-  source: "web-cart" | "web-toss" | "web-bank-transfer";
+  createdAt?: OrderTimestamp;
+  updatedAt?: OrderTimestamp;
+  source:
+    | "web-cart"
+    | "web-toss"
+    | "web-bank-transfer"
+    | "web-guest-bank-transfer"
+    | "logii";
   orderNo?: string;
   delivery?: OrderDeliveryInfo;
   payment?: {
@@ -100,15 +109,21 @@ export type PurchaseOrder = {
     paymentKey?: string;
     method?: string;
     requestedMethod?: string;
-    requestedAt?: Timestamp;
-    approvedAt?: Timestamp;
-    failedAt?: Timestamp;
+    bank?: string;
+    requestedAt?: OrderTimestamp;
+    approvedAt?: OrderTimestamp;
+    failedAt?: OrderTimestamp;
     toss?: unknown;
     failure?: unknown;
   };
+  agreements?: {
+    termsAcceptedAt?: OrderTimestamp;
+    privacyAcceptedAt?: OrderTimestamp;
+    purchaseConfirmedAt?: OrderTimestamp;
+  };
   inventory?: {
     processed?: boolean;
-    processedAt?: Timestamp;
+    processedAt?: OrderTimestamp;
     paymentReference?: string;
   };
   reward?: {
@@ -176,15 +191,15 @@ export async function fetchPurchaseOrders(userId: string, max = 20) {
     ...doc.data(),
   } as PurchaseOrder))
     .sort((a, b) => {
-      const aTime = a.createdAt?.toMillis() ?? 0;
-      const bTime = b.createdAt?.toMillis() ?? 0;
+      const aTime = toDateValue(a.createdAt)?.getTime() ?? 0;
+      const bTime = toDateValue(b.createdAt)?.getTime() ?? 0;
       return bTime - aTime;
     })
     .slice(0, max);
 }
 
 export function formatOrderDate(order: Pick<PurchaseOrder, "createdAt">) {
-  const date = order.createdAt?.toDate();
+  const date = toDateValue(order.createdAt);
   if (!date) return "방금 전";
 
   return new Intl.DateTimeFormat("ko-KR", {

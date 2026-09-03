@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
 import { AdminField, AdminPanel, adminInputClass } from "@/components/admin/AdminForm";
 import { Button } from "@/components/ui/button";
@@ -80,7 +80,7 @@ export function AdminUserDetailPage({ userId }: { userId: string }) {
   const user = data?.user;
 
   return (
-    <AdminShell>
+    <>
       <AdminPageHeader
         title={user ? `${user.name} 회원 상세` : "회원 상세"}
         actions={
@@ -195,7 +195,7 @@ export function AdminUserDetailPage({ userId }: { userId: string }) {
               ))}
               {(data.sellRequests ?? []).length === 0 ? <p className="text-sm text-muted-foreground">판매 신청 없음</p> : null}
             </AdminPanel>
-            <AdminPanel title={`취소·교환·반품 ${data.returns?.length ?? 0}건`} action={<Link href="/admin/returns" className="text-xs font-semibold text-muted-foreground">신청 관리</Link>}>
+            <AdminPanel title={`취소·교환·반품 ${data.returns?.length ?? 0}건`}>
               {(data.returns ?? []).slice(0, 6).map((item) => (
                 <p key={item.id} className="py-2 text-sm">{RETURN_TYPE_LABELS[item.type]} · {item.reason}</p>
               ))}
@@ -224,6 +224,6 @@ export function AdminUserDetailPage({ userId }: { userId: string }) {
           </div>
         </div>
       )}
-    </AdminShell>
+    </>
   );
 }

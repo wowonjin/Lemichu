@@ -8,11 +8,10 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
-import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
 import { cn } from "@/lib/cn";
 import {
-  defaultHomeCategories,
   type HomeCategoryContent,
   type HomeCategoryContentItem,
   type HomeCategoryId,
@@ -69,11 +68,10 @@ export function AdminCategoriesPage() {
       const next = await fetchHomeCategories();
       setCategories(next.map((category) => ({ ...category, imageFile: null })));
     } catch (loadError) {
-      setCategories(defaultHomeCategories.map((category) => ({ ...category, imageFile: null })));
       setError(
         loadError instanceof Error
           ? loadError.message
-          : "카테고리를 불러오지 못했어요. 기본값을 보여줍니다."
+          : "카테고리를 불러오지 못했어요."
       );
     } finally {
       setIsLoading(false);
@@ -219,7 +217,7 @@ export function AdminCategoriesPage() {
   const busy = Boolean(savingKey);
 
   return (
-    <AdminShell>
+    <>
       <AdminPageHeader
         title="카테고리 관리"
         actions={
@@ -483,7 +481,7 @@ export function AdminCategoriesPage() {
           </section>
         </>
       )}
-    </AdminShell>
+    </>
   );
 }
 

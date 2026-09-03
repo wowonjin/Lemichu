@@ -1,13 +1,10 @@
 "use client";
 
-import { doc, onSnapshot, serverTimestamp, setDoc } from "firebase/firestore";
-import { getFirebaseIdToken } from "@/lib/auth";
-import { firestoreDb, isFirebaseConfigured } from "@/lib/firebase";
+import { adminRequestHeaders } from "@/lib/admin-client";
 import {
   DEFAULT_HEADER_BANNER,
   HEADER_BANNER_CHANGE_EVENT,
   HEADER_BANNER_DISMISS_KEY,
-  HEADER_BANNER_DOC_PATH,
   HEADER_BANNER_STORAGE_KEY,
   normalizeHeaderBanner,
   todayDismissKey,
@@ -43,50 +40,22 @@ export function readLocalHeaderBanner(): HeaderBannerSettings | null {
   }
 }
 
-function headerBannerRef() {
-  if (!isFirebaseConfigured || !firestoreDb) return null;
-  const [collectionName, documentId] = HEADER_BANNER_DOC_PATH;
-  return doc(firestoreDb, collectionName, documentId);
-}
-
 export async function saveHeaderBanner(settings: HeaderBannerSettings) {
   const normalized = normalizeHeaderBanner(settings);
   persistLocalHeaderBanner(normalized);
 
-  const ref = headerBannerRef();
-  if (ref) {
-    try {
-      await setDoc(ref, {
-        ...normalized,
-        updatedAt: serverTimestamp(),
-      });
-      return { persisted: "firestore" as const, settings: normalized };
-    } catch {
-      // Firestore 규칙이 아직 반영되지 않은 경우를 위해 API로 재시도한다.
-    }
+  const response = await fetch("/api/site/header-banner", {
+    method: "PUT",
+    headers: await adminRequestHeaders(),
+    body: JSON.stringify(normalized),
+  });
+
+  if (!response.ok) {
+    const result = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(result.message || "상단 배너를 저장하지 못했어요.");
   }
 
-  try {
-    const token = await getFirebaseIdToken();
-    if (token) {
-      const response = await fetch("/api/site/header-banner", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(normalized),
-      });
-
-      if (response.ok) {
-        return { persisted: "api" as const, settings: normalized };
-      }
-    }
-  } catch {
-    // 로컬 저장으로 내려간다.
-  }
-
-  return { persisted: "local" as const, settings: normalized };
+  return { persisted: "api" as const, settings: normalized };
 }
 
 export function observeHeaderBanner(onChange: (settings: HeaderBannerSettings) => void) {
@@ -101,26 +70,12 @@ export function observeHeaderBanner(onChange: (settings: HeaderBannerSettings) =
   fetch("/api/site/header-banner")
     .then((response) => response.json())
     .then((payload: { settings?: unknown; stored?: boolean }) => {
-      if (!active || !payload?.stored || !payload.settings) return;
+      if (!active || !payload.settings) return;
       const settings = normalizeHeaderBanner(payload.settings);
       persistLocalHeaderBanner(settings);
       onChange(settings);
     })
     .catch(() => undefined);
-
-  const ref = headerBannerRef();
-  const unsubscribeFirestore = ref
-    ? onSnapshot(
-        ref,
-        (snapshot) => {
-          if (!snapshot.exists()) return;
-          const settings = normalizeHeaderBanner(snapshot.data());
-          persistLocalHeaderBanner(settings);
-          onChange(settings);
-        },
-        () => undefined
-      )
-    : () => undefined;
 
   const handleLocalChange = (event: Event) => {
     const detail = (event as CustomEvent<HeaderBannerSettings>).detail;
@@ -131,7 +86,6 @@ export function observeHeaderBanner(onChange: (settings: HeaderBannerSettings) =
 
   return () => {
     active = false;
-    unsubscribeFirestore();
     window.removeEventListener(HEADER_BANNER_CHANGE_EVENT, handleLocalChange);
   };
 }

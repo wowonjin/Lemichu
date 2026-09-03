@@ -165,12 +165,7 @@ export function calculateCheckoutAmounts(
   );
   const instantDiscount = Math.max(retailTotal - productTotal, 0);
   const couponDiscount = 0;
-  const shippingFee =
-    options?.includeShipping === false
-      ? 0
-      : productTotal >= 500_000 || productTotal === 0
-        ? 0
-        : 3_000;
+  const shippingFee = 0;
   const subtotal = Math.max(0, productTotal - couponDiscount + shippingFee);
   const pointsUsed = getUsablePoints(subtotal, options?.pointsToUse ?? 0);
 

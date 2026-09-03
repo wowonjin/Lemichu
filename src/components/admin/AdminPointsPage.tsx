@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
 import { AdminField, AdminPanel, adminInputClass } from "@/components/admin/AdminForm";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ export function AdminPointsPage() {
   }, []);
 
   return (
-    <AdminShell>
+    <>
       <AdminPageHeader title="적립금 관리" />
       <p className="mb-6 max-w-2xl text-sm leading-6 text-muted-foreground">
         지급·차감한 적립금은 회원 마이페이지 적립금 내역에 바로 반영됩니다.
@@ -115,6 +115,6 @@ export function AdminPointsPage() {
           )}
         </AdminPanel>
       </div>
-    </AdminShell>
+    </>
   );
 }

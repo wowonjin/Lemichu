@@ -6,6 +6,22 @@ import {
   parseApiJson,
 } from "@/lib/admin-client";
 
+export type AdminBankOrderSummary = {
+  orderId: string;
+  orderNo: string;
+  isGuest: boolean;
+  customerName: string;
+  customerEmail: string;
+  depositorName: string;
+  expectedAmount: number;
+  paymentStatus: string;
+  recipientName: string;
+  recipientPhone: string;
+  postalCode: string;
+  address: string;
+  deliveryMessage: string;
+};
+
 export type AdminBankDepositEvent = {
   id: string;
   eventId: string;
@@ -16,6 +32,7 @@ export type AdminBankDepositEvent = {
   transactionAt: string | null;
   status: "RECEIVED" | "MATCHED" | "UNMATCHED" | "AMBIGUOUS" | "IGNORED";
   matchedOrderId: string | null;
+  matchedOrder: AdminBankOrderSummary | null;
   matchReason: string | null;
   isTest: boolean;
   createdAt: string | null;
@@ -51,6 +68,15 @@ export type AdminBankDepositCandidate = {
   createdAt: string | null;
   depositDueAt: string | null;
   exactName: boolean;
+  isGuest: boolean;
+  customerName: string;
+  customerEmail: string;
+  paymentStatus: string;
+  recipientName: string;
+  recipientPhone: string;
+  postalCode: string;
+  address: string;
+  deliveryMessage: string;
 };
 
 export async function fetchAdminBankDeposits(): Promise<AdminBankRelayOverview> {

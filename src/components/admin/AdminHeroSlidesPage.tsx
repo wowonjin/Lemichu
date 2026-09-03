@@ -10,7 +10,7 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
-import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
 import { cn } from "@/lib/cn";
 import { uploadProductImage } from "@/lib/product-images";
@@ -200,7 +200,7 @@ export function AdminHeroSlidesPage() {
   }
 
   return (
-    <AdminShell>
+    <>
       <AdminPageHeader
         title="메인 슬라이드"
         actions={
@@ -262,7 +262,7 @@ export function AdminHeroSlidesPage() {
           ))}
         </div>
       )}
-    </AdminShell>
+    </>
   );
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
 import { AdminField, AdminPanel, adminInputClass, adminTextareaClass } from "@/components/admin/AdminForm";
 import { Button } from "@/components/ui/button";
@@ -37,7 +37,7 @@ export function AdminFaqManagePage() {
   }, []);
 
   return (
-    <AdminShell>
+    <>
       <AdminPageHeader title="FAQ 관리" />
       <p className="mb-6 max-w-2xl text-sm leading-6 text-muted-foreground">
         저장한 내용은 `/faq`와 마이페이지 자주 묻는 질문에 함께 반영됩니다.
@@ -143,6 +143,6 @@ export function AdminFaqManagePage() {
           )}
         </AdminPanel>
       </div>
-    </AdminShell>
+    </>
   );
 }

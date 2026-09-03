@@ -11,7 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
-import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import {
   fetchAdminHomeSections,
   saveAdminHomeSlot,
@@ -151,7 +151,7 @@ export function AdminHomeSectionsPage() {
   }
 
   return (
-    <AdminShell>
+    <>
       <AdminPageHeader
         title="홈 섹션 알고리즘"
         actions={
@@ -332,7 +332,7 @@ export function AdminHomeSectionsPage() {
           </div>
         </div>
       )}
-    </AdminShell>
+    </>
   );
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
 import { AdminField, AdminPanel, adminInputClass } from "@/components/admin/AdminForm";
 import { Button } from "@/components/ui/button";
@@ -51,7 +51,7 @@ export function AdminCouponsPage() {
   );
 
   return (
-    <AdminShell>
+    <>
       <AdminPageHeader title="쿠폰 관리" />
       <p className="mb-6 max-w-2xl text-sm leading-6 text-muted-foreground">
         여기서 만든 쿠폰을 회원에게 발급하면 마이페이지 쿠폰함에 바로 표시됩니다.
@@ -222,6 +222,6 @@ export function AdminCouponsPage() {
           </AdminPanel>
         </div>
       </div>
-    </AdminShell>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { HeaderBannerEditor } from "@/components/admin/HeaderBannerEditor";
 import { HeaderEventBanner } from "@/components/layout/HeaderEventBanner";
 import { observeHeaderBanner } from "@/lib/headerBanner-store";
@@ -19,7 +19,7 @@ export function AdminBannerPage() {
   }, []);
 
   return (
-    <AdminShell>
+    <>
       <AdminPageHeader title="상단 이벤트 배너" />
       <p className="mb-8 max-w-2xl text-sm leading-6 text-muted-foreground">
         헤더 위 안내 바입니다. 토스처럼 짧은 문구만 롤링합니다.
@@ -40,6 +40,6 @@ export function AdminBannerPage() {
           배너 설정을 불러오는 중입니다.
         </div>
       )}
-    </AdminShell>
+    </>
   );
 }

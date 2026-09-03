@@ -1,12 +1,9 @@
 import {
-  addDoc,
   collection,
-  deleteDoc,
-  doc,
   getDocs,
-  serverTimestamp,
   type Timestamp,
 } from "firebase/firestore";
+import { adminRequestHeaders, assertApiOk } from "@/lib/admin-client";
 import { firestoreDb, isFirebaseConfigured } from "@/lib/firebase";
 import type { NaverProductInput } from "@/lib/naver/types";
 import type { ProductImageAsset } from "@/lib/product-images";
@@ -62,15 +59,26 @@ export type CreateStoreProductInput = Omit<
   "id" | "naverSync" | "createdAt" | "updatedAt"
 >;
 
-const firebaseConfigError =
-  "Firestore 설정이 필요합니다. .env.local에 Firebase 값을 넣고 개발 서버를 다시 시작해주세요.";
-
-function requireFirestore() {
-  if (!isFirebaseConfigured || !firestoreDb) {
-    throw new Error(firebaseConfigError);
-  }
-  return firestoreDb;
-}
+export type UpdateStoreProductInput = Partial<
+  Pick<
+    CreateStoreProductInput,
+    | "name"
+    | "brand"
+    | "color"
+    | "size"
+    | "salePrice"
+    | "stockQuantity"
+    | "storeCategoryId"
+    | "isPreOwned"
+    | "condition"
+    | "todayShip"
+    | "detailContent"
+    | "representativeImageUrl"
+    | "optionalImageUrls"
+    | "representativeImage"
+    | "optionalImages"
+  >
+> & { retailPrice?: number | null };
 
 /** 폼 입력값을 네이버 등록 API 입력 모델로 변환합니다. */
 export function toNaverProductInput(input: CreateStoreProductInput): NaverProductInput {
@@ -96,27 +104,26 @@ export async function createStoreProduct(
   input: CreateStoreProductInput,
   naverSync: NaverSyncInfo
 ): Promise<string> {
-  const db = requireFirestore();
-  const { size, ...productInput } = input;
+  const json = await assertApiOk(
+    await fetch("/api/admin/products", {
+      method: "POST",
+      headers: await adminRequestHeaders(),
+      body: JSON.stringify({ ...input, naverSync }),
+    }),
+    "상품을 저장하지 못했어요."
+  );
+  return String(json.id ?? "");
+}
 
-  const docRef = await addDoc(collection(db, "products"), {
-    ...productInput,
-    ...(size ? { size } : {}),
-    ...(input.storeCategoryId ? { storeCategoryId: input.storeCategoryId } : {}),
-    isPreOwned: Boolean(input.isPreOwned),
-    ...(input.condition ? { condition: input.condition } : {}),
-    todayShip: Boolean(input.todayShip),
-    overseasShipping: Boolean(input.overseasShipping),
-    optionalImageUrls: input.optionalImageUrls ?? [],
-    optionalImages: input.optionalImages ?? [],
-    variants: input.variants ?? [],
-    retailPrice: input.retailPrice ?? null,
-    naverSync,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-
-  return docRef.id;
+export async function updateStoreProduct(id: string, input: UpdateStoreProductInput) {
+  await assertApiOk(
+    await fetch(`/api/admin/products/${id}`, {
+      method: "PATCH",
+      headers: await adminRequestHeaders(),
+      body: JSON.stringify(input),
+    }),
+    "상품 정보를 저장하지 못했어요."
+  );
 }
 
 /** 저장된 상품 목록을 최신순으로 조회합니다. */
@@ -138,6 +145,11 @@ export async function fetchStoreProducts(): Promise<StoreProduct[]> {
 }
 
 export async function deleteStoreProduct(product: StoreProduct) {
-  const db = requireFirestore();
-  await deleteDoc(doc(db, "products", product.id));
+  await assertApiOk(
+    await fetch(`/api/admin/products/${product.id}`, {
+      method: "DELETE",
+      headers: await adminRequestHeaders(),
+    }),
+    "상품을 삭제하지 못했어요."
+  );
 }

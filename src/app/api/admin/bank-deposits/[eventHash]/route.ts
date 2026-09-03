@@ -51,11 +51,29 @@ export async function GET(
   const candidates = orders.docs
     .map((document) => {
       const order = document.data();
+      const delivery =
+        order.delivery && typeof order.delivery === "object"
+          ? order.delivery
+          : {};
       return {
         orderId: document.id,
         orderNo: String(order.orderNo || document.id),
+        isGuest:
+          order.isGuest === true ||
+          order.source === "web-guest-bank-transfer",
+        customerName: String(order.userName || ""),
+        customerEmail: String(order.userEmail || ""),
         depositorName: String(order.depositorName || ""),
         expectedAmount: Number(order.expectedAmount || order.amounts?.finalTotal || 0),
+        paymentStatus: String(order.paymentStatus || ""),
+        recipientName: String(delivery.recipientName || ""),
+        recipientPhone: String(delivery.phone || ""),
+        postalCode: String(delivery.postalCode || ""),
+        address: [delivery.address1, delivery.address2]
+          .map((value: unknown) => String(value || "").trim())
+          .filter(Boolean)
+          .join(" "),
+        deliveryMessage: String(delivery.message || ""),
         createdAt: toIso(order.createdAt),
         depositDueAt: toIso(order.depositDueAt),
         exactName:

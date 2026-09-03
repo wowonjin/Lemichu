@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
 import { AdminField, adminInputClass } from "@/components/admin/AdminForm";
 import { fetchAdminReturns, updateAdminReturn } from "@/lib/member-account-client";
@@ -37,7 +37,7 @@ export function AdminReturnsManagePage() {
   }, []);
 
   return (
-    <AdminShell>
+    <>
       <AdminPageHeader title="취소·교환·반품" />
       <p className="mb-6 max-w-2xl text-sm leading-6 text-muted-foreground">
         마이페이지에서 신청한 건을 처리합니다. 취소를 승인하면 해당 주문도 취소 상태로 바뀝니다.
@@ -121,6 +121,6 @@ export function AdminReturnsManagePage() {
           </table>
         </div>
       )}
-    </AdminShell>
+    </>
   );
 }

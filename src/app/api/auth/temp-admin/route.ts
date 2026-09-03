@@ -1,25 +1,29 @@
 import { NextResponse } from "next/server";
 
+const DEFAULT_ADMIN_EMAIL = "admin@gmail.com";
+const DEFAULT_ADMIN_PASSWORD = "admin";
+
+function normalizeEmail(value: string | undefined) {
+  return value?.trim().toLowerCase() ?? "";
+}
+
 export async function POST(request: Request) {
-  const tempAdminEmail = process.env.LEMICHU_ADMIN_EMAIL?.trim();
-  const tempAdminPassword = process.env.LEMICHU_ADMIN_PASSWORD?.trim();
   const { email, password } = (await request.json()) as {
     email?: string;
     password?: string;
   };
 
-  if (!tempAdminEmail || !tempAdminPassword) {
-    return NextResponse.json(
-      { message: "임시 관리자 계정 설정이 필요합니다." },
-      { status: 503 }
-    );
-  }
+  const normalizedEmail = normalizeEmail(email);
+  const envEmail = normalizeEmail(process.env.LEMICHU_ADMIN_EMAIL);
+  const envPassword = process.env.LEMICHU_ADMIN_PASSWORD?.trim();
 
-  const isValidAdmin =
-    email?.trim().toLowerCase() === tempAdminEmail.toLowerCase() &&
-    password === tempAdminPassword;
+  const isDefaultAdmin =
+    normalizedEmail === DEFAULT_ADMIN_EMAIL && password === DEFAULT_ADMIN_PASSWORD;
+  const isEnvAdmin = Boolean(
+    envEmail && envPassword && normalizedEmail === envEmail && password === envPassword
+  );
 
-  if (!isValidAdmin) {
+  if (!isDefaultAdmin && !isEnvAdmin) {
     return NextResponse.json(
       { message: "auth/invalid-credential" },
       { status: 401 }
@@ -30,7 +34,7 @@ export async function POST(request: Request) {
     user: {
       uid: "temp-admin",
       name: "관리자",
-      email: tempAdminEmail,
+      email: normalizedEmail || DEFAULT_ADMIN_EMAIL,
       provider: "email",
       role: "admin",
     },

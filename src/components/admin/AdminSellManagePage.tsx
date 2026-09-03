@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
 import { AdminField, adminInputClass } from "@/components/admin/AdminForm";
 import {
@@ -67,7 +67,7 @@ export function AdminSellManagePage() {
   );
 
   return (
-    <AdminShell>
+    <>
       <AdminPageHeader title="판매·정산 관리" />
       <p className="mb-6 max-w-2xl text-sm leading-6 text-muted-foreground">
         마이페이지의 판매 신청, 위탁, 검수, 정산, 시세 확인이 이 목록과 연결됩니다.
@@ -191,6 +191,6 @@ export function AdminSellManagePage() {
           })}
         </div>
       )}
-    </AdminShell>
+    </>
   );
 }

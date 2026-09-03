@@ -25,6 +25,7 @@ const nextConfig = {
       { source: "/sale", destination: "/products?filter=sale", permanent: true },
       { source: "/promotions", destination: "/products", permanent: true },
       { source: "/pre-owned", destination: "/products", permanent: true },
+      { source: "/admin/returns", destination: "/admin", permanent: false },
     ];
   },
   images: {

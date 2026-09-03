@@ -1,3 +1,4 @@
+import { toDateValue } from "@/lib/admin-serialize";
 import type { OrderStatus, PurchaseOrder } from "@/lib/orders";
 
 export type DailySalesPoint = {
@@ -47,7 +48,7 @@ function startOfDay(date: Date) {
 }
 
 function orderDate(order: PurchaseOrder): Date | null {
-  return order.createdAt?.toDate() ?? null;
+  return toDateValue(order.createdAt);
 }
 
 /** 최근 `days`일의 일자별 매출/주문수 (오래된 → 최신 순) */
@@ -122,6 +123,8 @@ function sumInWindow(
 }
 
 function isRevenueOrder(order: PurchaseOrder) {
+  const itemName = `${order.items?.[0]?.brand ?? ""} ${order.items?.[0]?.name ?? ""}`;
+  if (itemName.includes("검수")) return false;
   return ["paid", "preparing", "shipping", "delivered"].includes(order.status);
 }
 

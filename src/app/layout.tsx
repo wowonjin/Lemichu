@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import "./globals.css";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import { NavigationProgress } from "@/components/navigation/NavigationProgress";
@@ -34,7 +35,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const categoryMenu = await getHeaderCategoryMenu();
+  const pathname = (await headers()).get("x-pathname") ?? "";
+  const categoryMenu = pathname.startsWith("/admin") ? [] : await getHeaderCategoryMenu();
 
   return (
     <html lang="ko" suppressHydrationWarning>

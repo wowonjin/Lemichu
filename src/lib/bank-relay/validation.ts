@@ -8,7 +8,8 @@ import type {
   RelayHeartbeatPayload,
 } from "@/lib/bank-relay/types";
 
-const SEOUL_ISO_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+09:00$/;
+const SEOUL_ISO_PATTERN =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?\+09:00$/;
 
 function asObject(rawBody: string) {
   const value = JSON.parse(rawBody) as unknown;

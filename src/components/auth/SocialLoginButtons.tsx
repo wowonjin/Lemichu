@@ -6,10 +6,12 @@ import { cn } from "@/lib/cn";
 export function SocialLoginButtons({
   mode = "login",
   onGoogle,
+  onNaver,
   disabled = false,
 }: {
   mode?: "login" | "signup";
   onGoogle?: () => void | Promise<void>;
+  onNaver?: () => void | Promise<void>;
   disabled?: boolean;
 }) {
   const verb = mode === "signup" ? "가입하기" : "로그인";
@@ -32,32 +34,14 @@ export function SocialLoginButtons({
 
       <button
         type="button"
-        disabled
-        aria-disabled="true"
+        disabled={disabled}
+        onClick={() => void onNaver?.()}
         className={cn(
-          "relative flex h-11 w-full min-w-0 cursor-not-allowed items-center justify-center gap-2 rounded-md border border-[#03c75a] bg-[#03c75a] px-12 text-sm font-semibold text-white opacity-60 sm:h-12"
+          "flex h-11 w-full min-w-0 items-center justify-center gap-2 rounded-md border border-[#03c75a] bg-[#03c75a] text-sm font-semibold text-white transition-colors hover:bg-[#02b351] disabled:cursor-not-allowed disabled:opacity-60 sm:h-12"
         )}
       >
         <Image src="/social-icons/naver.svg" alt="" width={20} height={20} aria-hidden className="shrink-0" />
         <span className="truncate">네이버로 {verb}</span>
-        <span className="absolute right-2.5 text-[11px] font-medium text-white/85 sm:right-3 sm:text-xs">
-          준비중
-        </span>
-      </button>
-
-      <button
-        type="button"
-        disabled
-        aria-disabled="true"
-        className={cn(
-          "relative flex h-11 w-full min-w-0 cursor-not-allowed items-center justify-center gap-2 rounded-md border border-[#fee500] bg-[#fee500] px-12 text-sm font-semibold text-[#191919] opacity-60 sm:h-12"
-        )}
-      >
-        <Image src="/social-icons/kakao.svg" alt="" width={20} height={20} aria-hidden className="shrink-0" />
-        <span className="truncate">카카오로 {verb}</span>
-        <span className="absolute right-2.5 text-[11px] font-medium text-[#191919]/70 sm:right-3 sm:text-xs">
-          준비중
-        </span>
       </button>
     </div>
   );

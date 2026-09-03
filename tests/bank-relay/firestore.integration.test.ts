@@ -1,5 +1,5 @@
 import { deleteApp, initializeApp } from "firebase-admin/app";
-import { getFirestore, Timestamp } from "firebase-admin/firestore";
+import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import {
   RelayAuthenticationError,
@@ -140,5 +140,39 @@ describe.skipIf(!hasEmulator)("bank relay Firestore transaction", () => {
         }),
       })
     ).rejects.toBeInstanceOf(RelayAuthenticationError);
+  });
+
+  it("matches and completes a guest order without a member document", async () => {
+    if (!db) return;
+    await db.collection("orders").doc("BT-1").update({
+      userId: FieldValue.delete(),
+      isGuest: true,
+      source: "web-guest-bank-transfer",
+      reward: { points: 0, rate: 0, granted: false, reversed: false },
+    });
+
+    const event = payload();
+    const result = await processRelayDeposit({
+      db,
+      headers: {
+        deviceId: event.deviceId,
+        timestamp: Math.floor(Date.now() / 1000),
+        nonce: "52345678-1234-1234-1234-123456789012",
+      },
+      payload: event,
+    });
+    const order = await db.collection("orders").doc("BT-1").get();
+
+    expect(result).toMatchObject({
+      eventStatus: "MATCHED",
+      matchedOrderId: "BT-1",
+    });
+    expect(order.data()).toMatchObject({
+      isGuest: true,
+      paymentStatus: "PAID",
+      status: "preparing",
+      reward: { points: 0, rate: 0, granted: false },
+      inventory: { processed: true },
+    });
   });
 });

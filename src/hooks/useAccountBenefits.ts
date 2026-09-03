@@ -32,7 +32,8 @@ function mergePointHistory(
           orderId: order.orderNo ?? order.id,
           purchaseAmount: order.amounts.finalTotal,
           rate: order.reward.rate,
-          createdAt: order.createdAt,
+          createdAt:
+            typeof order.createdAt === "string" ? undefined : order.createdAt,
         });
       }
     }
@@ -46,7 +47,8 @@ function mergePointHistory(
         amount: used,
         reason: "주문 결제 사용",
         orderId: order.orderNo ?? order.id,
-        createdAt: order.createdAt,
+        createdAt:
+          typeof order.createdAt === "string" ? undefined : order.createdAt,
       });
     }
   }

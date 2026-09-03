@@ -10,7 +10,7 @@ import {
   TrendingUp,
   Users as UsersIcon,
 } from "lucide-react";
-import { AdminMetricCard, AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminMetricCard, AdminPageHeader } from "@/components/admin/AdminShell";
 import { SalesAreaChart, StatusBars } from "@/components/admin/Charts";
 import {
   fetchAdminOrders,
@@ -53,7 +53,6 @@ export function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [memberOverview, setMemberOverview] = useState({
     pendingSell: 0,
-    pendingReturns: 0,
     unreadNotifications: 0,
   });
 
@@ -64,29 +63,43 @@ export function AdminDashboard() {
       setIsLoading(true);
       setError("");
 
-      try {
-        const [nextUsers, nextOrders, nextProducts, nextOverview] = await Promise.all([
-          fetchAdminUsers(),
-          fetchAdminOrders(),
-          fetchAdminProducts(),
-          fetchAdminMemberOverview().catch(() => null),
-        ]);
-        if (!cancelled) {
-          setUsers(nextUsers);
-          setOrders(nextOrders);
-          setProducts(nextProducts);
-          if (nextOverview) setMemberOverview(nextOverview);
-        }
-      } catch (adminError) {
-        if (!cancelled) {
-          setError(
-            adminError instanceof Error
-              ? adminError.message
-              : "관리자 데이터를 불러오지 못했어요."
-          );
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false);
+      const errors: string[] = [];
+
+      const loadUsers = fetchAdminUsers()
+        .then((nextUsers) => {
+          if (!cancelled) setUsers(nextUsers);
+        })
+        .catch((adminError) => {
+          errors.push(adminError instanceof Error ? adminError.message : "회원 목록을 불러오지 못했어요.");
+        });
+
+      const loadOrders = fetchAdminOrders()
+        .then((nextOrders) => {
+          if (!cancelled) setOrders(nextOrders);
+        })
+        .catch((adminError) => {
+          errors.push(adminError instanceof Error ? adminError.message : "주문 목록을 불러오지 못했어요.");
+        });
+
+      const loadProducts = fetchAdminProducts()
+        .then((nextProducts) => {
+          if (!cancelled) setProducts(nextProducts);
+        })
+        .catch((adminError) => {
+          errors.push(adminError instanceof Error ? adminError.message : "상품 목록을 불러오지 못했어요.");
+        });
+
+      const loadOverview = fetchAdminMemberOverview()
+        .then((nextOverview) => {
+          if (!cancelled && nextOverview) setMemberOverview(nextOverview);
+        })
+        .catch(() => undefined);
+
+      await Promise.all([loadUsers, loadOrders, loadProducts, loadOverview]);
+
+      if (!cancelled) {
+        setError(errors[0] ?? "");
+        setIsLoading(false);
       }
     }
 
@@ -115,46 +128,56 @@ export function AdminDashboard() {
     value == null ? null : { value, label };
 
   return (
-    <AdminShell>
+    <div className="mx-auto w-full max-w-[1240px]">
       <AdminPageHeader title="대시보드" />
 
       {error ? <AdminNotice message={error} /> : null}
 
-      <section className="grid gap-x-8 gap-y-6 border-y border-border py-6 sm:grid-cols-2 xl:grid-cols-5">
-        <AdminMetricCard
-          label="전체 회원"
-          value={isLoading ? "-" : `${users.length}명`}
-          icon={UsersIcon}
-        />
-        <AdminMetricCard
-          label="등록 상품"
-          value={isLoading ? "-" : `${products.length}개`}
-          icon={ShoppingBag}
-        />
-        <AdminMetricCard
-          label="전체 주문"
-          value={isLoading ? "-" : `${orders.length}건`}
-          icon={PackageCheck}
-          delta={isLoading ? null : toDelta(trend.orders.value, trend.orders.label)}
-        />
-        <AdminMetricCard
-          label="결제완료"
-          value={isLoading ? "-" : `${paidOrders}건`}
-          icon={CreditCard}
-        />
-        <AdminMetricCard
-          label="누적 매출"
-          value={isLoading ? "-" : formatPriceWithUnit(revenue)}
-          icon={TrendingUp}
-          delta={isLoading ? null : toDelta(trend.revenue.value, trend.revenue.label)}
-        />
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <MetricSurface>
+          <AdminMetricCard
+            label="전체 회원"
+            value={users.length === 0 && isLoading ? "-" : `${users.length}명`}
+            icon={UsersIcon}
+          />
+        </MetricSurface>
+        <MetricSurface>
+          <AdminMetricCard
+            label="등록 상품"
+            value={products.length === 0 && isLoading ? "-" : `${products.length}개`}
+            icon={ShoppingBag}
+          />
+        </MetricSurface>
+        <MetricSurface>
+          <AdminMetricCard
+            label="전체 주문"
+            value={orders.length === 0 && isLoading ? "-" : `${orders.length}건`}
+            icon={PackageCheck}
+            delta={orders.length === 0 && isLoading ? null : toDelta(trend.orders.value, trend.orders.label)}
+          />
+        </MetricSurface>
+        <MetricSurface>
+          <AdminMetricCard
+            label="결제완료"
+            value={orders.length === 0 && isLoading ? "-" : `${paidOrders}건`}
+            icon={CreditCard}
+          />
+        </MetricSurface>
+        <MetricSurface>
+          <AdminMetricCard
+            label="누적 매출"
+            value={orders.length === 0 && isLoading ? "-" : formatPriceWithUnit(revenue)}
+            icon={TrendingUp}
+            delta={orders.length === 0 && isLoading ? null : toDelta(trend.revenue.value, trend.revenue.label)}
+          />
+        </MetricSurface>
       </section>
 
-      <section className="mt-10 grid gap-10 xl:grid-cols-[1.6fr_1fr]">
-        <div>
+      <section className="mt-5 grid gap-5 xl:grid-cols-[1.6fr_1fr]">
+        <div className="rounded-[18px] bg-[#f7f8fa] p-5 sm:p-6 dark:bg-secondary/60">
           <h3 className="text-base font-semibold text-foreground">매출 추이</h3>
-          <div className="mt-4">
-            {isLoading ? (
+          <div className="mt-5">
+            {orders.length === 0 && isLoading ? (
               <div className="grid h-[220px] place-items-center text-sm text-muted-foreground">
                 매출 데이터를 불러오는 중입니다.
               </div>
@@ -164,19 +187,19 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        <div>
+        <div className="rounded-[18px] bg-[#f7f8fa] p-5 sm:p-6 dark:bg-secondary/60">
           <div className="flex items-center justify-between gap-4">
             <h3 className="text-base font-semibold text-foreground">주문 상태 분포</h3>
             <Link
               href="/admin/orders"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex items-center gap-0.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
             >
               주문 관리
               <ChevronRight className="size-4" />
             </Link>
           </div>
           <div className="mt-5">
-            {isLoading ? (
+            {orders.length === 0 && isLoading ? (
               <div className="grid h-[220px] place-items-center text-sm text-muted-foreground">
                 불러오는 중입니다.
               </div>
@@ -189,19 +212,19 @@ export function AdminDashboard() {
         </div>
       </section>
 
-      <section className="mt-10 grid gap-10 border-t border-border pt-10 xl:grid-cols-[1.6fr_1fr]">
-        <div>
+      <section className="mt-5 grid gap-5 xl:grid-cols-[1.6fr_1fr]">
+        <div className="rounded-[18px] bg-[#f7f8fa] p-5 sm:p-6 dark:bg-secondary/60">
           <div className="flex items-center justify-between gap-4">
             <h3 className="text-base font-semibold text-foreground">최근 주문</h3>
             <Link
               href="/admin/orders"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex items-center gap-0.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
             >
               전체보기
               <ChevronRight className="size-4" />
             </Link>
           </div>
-          <div className="mt-4 divide-y divide-border">
+          <div className="mt-5 divide-y divide-border/70">
             {latestOrders.length > 0 ? (
               latestOrders.map((order) => <RecentOrder key={order.id} order={order} />)
             ) : (
@@ -210,18 +233,18 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        <div>
+        <div className="rounded-[18px] bg-[#f7f8fa] p-5 sm:p-6 dark:bg-secondary/60">
           <div className="flex items-center justify-between gap-4">
             <h3 className="text-base font-semibold text-foreground">최근 회원</h3>
             <Link
               href="/admin/users"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex items-center gap-0.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
             >
               회원 목록
               <ChevronRight className="size-4" />
             </Link>
           </div>
-          <div className="mt-4 divide-y divide-border">
+          <div className="mt-5 divide-y divide-border/70">
             {users.slice(0, 5).length > 0 ? (
               users.slice(0, 5).map((user) => <RecentUser key={user.uid} user={user} />)
             ) : (
@@ -231,36 +254,48 @@ export function AdminDashboard() {
         </div>
       </section>
 
-      <section className="mt-10 border-t border-border pt-10">
+      <section className="mt-5 rounded-[18px] bg-[#f7f8fa] p-5 sm:p-6 dark:bg-secondary/60">
         <h3 className="text-base font-semibold text-foreground">마이페이지 연동</h3>
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {[
             { href: "/admin/sell", label: "진행 중 판매", value: memberOverview.pendingSell },
-            { href: "/admin/returns", label: "취소·교환·반품 대기", value: memberOverview.pendingReturns },
             { href: "/admin/notifications", label: "미확인 알림", value: memberOverview.unreadNotifications },
           ].map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-xl border border-border px-4 py-4 transition-colors hover:bg-secondary"
+              className="group flex items-center justify-between rounded-[14px] bg-background px-4 py-4 transition-all hover:-translate-y-0.5 hover:shadow-sm"
             >
-              <p className="text-sm text-muted-foreground">{item.label}</p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{isLoading ? "-" : item.value}</p>
+              <div>
+                <p className="text-sm text-muted-foreground">{item.label}</p>
+                <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight text-foreground">{isLoading ? "-" : item.value}</p>
+              </div>
+              <ChevronRight className="size-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
             </Link>
           ))}
         </div>
       </section>
-    </AdminShell>
+    </div>
+  );
+}
+
+function MetricSurface({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-w-0 rounded-[18px] bg-[#f7f8fa] p-5 dark:bg-secondary/60">
+      {children}
+    </div>
   );
 }
 
 function isRevenueOrder(order: PurchaseOrder) {
+  const itemName = `${order.items?.[0]?.brand ?? ""} ${order.items?.[0]?.name ?? ""}`;
+  if (itemName.includes("검수")) return false;
   return ["paid", "preparing", "shipping", "delivered"].includes(order.status);
 }
 
 export function AdminNotice({ message }: { message: string }) {
   return (
-    <div className="mb-6 border-l-2 border-rose-400 bg-rose-50/60 px-4 py-3 text-sm font-medium text-rose-600">
+    <div className="mb-6 rounded-[14px] bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600 dark:bg-rose-950/30">
       {message}
     </div>
   );
@@ -273,25 +308,28 @@ export function EmptyAdminState({ text }: { text: string }) {
 }
 
 function RecentOrder({ order }: { order: PurchaseOrder }) {
-  const firstItem = order.items[0];
+  const firstItem = order.items?.[0];
+  const customer = [order.userName, order.userEmail].filter(Boolean).join(" · ");
+  const total = Number(order.amounts?.finalTotal) || 0;
 
   return (
-    <div className="flex items-center justify-between gap-4 py-3.5 first:pt-0 last:pb-0">
+    <div className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-foreground">
-          {firstItem ? `${firstItem.brand} ${firstItem.name}` : "주문 상품"}
+          {firstItem ? `${firstItem.brand} ${firstItem.name}`.trim() : "주문 상품"}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          {order.userEmail} · {formatOrderDate(order)}
+          {customer ? `${customer} · ` : ""}
+          {formatOrderDate(order)}
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
         <p className="text-sm font-semibold tabular-nums text-foreground">
-          {formatPriceWithUnit(order.amounts.finalTotal)}
+          {total > 0 ? formatPriceWithUnit(total) : "-"}
         </p>
         <span
           className={cn(
-            "rounded-md px-2.5 py-1 text-xs font-semibold",
+            "rounded-full px-2.5 py-1 text-xs font-semibold",
             statusBadgeClass[order.status] ?? "bg-secondary text-foreground"
           )}
         >
@@ -304,8 +342,8 @@ function RecentOrder({ order }: { order: PurchaseOrder }) {
 
 function RecentUser({ user }: { user: AdminUserProfile }) {
   return (
-    <Link href={`/admin/users/${user.uid}`} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-      <span className="grid size-10 shrink-0 place-items-center rounded-md bg-foreground text-sm font-bold text-background">
+    <Link href={`/admin/users/${user.uid}`} className="flex items-center gap-3 py-3.5 first:pt-0 last:pb-0">
+      <span className="grid size-10 shrink-0 place-items-center rounded-[12px] bg-background text-sm font-bold text-foreground">
         {user.name?.slice(0, 1) || "U"}
       </span>
       <div className="min-w-0">

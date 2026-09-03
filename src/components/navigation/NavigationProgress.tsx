@@ -18,6 +18,10 @@ function isInternalNavigation(anchor: HTMLAnchorElement) {
     return false;
   }
 
+  if (url.pathname.startsWith("/admin") && window.location.pathname.startsWith("/admin")) {
+    return false;
+  }
+
   return url.pathname + url.search !== window.location.pathname + window.location.search;
 }
 

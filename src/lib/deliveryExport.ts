@@ -1,3 +1,4 @@
+import { toDateValue } from "@/lib/admin-serialize";
 import type { PurchaseOrder } from "@/lib/orders";
 
 const deliveryHeaders = [
@@ -38,7 +39,7 @@ function escapeHtml(value: unknown) {
 }
 
 function formatDate(order: PurchaseOrder) {
-  const date = order.createdAt?.toDate();
+  const date = toDateValue(order.createdAt);
   if (!date) return "";
 
   return new Intl.DateTimeFormat("ko-KR", {

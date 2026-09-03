@@ -1,92 +1,39 @@
+import { adminRequestHeaders, assertApiOk } from "@/lib/admin-client";
 import {
-  collection,
-  doc,
-  getDocs,
-  serverTimestamp,
-  setDoc,
-  type Timestamp,
-} from "firebase/firestore";
-import {
-  HOME_CATEGORY_COLLECTION,
   defaultHomeCategories,
   mergeHomeCategories,
   type HomeCategoryContent,
 } from "@/data/homeCategories";
-import { firestoreDb, isFirebaseConfigured } from "@/lib/firebase";
 
-export type StoreHomeCategory = HomeCategoryContent & {
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
-};
-
-const firebaseConfigError =
-  "Firestore 설정이 필요합니다. .env.local에 Firebase 값을 넣고 개발 서버를 다시 시작해주세요.";
-
-function requireFirestore() {
-  if (!isFirebaseConfigured || !firestoreDb) {
-    throw new Error(firebaseConfigError);
-  }
-  return firestoreDb;
-}
-
-function toPayload(category: HomeCategoryContent) {
-  return {
-    label: category.label,
-    href: category.href,
-    hint: category.hint,
-    description: category.description,
-    imageSrc: category.imageSrc,
-    visible: category.visible,
-    order: category.order,
-    items: category.items,
-  };
-}
-
-async function fetchStoredHomeCategories() {
-  const db = requireFirestore();
-  const snapshot = await getDocs(collection(db, HOME_CATEGORY_COLLECTION));
-  return snapshot.docs.map((categoryDoc) => ({
-    id: categoryDoc.id,
-    ...categoryDoc.data(),
-  }));
-}
-
-export async function fetchHomeCategories(): Promise<HomeCategoryContent[]> {
-  return mergeHomeCategories(await fetchStoredHomeCategories());
-}
-
-export async function saveHomeCategory(category: HomeCategoryContent) {
-  const db = requireFirestore();
-  await setDoc(
-    doc(db, HOME_CATEGORY_COLLECTION, category.id),
-    {
-      ...toPayload(category),
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true }
+async function adminCategoryFetch(init?: RequestInit) {
+  return assertApiOk(
+    await fetch("/api/admin/home-categories", {
+      cache: "no-store",
+      ...init,
+      headers: {
+        ...(await adminRequestHeaders()),
+        ...(init?.headers ?? {}),
+      },
+    }),
+    "카테고리를 처리하지 못했어요."
   );
 }
 
+export async function fetchHomeCategories(): Promise<HomeCategoryContent[]> {
+  const json = await adminCategoryFetch();
+  const categories = Array.isArray(json.categories) ? json.categories : [];
+  return mergeHomeCategories(categories as Array<Record<string, unknown> & { id: string }>);
+}
+
+export async function saveHomeCategory(category: HomeCategoryContent) {
+  await adminCategoryFetch({
+    method: "PUT",
+    body: JSON.stringify(category),
+  });
+}
+
 export async function seedHomeCategories() {
-  const stored = await fetchStoredHomeCategories();
-  const existingIds = new Set(stored.map((item) => item.id));
-  const missing =
-    stored.length === 0
-      ? defaultHomeCategories
-      : defaultHomeCategories.filter((category) => !existingIds.has(category.id));
-
-  if (missing.length > 0) {
-    const db = requireFirestore();
-    await Promise.all(
-      missing.map((category) =>
-        setDoc(doc(db, HOME_CATEGORY_COLLECTION, category.id), {
-          ...toPayload(category),
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        })
-      )
-    );
-  }
-
-  return fetchHomeCategories();
+  const json = await adminCategoryFetch({ method: "POST" });
+  const categories = Array.isArray(json.categories) ? json.categories : defaultHomeCategories;
+  return mergeHomeCategories(categories as Array<Record<string, unknown> & { id: string }>);
 }

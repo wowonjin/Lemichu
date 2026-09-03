@@ -1,10 +1,4 @@
-import {
-  collection,
-  getDocs,
-  type Timestamp,
-} from "firebase/firestore";
 import { adminRequestHeaders, assertApiOk } from "@/lib/admin-client";
-import { firestoreDb, isFirebaseConfigured } from "@/lib/firebase";
 import type { OrderStatus, PurchaseOrder } from "@/lib/orders";
 import type { StoreProduct } from "@/lib/products";
 
@@ -13,73 +7,50 @@ export type AdminUserProfile = {
   name: string;
   email: string;
   phone?: string;
-  provider: "email" | "google" | "naver";
+  provider: "email" | "google" | "naver" | "kakao";
   role: "admin" | "member";
   photoURL?: string | null;
   points?: number;
   grade?: string;
-  createdAt?: Timestamp;
-  lastLoginAt?: Timestamp;
-  updatedAt?: Timestamp;
+  createdAt?: string | null;
+  lastLoginAt?: string | null;
+  updatedAt?: string | null;
 };
 
-const firebaseConfigError =
-  "Firestore 설정이 필요합니다. .env.local에 Firebase 값을 넣고 개발 서버를 다시 시작해주세요.";
-
-function requireFirestore() {
-  if (!isFirebaseConfigured || !firestoreDb) {
-    throw new Error(firebaseConfigError);
-  }
-
-  return firestoreDb;
-}
-
 export async function fetchAdminUsers() {
-  const db = requireFirestore();
-  const snapshot = await getDocs(collection(db, "users"));
+  const json = await assertApiOk(
+    await fetch("/api/admin/users", {
+      cache: "no-store",
+      headers: await adminRequestHeaders(),
+    }),
+    "회원 목록을 불러오지 못했어요."
+  );
 
-  return snapshot.docs
-    .map((userDoc) => ({
-      uid: userDoc.id,
-      ...userDoc.data(),
-    } as AdminUserProfile))
-    .sort((a, b) => {
-      const aTime = a.lastLoginAt?.toMillis() ?? 0;
-      const bTime = b.lastLoginAt?.toMillis() ?? 0;
-      return bTime - aTime;
-    });
+  return (Array.isArray(json.users) ? json.users : []) as AdminUserProfile[];
 }
 
 export async function fetchAdminOrders() {
-  const db = requireFirestore();
-  const snapshot = await getDocs(collection(db, "orders"));
+  const json = await assertApiOk(
+    await fetch("/api/admin/orders", {
+      cache: "no-store",
+      headers: await adminRequestHeaders(),
+    }),
+    "주문 목록을 불러오지 못했어요."
+  );
 
-  return snapshot.docs
-    .map((orderDoc) => ({
-      id: orderDoc.id,
-      ...orderDoc.data(),
-    } as PurchaseOrder))
-    .sort((a, b) => {
-      const aTime = a.createdAt?.toMillis() ?? 0;
-      const bTime = b.createdAt?.toMillis() ?? 0;
-      return bTime - aTime;
-    });
+  return (Array.isArray(json.orders) ? json.orders : []) as PurchaseOrder[];
 }
 
 export async function fetchAdminProducts() {
-  const db = requireFirestore();
-  const snapshot = await getDocs(collection(db, "products"));
+  const json = await assertApiOk(
+    await fetch("/api/admin/products", {
+      cache: "no-store",
+      headers: await adminRequestHeaders(),
+    }),
+    "상품 목록을 불러오지 못했어요."
+  );
 
-  return snapshot.docs
-    .map((productDoc) => ({
-      id: productDoc.id,
-      ...productDoc.data(),
-    } as StoreProduct))
-    .sort((a, b) => {
-      const aTime = a.createdAt?.toMillis() ?? 0;
-      const bTime = b.createdAt?.toMillis() ?? 0;
-      return bTime - aTime;
-    });
+  return (Array.isArray(json.products) ? json.products : []) as StoreProduct[];
 }
 
 export async function updateAdminOrderStatus(

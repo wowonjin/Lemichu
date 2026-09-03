@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BankTransferDepositDialog } from "@/components/product/BankTransferDepositDialog";
 import { GuestMemberPurchaseDialog } from "@/components/product/GuestMemberPurchaseDialog";
 import { ProductInquiryChat } from "@/components/product/ProductInquiryChat";
 import { WishlistToggleButton } from "@/components/product/WishlistToggleButton";
@@ -25,21 +24,13 @@ export function ProductPurchaseBar({
 }) {
   const {
     authOpen,
-    depositOpen,
     closePurchase,
     continueAsGuest,
     message,
     openDeposit,
-    selectedPrice,
     payablePrice,
     pointsToUse,
-    expectedEarn,
-    usePoints,
-    productId,
-    variantId,
-    productName,
     productHref,
-    optionLabel,
     canPurchase,
     requiresVariantSelection,
   } = useBankTransferPurchase();
@@ -96,19 +87,6 @@ export function ProductPurchaseBar({
         onClose={closePurchase}
         onGuestPurchase={continueAsGuest}
         redirectPath={productHref}
-      />
-      <BankTransferDepositDialog
-        open={depositOpen}
-        onClose={closePurchase}
-        amount={payablePrice}
-        productAmount={selectedPrice}
-        pointsToUse={pointsToUse}
-        expectedEarn={expectedEarn}
-        productId={productId}
-        variantId={variantId}
-        usePoints={usePoints}
-        productName={productName}
-        optionLabel={optionLabel}
       />
     </div>
   );

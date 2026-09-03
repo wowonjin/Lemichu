@@ -6,9 +6,10 @@ import { PackageCheck, Search, ShieldCheck } from "lucide-react";
 import { GRADE_LABELS, resolveMemberGrade } from "@/lib/member-account";
 import { formatPriceWithUnit } from "@/lib/formatPrice";
 import { toSafePoints } from "@/lib/points";
-import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
 import { fetchAdminUsers, type AdminUserProfile } from "@/lib/admin";
+import { toDateValue } from "@/lib/admin-serialize";
 import { fetchAdminLogiiShipments } from "@/lib/member-account-client";
 import type { LogiiShipmentRecord } from "@/lib/logii-delivery";
 import { getCourierTrackingUrl } from "@/lib/courier";
@@ -97,7 +98,7 @@ export function AdminUsersPage() {
   );
 
   return (
-    <AdminShell>
+    <>
       <AdminPageHeader title="고객 목록" />
 
       {error ? <AdminNotice message={error} /> : null}
@@ -169,7 +170,7 @@ export function AdminUsersPage() {
                   </span>
                 </td>
                 <td className="px-4 py-4 text-muted-foreground">
-                  {user.lastLoginAt?.toDate().toLocaleString("ko-KR") ?? "-"}
+                  {toDateValue(user.lastLoginAt)?.toLocaleString("ko-KR") ?? "-"}
                 </td>
               </tr>
             ))}
@@ -289,7 +290,7 @@ export function AdminUsersPage() {
           ) : null}
         </div>
       </section>
-    </AdminShell>
+    </>
   );
 }
 

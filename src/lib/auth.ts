@@ -14,7 +14,7 @@ import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { firebaseAuth, firestoreDb, googleProvider, isFirebaseConfigured } from "@/lib/firebase";
 import { normalizeRedirectPath } from "@/lib/redirect";
 
-export type AuthProvider = "email" | "google" | "naver";
+export type AuthProvider = "email" | "google" | "naver" | "kakao";
 
 export type AuthUser = {
   uid?: string;
@@ -27,9 +27,20 @@ export type AuthUser = {
 };
 
 export const ADMIN_EMAIL = "admin@gmail.com";
+const TEMP_ADMIN_UID = "temp-admin";
 
 export const AUTH_STORAGE_KEY = "lemichu-auth-user";
 export const AUTH_STATE_CHANGE = "lemichu-auth-change";
+
+function isTempAdminSession(user: AuthUser | null | undefined) {
+  return user?.uid === TEMP_ADMIN_UID && user.email?.toLowerCase() === ADMIN_EMAIL;
+}
+
+/** True only when member APIs (Firebase ID token) can actually be called. */
+export function canSubmitMemberOrder(user: AuthUser | null | undefined) {
+  if (!user?.uid || isTempAdminSession(user)) return false;
+  return Boolean(isFirebaseConfigured && firebaseAuth?.currentUser);
+}
 
 const defaultUser: AuthUser = {
   name: "레미츄",
@@ -77,6 +88,10 @@ function persistAuthUser(user: AuthUser | null) {
 function resolveAuthProvider(user: User): AuthProvider {
   if (user.uid.startsWith("naver:")) {
     return "naver";
+  }
+
+  if (user.uid.startsWith("kakao:")) {
+    return "kakao";
   }
 
   if (user.providerData.some((provider) => provider.providerId === "google.com")) {
@@ -147,6 +162,7 @@ export function isAdminUser(user: AuthUser | null | undefined): user is AuthUser
 export function formatAuthProvider(provider?: AuthProvider) {
   if (provider === "google") return "Google";
   if (provider === "naver") return "네이버";
+  if (provider === "kakao") return "카카오";
   return "이메일";
 }
 
@@ -226,7 +242,17 @@ export function observeAuthUser(onChange: (user: AuthUser | null) => void) {
 
   window.addEventListener(AUTH_STATE_CHANGE, handleAuthChange);
 
-  const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+  const activeFirebaseAuth = firebaseAuth;
+  const unsubscribe = onAuthStateChanged(activeFirebaseAuth, (user) => {
+    const stored = readAuthUser();
+    if (isTempAdminSession(stored)) {
+      if (user) {
+        void firebaseSignOut(activeFirebaseAuth).catch(() => undefined);
+      }
+      onChange(stored);
+      return;
+    }
+
     if (!user) {
       persistAuthUser(null);
       return;
@@ -320,8 +346,8 @@ export async function updateAccountProfile(patch: {
   return next;
 }
 
-export async function signInWithEmail(email: string, password: string) {
-  if (!isFirebaseConfigured || !firebaseAuth) {
+async function tryTempAdminSignIn(email: string, password: string) {
+  try {
     const response = await fetch("/api/auth/temp-admin", {
       method: "POST",
       headers: {
@@ -329,15 +355,31 @@ export async function signInWithEmail(email: string, password: string) {
       },
       body: JSON.stringify({ email, password }),
     });
-    const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.message ?? "임시 관리자 로그인에 실패했어요.");
+      return null;
     }
 
-    const user = result.user as AuthUser;
-    persistAuthUser(user);
-    return user;
+    const result = (await response.json()) as { user?: AuthUser };
+    return isTempAdminSession(result.user) ? result.user : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function signInWithEmail(email: string, password: string) {
+  const tempAdmin = await tryTempAdminSignIn(email, password);
+  if (tempAdmin) {
+    if (isFirebaseConfigured && firebaseAuth) {
+      await firebaseSignOut(firebaseAuth).catch(() => undefined);
+    }
+
+    persistAuthUser(tempAdmin);
+    return tempAdmin;
+  }
+
+  if (!isFirebaseConfigured || !firebaseAuth) {
+    throw new Error("auth/invalid-credential");
   }
 
   const auth = requireFirebaseAuth();
@@ -419,6 +461,38 @@ export async function completeNaverSignIn() {
   return user;
 }
 
+export function startKakaoLogin(redirectPath = "/my") {
+  if (typeof window === "undefined") return;
+
+  const params = new URLSearchParams({
+    redirect: normalizeRedirectPath(redirectPath),
+  });
+  window.location.assign(`/api/auth/kakao/start?${params.toString()}`);
+}
+
+export async function completeKakaoSignIn() {
+  const auth = requireFirebaseAuth();
+  const response = await fetch("/api/auth/kakao/session", {
+    method: "GET",
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  const result = (await response.json()) as { token?: string; message?: string };
+
+  if (!response.ok || !result.token) {
+    throw new Error(result.message || "카카오 로그인 세션을 확인할 수 없습니다.");
+  }
+
+  const credential = await withAuthTimeout(
+    signInWithCustomToken(auth, result.token),
+    "completeKakaoSignIn"
+  );
+  const user = { ...toAuthUser(credential.user), provider: "kakao" as const };
+  persistAuthUser(user);
+  syncUserProfile(user).catch(() => undefined);
+  return user;
+}
+
 export async function requestPasswordReset(email: string) {
   const auth = requireFirebaseAuth();
   auth.languageCode = "ko";
@@ -426,9 +500,9 @@ export async function requestPasswordReset(email: string) {
 }
 
 export async function signOut() {
+  persistAuthUser(null);
+
   if (isFirebaseConfigured && firebaseAuth) {
     await firebaseSignOut(firebaseAuth);
   }
-
-  persistAuthUser(null);
 }

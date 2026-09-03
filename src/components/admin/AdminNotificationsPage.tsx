@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
 import { AdminField, AdminPanel, adminInputClass, adminTextareaClass } from "@/components/admin/AdminForm";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,7 @@ export function AdminNotificationsManagePage() {
   }, []);
 
   return (
-    <AdminShell>
+    <>
       <AdminPageHeader title="회원 알림" />
       <p className="mb-6 max-w-2xl text-sm leading-6 text-muted-foreground">
         보낸 알림은 마이페이지 대시보드와 알림 페이지에 표시됩니다. 회원의 알림 설정은 회원 상세에서 확인할 수 있습니다.
@@ -124,6 +124,6 @@ export function AdminNotificationsManagePage() {
           )}
         </AdminPanel>
       </div>
-    </AdminShell>
+    </>
   );
 }

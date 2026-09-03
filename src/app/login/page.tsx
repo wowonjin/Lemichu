@@ -12,6 +12,7 @@ import {
   requestPasswordReset,
   signInWithEmail,
   signInWithGoogle,
+  startNaverLogin,
 } from "@/lib/auth";
 import { readPostLoginPath } from "@/lib/redirect";
 
@@ -119,6 +120,12 @@ export default function LoginPage() {
     }
   };
 
+  const handleNaverLogin = () => {
+    setError("");
+    setIsSubmitting(true);
+    startNaverLogin(redirectPath);
+  };
+
   const openRecoveryDialog = () => {
     setRecoveryEmail(email.trim());
     setRecoveryMessage("");
@@ -172,6 +179,7 @@ export default function LoginPage() {
               mode="login"
               disabled={isSubmitting}
               onGoogle={handleGoogleLogin}
+              onNaver={handleNaverLogin}
             />
           </div>
 

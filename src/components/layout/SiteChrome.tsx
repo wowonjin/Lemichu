@@ -60,7 +60,7 @@ export function SiteChrome({
   }, [isAuthPage]);
 
   if (isAdmin) {
-    return <main className="min-h-screen">{children}</main>;
+    return <div className="min-h-svh">{children}</div>;
   }
 
   return (

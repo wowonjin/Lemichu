@@ -1,8 +1,8 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
-import { FirebaseAuthError, getAdminDb, requireFirebaseUser } from "@/lib/firebase-admin";
+import { FirebaseAuthError, getAdminDb } from "@/lib/firebase-admin";
+import { verifyAdminRequest } from "@/lib/admin-auth";
 import {
-  canManageHeaderBanner,
   DEFAULT_HEADER_BANNER,
   HEADER_BANNER_DOC_PATH,
   normalizeHeaderBanner,
@@ -47,8 +47,7 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   try {
-    const user = await requireFirebaseUser(req);
-    if (!canManageHeaderBanner(user.email)) {
+    if (!(await verifyAdminRequest(req))) {
       return NextResponse.json({ message: "관리자만 수정할 수 있습니다." }, { status: 403 });
     }
 

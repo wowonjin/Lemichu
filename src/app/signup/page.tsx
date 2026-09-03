@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { AuthSplitLayout } from "@/components/auth/AuthSplitLayout";
 import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
 import { privacyDoc, termsDoc, type InfoDoc } from "@/data/pageContent";
-import { createAccountWithEmail, signInWithGoogle } from "@/lib/auth";
+import { createAccountWithEmail, signInWithGoogle, startNaverLogin } from "@/lib/auth";
 
 function getSignupMessage(error: unknown) {
   const message = error instanceof Error ? error.message : "회원가입 중 문제가 발생했어요.";
@@ -67,6 +67,12 @@ export default function SignupPage() {
     }
   };
 
+  const handleNaverSignup = () => {
+    setError("");
+    setIsSubmitting(true);
+    startNaverLogin("/my");
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
@@ -115,6 +121,7 @@ export default function SignupPage() {
               mode="signup"
               disabled={isSubmitting}
               onGoogle={handleGoogleSignup}
+              onNaver={handleNaverSignup}
             />
           </div>
 

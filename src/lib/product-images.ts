@@ -1,7 +1,6 @@
 "use client";
 
-import { deleteObject, getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { firebaseStorage, isFirebaseConfigured } from "@/lib/firebase";
+import { adminRequestHeaders, assertApiOk } from "@/lib/admin-client";
 
 export type ProductImageVariant = {
   url: string;
@@ -26,18 +25,8 @@ type ImageVariantBlob = {
   contentType: string;
 };
 
-const firebaseStorageError =
-  "Firebase Storage 설정이 필요합니다. .env.local에 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET 값을 확인하고 개발 서버를 다시 시작해주세요.";
-
 const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 const maxImageSize = 10 * 1024 * 1024;
-
-function requireFirebaseStorage() {
-  if (!isFirebaseConfigured || !firebaseStorage) {
-    throw new Error(firebaseStorageError);
-  }
-  return firebaseStorage;
-}
 
 function getExtension(contentType: string) {
   if (contentType === "image/png") return "png";
@@ -117,16 +106,23 @@ async function uploadVariant({
 }: ImageVariantBlob & {
   path: string;
 }): Promise<ProductImageVariant> {
-  const storage = requireFirebaseStorage();
-  const storageRef = ref(storage, path);
-  const snapshot = await uploadBytes(storageRef, blob, {
-    contentType,
-    cacheControl: "public,max-age=31536000,immutable",
-  });
-  const url = await getDownloadURL(snapshot.ref);
+  const formData = new FormData();
+  formData.append("file", blob, path.split("/").at(-1) || "image");
+  formData.append("path", path);
+  formData.append("width", String(width));
+  formData.append("height", String(height));
+
+  const json = await assertApiOk(
+    await fetch("/api/admin/product-images", {
+      method: "POST",
+      headers: await adminRequestHeaders(null),
+      body: formData,
+    }),
+    "이미지를 Firebase Storage에 저장하지 못했어요."
+  );
 
   return {
-    url,
+    url: String(json.url ?? ""),
     path,
     width,
     height,
@@ -180,14 +176,19 @@ export async function uploadProductImage({
 }
 
 export async function deleteProductImageAssets(assets: ProductImageAsset[]) {
-  const storage = firebaseStorage;
-  if (!storage) return;
-
   const paths = assets.flatMap((asset) => [
     asset.original.path,
     asset.thumbnail.path,
     asset.medium.path,
   ]);
+  if (paths.length === 0) return;
 
-  await Promise.allSettled(paths.map((path) => deleteObject(ref(storage, path))));
+  await assertApiOk(
+    await fetch("/api/admin/product-images", {
+      method: "DELETE",
+      headers: await adminRequestHeaders(),
+      body: JSON.stringify({ paths }),
+    }),
+    "상품 이미지를 삭제하지 못했어요."
+  );
 }

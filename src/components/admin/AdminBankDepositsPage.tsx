@@ -11,7 +11,6 @@ import {
 import {
   AdminMetricCard,
   AdminPageHeader,
-  AdminShell,
 } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,7 @@ import {
   manuallyMatchBankDeposit,
   type AdminBankDepositCandidate,
   type AdminBankDepositEvent,
+  type AdminBankOrderSummary,
   type AdminBankRelayOverview,
 } from "@/lib/bank-deposit-admin";
 import { cn } from "@/lib/cn";
@@ -50,6 +50,53 @@ function relativeMinutes(value: string | null) {
   if (!value) return "수신 기록 없음";
   const minutes = Math.max(0, Math.floor((Date.now() - Date.parse(value)) / 60_000));
   return minutes < 1 ? "방금 전" : minutes < 60 ? `${minutes}분 전` : `${Math.floor(minutes / 60)}시간 전`;
+}
+
+function paymentStatusLabel(value: string) {
+  if (value === "WAITING_FOR_DEPOSIT") return "입금대기";
+  if (value === "PAID") return "결제완료";
+  if (value === "FAILED") return "결제실패";
+  if (value === "CANCELLED") return "결제취소";
+  if (value === "PENDING") return "결제처리중";
+  return value || "-";
+}
+
+function BankOrderDetails({
+  order,
+}: {
+  order: AdminBankOrderSummary | AdminBankDepositCandidate;
+}) {
+  return (
+    <div className="min-w-[260px]">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-semibold">#{order.orderNo}</span>
+        {order.isGuest ? (
+          <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-bold text-violet-700">
+            비회원
+          </span>
+        ) : null}
+        <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700">
+          {paymentStatusLabel(order.paymentStatus)}
+        </span>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {order.customerName || order.recipientName || "고객"}
+        {order.customerEmail ? ` · ${order.customerEmail}` : ""}
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        수령인 {order.recipientName || "-"} · {order.recipientPhone || "-"}
+      </p>
+      <p className="mt-1 whitespace-normal text-xs leading-5 text-muted-foreground">
+        {order.postalCode ? `[${order.postalCode}] ` : ""}
+        {order.address || "배송지 미입력"}
+      </p>
+      {order.deliveryMessage ? (
+        <p className="mt-1 whitespace-normal text-xs leading-5 text-sky-700">
+          요청: {order.deliveryMessage}
+        </p>
+      ) : null}
+    </div>
+  );
 }
 
 export function AdminBankDepositsPage() {
@@ -115,7 +162,7 @@ export function AdminBankDepositsPage() {
     device?.health === "HEALTHY" ? "정상" : device?.health === "WARNING" ? "주의" : "오프라인";
 
   return (
-    <AdminShell>
+    <>
       <AdminPageHeader
         title="무통장입금"
         actions={
@@ -190,9 +237,9 @@ export function AdminBankDepositsPage() {
             {candidates.map((candidate) => (
               <div key={candidate.orderId} className="flex flex-col gap-3 rounded-md border border-border bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="font-semibold">#{candidate.orderNo}</p>
+                  <BankOrderDetails order={candidate} />
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {candidate.depositorName} · {formatPriceWithUnit(candidate.expectedAmount)}
+                    입금자 {candidate.depositorName} · {formatPriceWithUnit(candidate.expectedAmount)}
                   </p>
                   <p className={cn("mt-1 text-xs font-semibold", candidate.exactName ? "text-emerald-600" : "text-amber-600")}>
                     {candidate.exactName ? "입금자명 정확 일치" : "입금자명 불일치"}
@@ -214,7 +261,7 @@ export function AdminBankDepositsPage() {
       ) : null}
 
       <div className="mt-7 overflow-x-auto">
-        <table className="w-full min-w-[900px] text-left text-sm">
+        <table className="w-full min-w-[1180px] text-left text-sm">
           <thead>
             <tr className="border-b border-border text-xs text-muted-foreground">
               <th className="py-3 pr-4 font-semibold">시간</th>
@@ -231,7 +278,15 @@ export function AdminBankDepositsPage() {
                 <td className="py-4 pr-4">{formatDateTime(event.transactionAt)}</td>
                 <td className="px-4 py-4 font-semibold">{event.depositorName}</td>
                 <td className="px-4 py-4 font-semibold tabular-nums">{formatPriceWithUnit(event.amount)}</td>
-                <td className="px-4 py-4">{event.matchedOrderId ? `#${event.matchedOrderId}` : "-"}</td>
+                <td className="px-4 py-4">
+                  {event.matchedOrder ? (
+                    <BankOrderDetails order={event.matchedOrder} />
+                  ) : event.matchedOrderId ? (
+                    `#${event.matchedOrderId}`
+                  ) : (
+                    "-"
+                  )}
+                </td>
                 <td className="px-4 py-4">
                   <span className={cn("font-semibold", event.status === "MATCHED" ? "text-emerald-600" : ["UNMATCHED", "AMBIGUOUS"].includes(event.status) ? "text-amber-600" : "text-muted-foreground")}>
                     {statusLabel[event.status]}
@@ -255,6 +310,6 @@ export function AdminBankDepositsPage() {
         {!loading && (overview?.events.length ?? 0) === 0 ? <EmptyAdminState text="수신된 입금 이벤트가 없습니다." /> : null}
         {loading ? <EmptyAdminState text="입금 내역을 불러오는 중입니다." /> : null}
       </div>
-    </AdminShell>
+    </>
   );
 }

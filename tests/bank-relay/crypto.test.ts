@@ -90,4 +90,25 @@ describe("relay payload validation", () => {
     expect(parsed.depositorName).toBe("홍길동");
     expect(parsed.isTest).toBe(true);
   });
+
+  it("accepts the Android parser timestamp format without seconds", () => {
+    const event = {
+      eventId: "22345678-1234-1234-1234-123456789012",
+      deviceId,
+      bank: "KB" as const,
+      accountMask: "498125****8895",
+      depositorName: "홍길동",
+      amount: 1_250_000,
+      transactionAt: "2026-07-10T16:40+09:00",
+      isTest: true,
+    };
+    const rawBody = JSON.stringify({
+      ...event,
+      eventHash: computeRelayEventHash(event),
+    });
+
+    expect(parseRelayDepositPayload(rawBody).transactionAt).toBe(
+      event.transactionAt
+    );
+  });
 });

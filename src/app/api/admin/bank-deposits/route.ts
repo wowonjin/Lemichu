@@ -27,6 +27,39 @@ function seoulDate(value: string | null) {
   }).format(new Date(value));
 }
 
+function toOrderSummary(
+  id: string,
+  data: Record<string, unknown>
+) {
+  const delivery =
+    data.delivery && typeof data.delivery === "object"
+      ? (data.delivery as Record<string, unknown>)
+      : {};
+  const amounts =
+    data.amounts && typeof data.amounts === "object"
+      ? (data.amounts as Record<string, unknown>)
+      : {};
+  return {
+    orderId: id,
+    orderNo: String(data.orderNo || id),
+    isGuest:
+      data.isGuest === true || data.source === "web-guest-bank-transfer",
+    customerName: String(data.userName || ""),
+    customerEmail: String(data.userEmail || ""),
+    depositorName: String(data.depositorName || ""),
+    expectedAmount: Number(data.expectedAmount || amounts.finalTotal || 0),
+    paymentStatus: String(data.paymentStatus || ""),
+    recipientName: String(delivery.recipientName || ""),
+    recipientPhone: String(delivery.phone || ""),
+    postalCode: String(delivery.postalCode || ""),
+    address: [delivery.address1, delivery.address2]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean)
+      .join(" "),
+    deliveryMessage: String(delivery.message || ""),
+  };
+}
+
 export async function GET(request: Request) {
   if (!(await verifyAdminRequest(request))) {
     return NextResponse.json(
@@ -41,7 +74,7 @@ export async function GET(request: Request) {
       db.collection("bankRelayDevices").doc(getRelayDeviceId()).get(),
       db.collection("bankDepositEvents").orderBy("createdAt", "desc").limit(100).get(),
     ]);
-    const events = eventSnapshot.docs.map((document) => {
+    const rawEvents = eventSnapshot.docs.map((document) => {
       const data = document.data();
       return {
         id: document.id,
@@ -58,6 +91,39 @@ export async function GET(request: Request) {
         createdAt: toIso(data.createdAt),
       };
     });
+    const matchedOrderIds = [
+      ...new Set(
+        rawEvents
+          .map((event) => event.matchedOrderId)
+          .filter((id): id is string => Boolean(id))
+      ),
+    ];
+    const matchedOrders = new Map<
+      string,
+      ReturnType<typeof toOrderSummary>
+    >();
+    if (matchedOrderIds.length > 0) {
+      const snapshots = await db.getAll(
+        ...matchedOrderIds.map((id) => db.collection("orders").doc(id))
+      );
+      snapshots.forEach((snapshot) => {
+        if (snapshot.exists) {
+          matchedOrders.set(
+            snapshot.id,
+            toOrderSummary(
+              snapshot.id,
+              snapshot.data() as Record<string, unknown>
+            )
+          );
+        }
+      });
+    }
+    const events = rawEvents.map((event) => ({
+      ...event,
+      matchedOrder: event.matchedOrderId
+        ? matchedOrders.get(event.matchedOrderId) ?? null
+        : null,
+    }));
     const today = seoulDate(new Date().toISOString());
     const todayEvents = events.filter(
       (event) => !event.isTest && seoulDate(event.transactionAt) === today
