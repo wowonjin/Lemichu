@@ -89,12 +89,7 @@ export function HeaderBannerEditor({
       const result = await saveHeaderBanner(next);
       setSettings(result.settings);
       onSaved?.(result.settings);
-
-      if (result.persisted === "local") {
-        setSuccess("이 브라우저에 저장했습니다. Firebase 연동 후 모든 방문객에게 반영됩니다.");
-      } else {
-        setSuccess("저장했습니다. 쇼핑몰 상단 배너에 바로 반영됩니다.");
-      }
+      setSuccess("저장했습니다. 쇼핑몰 상단 배너에 바로 반영됩니다.");
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "배너를 저장하지 못했어요.");
     } finally {
