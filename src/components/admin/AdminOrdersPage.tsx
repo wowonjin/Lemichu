@@ -184,10 +184,16 @@ export function AdminOrdersPage() {
     setError("");
 
     try {
-      const savedStatus = await updateAdminOrderStatus(orderId, nextStatus);
+      const saved = await updateAdminOrderStatus(orderId, nextStatus);
       setOrders((current) =>
         current.map((order) =>
-          order.id === orderId ? { ...order, status: savedStatus } : order
+          order.id === orderId
+            ? {
+                ...order,
+                status: saved.status,
+                ...(saved.paymentStatus ? { paymentStatus: saved.paymentStatus } : {}),
+              }
+            : order
         )
       );
     } catch (adminError) {
@@ -511,8 +517,14 @@ function OrderRow({
         </div>
       </div>
 
-      {canManageFulfillment ? (
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-[160px_1fr_1fr_auto]">
+      <div
+        className={cn(
+          "mt-4 grid gap-2 sm:grid-cols-2",
+          canManageFulfillment
+            ? "lg:grid-cols-[160px_1fr_1fr_auto]"
+            : "lg:grid-cols-[160px]"
+        )}
+      >
           <label className="block">
             <span className="mb-1.5 block text-[11px] font-semibold text-muted-foreground">
               주문 상태
@@ -527,59 +539,52 @@ function OrderRow({
               {statusOptions
                 .filter((option) => option.value !== "all")
                 .map((option) => (
-                  <option
-                    key={option.value}
-                    value={option.value}
-                    disabled={
-                      option.value === order.status
-                        ? false
-                        : order.status === "pending"
-                          ? !["paid", "cancelled"].includes(option.value)
-                          : ["pending", "paid", "failed"].includes(option.value)
-                    }
-                  >
+                  <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
                 ))}
             </select>
           </label>
-          <label className="block">
-            <span className="mb-1.5 block text-[11px] font-semibold text-muted-foreground">
-              택배사
-            </span>
-            <input
-              value={deliveryDraft.courier}
-              onChange={(event) => onDeliveryDraftChange("courier", event.target.value)}
-              placeholder="택배사"
-              aria-label={`${order.orderNo ?? order.id} 택배사`}
-              className="h-11 w-full rounded-md bg-secondary px-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground/10"
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1.5 block text-[11px] font-semibold text-muted-foreground">
-              송장번호
-            </span>
-            <input
-              value={deliveryDraft.invoiceNo}
-              onChange={(event) => onDeliveryDraftChange("invoiceNo", event.target.value)}
-              placeholder="송장번호"
-              aria-label={`${order.orderNo ?? order.id} 송장번호`}
-              className="h-11 w-full rounded-md bg-secondary px-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground/10"
-            />
-          </label>
-          <div className="flex items-end">
-            <button
-              type="button"
-              disabled={isUpdating}
-              onClick={onDeliverySave}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-foreground px-5 text-sm font-semibold text-background transition-opacity hover:opacity-85 disabled:opacity-50 lg:w-auto"
-            >
-              {isUpdating ? <Loader2 className="size-4 animate-spin" /> : null}
-              {isUpdating ? "저장 중" : "저장"}
-            </button>
-          </div>
+          {canManageFulfillment ? (
+            <>
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-semibold text-muted-foreground">
+                  택배사
+                </span>
+                <input
+                  value={deliveryDraft.courier}
+                  onChange={(event) => onDeliveryDraftChange("courier", event.target.value)}
+                  placeholder="택배사"
+                  aria-label={`${order.orderNo ?? order.id} 택배사`}
+                  className="h-11 w-full rounded-md bg-secondary px-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground/10"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-semibold text-muted-foreground">
+                  송장번호
+                </span>
+                <input
+                  value={deliveryDraft.invoiceNo}
+                  onChange={(event) => onDeliveryDraftChange("invoiceNo", event.target.value)}
+                  placeholder="송장번호"
+                  aria-label={`${order.orderNo ?? order.id} 송장번호`}
+                  className="h-11 w-full rounded-md bg-secondary px-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground/10"
+                />
+              </label>
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  disabled={isUpdating}
+                  onClick={onDeliverySave}
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-foreground px-5 text-sm font-semibold text-background transition-opacity hover:opacity-85 disabled:opacity-50 lg:w-auto"
+                >
+                  {isUpdating ? <Loader2 className="size-4 animate-spin" /> : null}
+                  {isUpdating ? "저장 중" : "저장"}
+                </button>
+              </div>
+            </>
+          ) : null}
         </div>
-      ) : null}
     </article>
   );
 }

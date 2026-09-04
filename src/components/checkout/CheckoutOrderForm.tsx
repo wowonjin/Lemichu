@@ -643,7 +643,7 @@ export function CheckoutOrderForm({ draft }: { draft: CheckoutDraft }) {
 
   const shippingFeeLabel = "레미츄에서 무료로 보내드려요";
   const goToDeliveryList = () => {
-    router.push(isMemberCheckout ? "/my/delivery" : "/");
+    router.push(isMemberCheckout ? "/my/delivery" : "/orders/lookup");
   };
 
   return (
@@ -653,6 +653,7 @@ export function CheckoutOrderForm({ draft }: { draft: CheckoutDraft }) {
         orderId={createdOrder?.orderId ?? ""}
         amount={createdOrder?.payablePrice ?? amounts.finalTotal}
         onGoToDelivery={goToDeliveryList}
+        isGuest={!isMemberCheckout}
       />
       <h1 className="text-[22px] font-bold tracking-[-0.03em] text-[#191F28] md:text-[28px]">
         주문/결제
@@ -894,6 +895,7 @@ export function CheckoutOrderForm({ draft }: { draft: CheckoutDraft }) {
                     placeholder="비밀번호"
                   />
                   <span className="mt-1.5 block text-[12px] leading-5 text-[#8B95A1]">
+                    주문 조회는 전화번호 또는 이메일로 할 수 있어요.
                     (영문대소문자/숫자/특수문자 중 2가지 이상 조합, 10자~16자)
                   </span>
                 </label>

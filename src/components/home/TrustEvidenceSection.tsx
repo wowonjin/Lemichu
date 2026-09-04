@@ -140,7 +140,7 @@ export function TrustEvidenceSection() {
             </div>
             <Link
               href="/policy/guarantee"
-              className="mt-1.5 inline-flex shrink-0 items-center text-[13px] font-medium text-[#8B8B8B] transition-colors hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground md:text-[14px]"
+              className="home-more mt-1.5"
             >
               정책 전체보기
               <ChevronRight className="size-4" />

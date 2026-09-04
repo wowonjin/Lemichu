@@ -3,9 +3,9 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { formatOrderDate, type PurchaseOrder } from "@/lib/orders";
 import { ORDER_STATUS_LABELS } from "@/lib/orderStatus";
-import { getCourierTrackingUrl } from "@/lib/courier";
 import { formatPriceWithUnit } from "@/lib/formatPrice";
 import { isRealImage } from "@/lib/placeholder";
+import { OrderShipmentSummary } from "@/components/orders/OrderShipmentSummary";
 import { OrderProgress } from "./OrderProgress";
 import { KakaoCsLink } from "./KakaoCsLink";
 import { buildOrderInquiryMessage } from "@/lib/kakao-inquiry";
@@ -21,12 +21,11 @@ export function OrderCard({
 }) {
   const firstItem = order.items[0];
   const extraCount = Math.max(order.items.length - 1, 0);
-  const trackingUrl = getCourierTrackingUrl(order.delivery?.courier, order.delivery?.invoiceNo);
   const logiiDelivery = order.delivery?.logii;
-  const hasDeliveryInfo = Boolean(
-    order.delivery?.courier ||
-      order.delivery?.invoiceNo ||
-      logiiDelivery?.reservationNo
+  const hasLogiiDetails = Boolean(
+    logiiDelivery?.reservationNo ||
+      logiiDelivery?.recipientName ||
+      logiiDelivery?.recipientAddress
   );
   const expectedArrival = firstItem?.expectedArrival;
 
@@ -104,13 +103,17 @@ export function OrderCard({
           <p className="mt-1 text-xs text-muted-foreground">배송 방식 {firstItem.deliveryBadge}</p>
         ) : null}
 
-        {hasDeliveryInfo ? (
+        <div className="mt-4">
+          <OrderShipmentSummary
+            statusLabel={ORDER_STATUS_LABELS[order.status]}
+            courier={order.delivery?.courier}
+            invoiceNo={order.delivery?.invoiceNo}
+          />
+        </div>
+
+        {hasLogiiDetails ? (
           <div className="mt-3 space-y-1 text-sm text-muted-foreground">
-            {logiiDelivery?.service ? (
-              <p>택배 서비스 {logiiDelivery.service}</p>
-            ) : order.delivery?.courier ? (
-              <p>택배사 {order.delivery.courier}</p>
-            ) : null}
+            {logiiDelivery?.service ? <p>택배 서비스 {logiiDelivery.service}</p> : null}
             {logiiDelivery?.reservationNo ? (
               <p>
                 {logiiDelivery.bookedAt ? `예약일 ${logiiDelivery.bookedAt} · ` : ""}
@@ -128,27 +131,7 @@ export function OrderCard({
             {logiiDelivery?.recipientAddress ? (
               <p>배송지 {logiiDelivery.recipientAddress}</p>
             ) : null}
-            {order.delivery?.invoiceNo ? (
-              trackingUrl ? (
-                <a
-                  href={trackingUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-semibold text-foreground underline-offset-4 hover:underline"
-                >
-                  송장번호 {order.delivery.invoiceNo}
-                </a>
-              ) : (
-                <p>송장번호 {order.delivery.invoiceNo}</p>
-              )
-            ) : (
-              <p>택배 예약이 접수되었으며 송장번호는 아직 발급되지 않았어요.</p>
-            )}
           </div>
-        ) : order.status === "shipping" ? (
-          <p className="mt-3 text-sm text-muted-foreground">
-            송장번호가 아직 등록되지 않았어요.
-          </p>
         ) : null}
 
         <div className="mt-5">

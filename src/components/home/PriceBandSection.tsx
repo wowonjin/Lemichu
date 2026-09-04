@@ -8,8 +8,10 @@ import { Reveal, panelItem, panelStagger } from "@/components/home/section-motio
 import { ProductPreviewMedia } from "@/components/product/ProductPreviewMedia";
 import { cn } from "@/lib/cn";
 import { formatPrice, getDiscountRate } from "@/lib/formatPrice";
+import { priceBandMoreHref } from "@/lib/homeCollection";
 import type { HomeTabProducts } from "@/lib/homeCatalog";
 import type { Product } from "@/types/product";
+import type { PriceBandId } from "@/data/homeContent";
 
 function PriceBandCard({ product }: { product: Product }) {
   const rate = product.discountRate ?? getDiscountRate(product.price, product.retailPrice);
@@ -47,10 +49,8 @@ function PriceBandCard({ product }: { product: Product }) {
 
 export function PriceBandSection({
   tabs,
-  moreHref,
 }: {
-  tabs: HomeTabProducts<string>[];
-  moreHref?: string;
+  tabs: HomeTabProducts<PriceBandId>[];
 }) {
   const [tabId, setTabId] = useState(tabs[0]?.id ?? "");
   const tabPrefix = useId();
@@ -75,15 +75,10 @@ export function PriceBandSection({
             </p>
           </div>
 
-          {moreHref ? (
-            <Link
-              href={moreHref}
-              className="home-more mt-1"
-            >
-              전체보기
-              <ChevronRight className="size-4" />
-            </Link>
-          ) : null}
+          <Link href={priceBandMoreHref(active.id)} className="home-more mt-1">
+            전체보기
+            <ChevronRight className="size-4" />
+          </Link>
         </Reveal>
 
         <Reveal delay={0.08} variant="soft">

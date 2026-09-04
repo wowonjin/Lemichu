@@ -15,7 +15,11 @@ import {
   BANK_TRANSFER_POINT_RATE,
   calculatePurchasePoints,
 } from "@/lib/points";
-import { applyInventoryItems } from "@/lib/payment-completion/inventory";
+import { revalidateProductCatalog } from "@/lib/catalog-revalidate";
+import {
+  computeInventoryUpdates,
+  writeInventoryUpdates,
+} from "@/lib/payment-completion/inventory-tx";
 
 type CompletionOrder = {
   userId?: string;
@@ -40,7 +44,11 @@ type CompletionOrder = {
     reversed?: boolean;
     method?: string;
   };
-  inventory?: { processed?: boolean; paymentReference?: string };
+  inventory?: {
+    processed?: boolean;
+    restored?: boolean;
+    paymentReference?: string;
+  };
 };
 
 export type CompletePaymentInput = {
@@ -49,6 +57,7 @@ export type CompletePaymentInput = {
   paymentMethod: string;
   paidAt?: Date | Timestamp;
   paymentDetails?: Record<string, unknown>;
+  nextStatus?: "paid" | "preparing";
 };
 
 export type PaymentCompletionResult = {
@@ -106,21 +115,7 @@ export async function applyPaymentCompletionInTransaction({
   const orderItems = Array.isArray(order.items) ? order.items : [];
   if (orderItems.length === 0) throw new Error("ORDER_ITEMS_MISSING");
 
-  const itemsByProduct = new Map<string, OrderItemSnapshot[]>();
-  for (const item of orderItems) {
-    const current = itemsByProduct.get(item.productId) ?? [];
-    current.push(item);
-    itemsByProduct.set(item.productId, current);
-  }
-
   const inventoryAlreadyProcessed = order.inventory?.processed === true;
-  const productEntries = inventoryAlreadyProcessed
-    ? []
-    : [...itemsByProduct.entries()].map(([productId, items]) => ({
-        productId,
-        items,
-        ref: db.collection("products").doc(productId),
-      }));
   const memberUserId = order.isGuest === true ? "" : String(order.userId || "");
   const userRef = memberUserId
     ? db.collection("users").doc(memberUserId)
@@ -129,19 +124,12 @@ export async function applyPaymentCompletionInTransaction({
     ? userRef.collection("pointLedger").doc(input.orderId)
     : null;
 
-  const [productSnapshots, earnLedgerSnapshot] = await Promise.all([
-    Promise.all(productEntries.map((entry) => tx.get(entry.ref))),
+  const [inventoryUpdates, earnLedgerSnapshot] = await Promise.all([
+    inventoryAlreadyProcessed
+      ? Promise.resolve([])
+      : computeInventoryUpdates(db, tx, orderItems),
     earnLedgerRef ? tx.get(earnLedgerRef) : Promise.resolve(null),
   ]);
-
-  const inventoryUpdates = productEntries.map((entry, index) => {
-    const snapshot = productSnapshots[index];
-    if (!snapshot?.exists) throw new Error("INVENTORY_PRODUCT_NOT_FOUND");
-    return {
-      ref: entry.ref,
-      update: applyInventoryItems(snapshot.data() ?? {}, entry.items),
-    };
-  });
 
   const paymentMethodCode = toPaymentMethodCode(order, input.paymentMethod);
   const purchaseAmount = Number(order.expectedAmount ?? order.amounts?.finalTotal ?? 0);
@@ -155,12 +143,7 @@ export async function applyPaymentCompletionInTransaction({
     earnLedgerSnapshot?.exists !== true;
   const paidAt = toPaidAt(input.paidAt);
 
-  for (const { ref, update } of inventoryUpdates) {
-    tx.update(ref, {
-      ...update,
-      updatedAt: FieldValue.serverTimestamp(),
-    });
-  }
+  writeInventoryUpdates(tx, inventoryUpdates);
 
   if (userRef && earnLedgerRef && shouldGrantReward && points > 0) {
     tx.set(
@@ -183,7 +166,7 @@ export async function applyPaymentCompletionInTransaction({
   }
 
   tx.update(orderRef, {
-    status: "preparing",
+    status: input.nextStatus === "paid" ? "paid" : "preparing",
     paymentStatus: "PAID",
     paymentMethod: paymentMethodCode,
     paidAt,
@@ -217,7 +200,7 @@ export async function completePayment(
   db = getAdminDb()
 ): Promise<PaymentCompletionResult> {
   const orderRef = db.collection("orders").doc(input.orderId);
-  return db.runTransaction(async (tx) => {
+  const result = await db.runTransaction(async (tx) => {
     const orderSnapshot = await tx.get(orderRef);
     return applyPaymentCompletionInTransaction({
       db,
@@ -227,4 +210,74 @@ export async function completePayment(
       input,
     });
   });
+  if (result.status === "completed") {
+    revalidateProductCatalog();
+  }
+  return result;
+}
+
+export async function reserveOrderInventory(
+  orderId: string,
+  db = getAdminDb()
+): Promise<{ reserved: boolean }> {
+  const orderRef = db.collection("orders").doc(orderId);
+  const result = await db.runTransaction(async (tx) => {
+    const snapshot = await tx.get(orderRef);
+    if (!snapshot.exists) return { reserved: false };
+    const order = snapshot.data() as CompletionOrder;
+    if (order.inventory?.processed === true) return { reserved: false };
+    const items = Array.isArray(order.items) ? order.items : [];
+    if (items.length === 0) return { reserved: false };
+
+    const updates = await computeInventoryUpdates(db, tx, items);
+    writeInventoryUpdates(tx, updates);
+    tx.update(orderRef, {
+      inventory: {
+        ...(order.inventory ?? {}),
+        processed: true,
+        processedAt: FieldValue.serverTimestamp(),
+        restored: false,
+      },
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+    return { reserved: true };
+  });
+  if (result.reserved) {
+    revalidateProductCatalog();
+  }
+  return result;
+}
+
+export async function restoreOrderInventory(
+  orderId: string,
+  db = getAdminDb()
+): Promise<{ restored: boolean }> {
+  const orderRef = db.collection("orders").doc(orderId);
+  const result = await db.runTransaction(async (tx) => {
+    const snapshot = await tx.get(orderRef);
+    if (!snapshot.exists) return { restored: false };
+    const order = snapshot.data() as CompletionOrder;
+    if (order.inventory?.processed !== true || order.inventory?.restored === true) {
+      return { restored: false };
+    }
+    const items = Array.isArray(order.items) ? order.items : [];
+    if (items.length === 0) return { restored: false };
+
+    const updates = await computeInventoryUpdates(db, tx, items, "revert");
+    writeInventoryUpdates(tx, updates);
+    tx.update(orderRef, {
+      inventory: {
+        ...(order.inventory ?? {}),
+        processed: false,
+        restored: true,
+        restoredAt: FieldValue.serverTimestamp(),
+      },
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+    return { restored: true };
+  });
+  if (result.restored) {
+    revalidateProductCatalog();
+  }
+  return result;
 }

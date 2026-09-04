@@ -124,6 +124,8 @@ export type PurchaseOrder = {
   inventory?: {
     processed?: boolean;
     processedAt?: OrderTimestamp;
+    restored?: boolean;
+    restoredAt?: OrderTimestamp;
     paymentReference?: string;
   };
   reward?: {

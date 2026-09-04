@@ -78,14 +78,6 @@ export function ProductCard({
             <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
               {imageBadges}
             </div>
-
-            {unavailable && availability !== "sold" ? (
-              <div className="absolute inset-0 z-[8] grid place-items-center bg-background/70">
-                <span className="bg-foreground px-3 py-1 text-xs font-semibold text-background">
-                  품절
-                </span>
-              </div>
-            ) : null}
           </ProductPreviewMedia>
         </div>
 

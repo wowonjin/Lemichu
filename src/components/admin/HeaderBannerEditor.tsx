@@ -246,7 +246,7 @@ export function HeaderBannerEditor({
                   <input
                     value={slide.href}
                     onChange={(event) => updateSlide(index, { href: event.target.value })}
-                    placeholder="/events"
+                    placeholder="/notices/welcome-coupon"
                     className={cn(fieldClassName, "sm:col-span-2")}
                   />
                 </div>

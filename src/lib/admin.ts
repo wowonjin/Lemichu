@@ -66,5 +66,11 @@ export async function updateAdminOrderStatus(
     }),
     "주문 상태를 변경하지 못했어요."
   );
-  return (typeof json.status === "string" ? json.status : status) as OrderStatus;
+  return {
+    status: (typeof json.status === "string" ? json.status : status) as OrderStatus,
+    paymentStatus:
+      typeof json.paymentStatus === "string"
+        ? (json.paymentStatus as PurchaseOrder["paymentStatus"])
+        : undefined,
+  };
 }

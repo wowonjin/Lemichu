@@ -123,7 +123,7 @@ export function SearchDiscovery({
         <div className="flex items-end justify-between gap-3">
           <h3 className="text-sm font-semibold text-foreground">인기 검색어</h3>
           <span className="text-[11px] text-muted-foreground">
-            {formatPopularUpdatedAt(popularUpdatedAt ?? undefined)}
+            {formatPopularUpdatedAt(popularUpdatedAt)}
           </span>
         </div>
         <ol className="mt-3 divide-y divide-border/70">

@@ -15,6 +15,7 @@ import {
   DEFAULT_HEADER_BANNER,
   getHeaderBannerTheme,
   getVisibleHeaderBannerSlides,
+  resolveHeaderBannerHref,
   type HeaderBannerSettings,
 } from "@/lib/headerBanner";
 
@@ -174,7 +175,7 @@ export function HeaderEventBanner({ previewSettings }: { previewSettings?: Heade
           ) : null}
 
           <Link
-            href={current.href}
+            href={resolveHeaderBannerHref(current)}
             className={cn(
               "flex w-full min-w-0 items-center justify-center gap-1.5 px-8 text-center transition-opacity duration-150 active:opacity-70 md:px-14",
               visible ? "opacity-100" : "opacity-0"

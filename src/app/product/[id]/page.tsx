@@ -8,7 +8,6 @@ import { KoboyoIcon, type KoboyoIconName } from "@/components/icons/KoboyoIcon";
 import { ProductBuyNotice } from "@/components/product/ProductBuyNotice";
 import { ProductFaq } from "@/components/product/ProductFaq";
 import { RelatedProductRail } from "@/components/product/RelatedProductRail";
-import { ProductReviewHeaderStats } from "@/components/product/ProductReviewHeaderStats";
 import { PurchaseReviewGallery } from "@/components/reviews/PurchaseReviewGallery";
 import { ProductPurchaseBar } from "@/components/product/ProductPurchaseBar";
 import { ProductCheckoutActions } from "@/components/product/ProductCheckoutActions";
@@ -38,8 +37,6 @@ import {
 import { SITE_NAME, productDocumentTitle, siteTitle } from "@/lib/site";
 import { AUTHENTICITY_GUARANTEE } from "@/lib/guarantee";
 import { formatProductOptions } from "@/lib/productOptions";
-import { getReviewSummary } from "@/data/productReviews";
-import { listPublishedProductReviews } from "@/lib/reviews-admin";
 import { SOLD_OUT_NOTICE, isSoldProduct } from "@/components/product/SoldOutOverlay";
 import { getProductKind } from "@/lib/productKind";
 import type { Product } from "@/types/product";
@@ -117,8 +114,6 @@ export default async function ProductDetailPage({
   const catalogProducts = await getCatalogProducts();
   const recommendedProducts = getRecommendedProducts(catalogProducts, product);
   const options = formatProductOptions(product);
-  const productReviews = await listPublishedProductReviews(product.id);
-  const reviewSummary = getReviewSummary(productReviews);
   const galleryImages = product.imageUrls?.length ? product.imageUrls : [product.imageUrl];
   const sold = isSoldProduct(product);
 
@@ -150,7 +145,7 @@ export default async function ProductDetailPage({
 
           <div className="min-w-0 max-w-full lg:sticky lg:top-[calc(var(--header-height)+1.5rem)] lg:row-span-2 lg:self-start">
             <aside className="min-w-0">
-              <div className="pb-5">
+              <div>
                 <Link
                   href={`/search?q=${encodeURIComponent(product.brand)}`}
                   className="group inline-flex items-center gap-0.5 text-[15px] font-bold tracking-tight text-foreground"
@@ -177,6 +172,10 @@ export default async function ProductDetailPage({
                   </div>
                 </div>
 
+                <div className="mt-3">
+                  <ProductVariantPrice />
+                </div>
+
                 {sold ? (
                   <div className="mt-4 rounded-md bg-[#F7F7F7] px-4 py-3.5 dark:bg-muted">
                     <p className="text-[14px] font-semibold leading-6 text-foreground">
@@ -190,17 +189,9 @@ export default async function ProductDetailPage({
                     </a>
                   </div>
                 ) : null}
-
-                <div className="mt-3 text-[13px]">
-                  <ProductReviewHeaderStats
-                    productId={product.id}
-                    initialSummary={reviewSummary}
-                  />
-                </div>
               </div>
 
-              <div className="bg-background py-5">
-                <ProductVariantPrice />
+              <div className="bg-background pt-4 pb-5">
                 <ProductPointsRedeem />
                 {sold ? null : <KakaoChannelBanner />}
                 {sold ? null : (

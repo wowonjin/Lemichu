@@ -33,11 +33,23 @@ export const searchCategoryShortcuts = [
   { label: "중고명품", href: "/products" },
 ];
 
-export function formatPopularUpdatedAt(date: Date | string = new Date()) {
+export function formatPopularUpdatedAt(date?: Date | string | null) {
+  if (!date) return "인기순 기준";
+
   const value = typeof date === "string" ? new Date(date) : date;
-  const safe = Number.isNaN(value.getTime()) ? new Date() : value;
-  const month = String(safe.getMonth() + 1).padStart(2, "0");
-  const day = String(safe.getDate()).padStart(2, "0");
-  const hour = String(safe.getHours()).padStart(2, "0");
+  if (Number.isNaN(value.getTime())) return "인기순 기준";
+
+  const parts = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    hour12: false,
+  }).formatToParts(value);
+  const readPart = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "00";
+  const month = readPart("month");
+  const day = readPart("day");
+  const hour = readPart("hour");
   return `${month}.${day} ${hour}:00 기준`;
 }

@@ -8,6 +8,7 @@ import { Reveal, panelItem, panelStagger } from "@/components/home/section-motio
 import { ProductPreviewMedia } from "@/components/product/ProductPreviewMedia";
 import { cn } from "@/lib/cn";
 import { formatPrice } from "@/lib/formatPrice";
+import { rankingMoreHref } from "@/lib/homeCollection";
 import type { RankedProduct } from "@/types/product";
 
 const VISIBLE_LIMIT = 4;
@@ -128,7 +129,7 @@ export function RankingSection({
             </p>
           </div>
 
-          <Link href="/products" className="home-more mt-1">
+          <Link href={rankingMoreHref(tab)} className="home-more mt-1">
             전체보기
             <ChevronRight className="size-4" />
           </Link>

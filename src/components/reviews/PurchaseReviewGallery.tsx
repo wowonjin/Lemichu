@@ -82,7 +82,7 @@ export function PurchaseReviewGallery({
           {showViewAll ? (
             <Link
               href="/reviews"
-              className="inline-flex shrink-0 items-center text-[13px] font-medium text-white/55 transition-colors hover:text-white md:text-[14px]"
+              className="home-more text-white/55 hover:text-white dark:text-white/55 dark:hover:text-white"
             >
               전체보기
               <ChevronRight className="size-4" />

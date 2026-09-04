@@ -3,7 +3,8 @@ import { getProductAvailability } from "@/lib/wishlist";
 import type { Product } from "@/types/product";
 
 export function isSoldProduct(product: Pick<Product, "availability">) {
-  return getProductAvailability(product as Product) === "sold";
+  const availability = getProductAvailability(product as Product);
+  return availability === "sold" || availability === "temporarily_unavailable";
 }
 
 export function SoldOutOverlay({
@@ -22,11 +23,12 @@ export function SoldOutOverlay({
     >
       <span
         className={cn(
-          "flex aspect-square size-[84px] shrink-0 items-center justify-center overflow-hidden rounded-full border border-white text-[13px] font-semibold leading-none text-white md:size-[96px] md:text-[14px]",
+          "grid size-[84px] shrink-0 place-items-center border border-white text-[13px] font-semibold leading-none text-white md:size-[96px] md:text-[14px]",
           badgeClassName
         )}
+        style={{ borderRadius: "50%" }}
       >
-        <span className="flex flex-col items-center gap-0.5 text-center">
+        <span className="flex flex-col items-center justify-center text-center leading-tight">
           <span>판매</span>
           <span>완료</span>
         </span>

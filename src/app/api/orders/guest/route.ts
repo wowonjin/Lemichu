@@ -22,7 +22,12 @@ import {
   resolveCheckoutItems,
   toOrderItemSnapshot,
 } from "@/lib/checkout";
+import { revalidateProductCatalog } from "@/lib/catalog-revalidate";
 import { getAdminDb } from "@/lib/firebase-admin";
+import {
+  computeInventoryUpdates,
+  writeInventoryUpdates,
+} from "@/lib/payment-completion/inventory-tx";
 
 export const runtime = "nodejs";
 
@@ -145,6 +150,11 @@ export async function POST(request: Request) {
     const orderRef = db.collection("orders").doc(orderId);
     const credentialRef = db.collection("guestOrderCredentials").doc(orderId);
     await db.runTransaction(async (transaction) => {
+      const inventoryUpdates = await computeInventoryUpdates(
+        db,
+        transaction,
+        itemSnapshots
+      );
       transaction.create(orderRef, {
         userId: "",
         userEmail: email,
@@ -187,11 +197,13 @@ export async function POST(request: Request) {
           method: BANK_TRANSFER_ACCOUNT.methodLabel,
         },
         inventory: {
-          processed: false,
+          processed: true,
+          processedAt: FieldValue.serverTimestamp(),
         },
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       });
+      writeInventoryUpdates(transaction, inventoryUpdates);
       transaction.create(credentialRef, {
         orderId,
         emailHash,
@@ -202,6 +214,8 @@ export async function POST(request: Request) {
         updatedAt: FieldValue.serverTimestamp(),
       });
     });
+
+    revalidateProductCatalog();
 
     return NextResponse.json({
       ok: true,

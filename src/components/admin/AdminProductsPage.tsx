@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
-  CheckCircle2,
   ImagePlus,
   Loader2,
   PlusCircle,
@@ -15,7 +14,6 @@ import {
   Trash2,
   UploadCloud,
   X,
-  XCircle,
 } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminNotice, EmptyAdminState } from "@/components/admin/AdminDashboard";
@@ -25,7 +23,6 @@ import {
   deleteStoreProduct,
   updateStoreProduct,
   type CreateStoreProductInput,
-  type NaverSyncInfo,
   type StoreProduct,
 } from "@/lib/products";
 import { storeCategoryOptions } from "@/data/homeCategories";
@@ -287,7 +284,7 @@ export function AdminProductCreatePage() {
   const [error, setError] = useState("");
   const [draftMessage, setDraftMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isPreOwned, setIsPreOwned] = useState(false);
+  const [isPreOwned, setIsPreOwned] = useState(true);
   const [todayShip, setTodayShip] = useState(false);
 
   useEffect(() => {
@@ -423,7 +420,7 @@ export function AdminProductCreatePage() {
       setForm(emptyForm);
       setRepresentativeImageFile(null);
       setOptionalImageFiles([]);
-      setIsPreOwned(false);
+      setIsPreOwned(true);
       setTodayShip(false);
       window.localStorage.removeItem(productDraftStorageKey);
       router.push("/admin/products?created=local");
@@ -511,6 +508,7 @@ export function AdminProductCreatePage() {
           <div className="space-y-1">
             <InfoToggle
               label="중고명품으로 진열"
+              hint="메인과 상품 목록에는 중고명품으로 진열한 상품만 나와요."
               checked={isPreOwned}
               onChange={setIsPreOwned}
             />
@@ -831,6 +829,7 @@ export function AdminProductEditPage({ productId }: { productId: string }) {
           <div className="space-y-1">
             <InfoToggle
               label="중고명품으로 진열"
+              hint="메인과 상품 목록에는 중고명품으로 진열한 상품만 나와요."
               checked={isPreOwned}
               onChange={setIsPreOwned}
             />
@@ -967,7 +966,7 @@ function ProductRow({
     <div className="group flex items-center gap-3 transition-colors hover:bg-secondary/55">
       <Link
         href={`/admin/products/${product.id}`}
-        className="flex min-w-0 flex-1 flex-col gap-4 px-2 py-4 sm:flex-row sm:items-center sm:px-3"
+        className="flex min-w-0 flex-1 items-center px-2 py-4 sm:px-3"
       >
         <div className="flex min-w-0 flex-1 items-center gap-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -992,22 +991,6 @@ function ProductRow({
             </p>
           </div>
         </div>
-
-        <div className="flex items-center justify-between gap-3 sm:min-w-[150px] sm:justify-end">
-          <div className="min-w-0 sm:w-28">
-          <p
-            className={cn(
-              "text-xs font-bold",
-              product.stockQuantity > 0 ? "text-foreground" : "text-rose-600"
-            )}
-          >
-            {product.stockQuantity > 0 ? `재고 ${product.stockQuantity}개` : "품절"}
-          </p>
-          <div className="mt-1.5">
-            <NaverSyncBadge sync={product.naverSync} />
-          </div>
-          </div>
-        </div>
       </Link>
       <button
         type="button"
@@ -1021,26 +1004,6 @@ function ProductRow({
       </button>
     </div>
   );
-}
-
-function NaverSyncBadge({ sync }: { sync: NaverSyncInfo }) {
-  if (sync.status === "synced") {
-    return (
-      <span className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-emerald-600">
-        <CheckCircle2 className="size-3.5" />
-        네이버 연동
-      </span>
-    );
-  }
-  if (sync.status === "failed") {
-    return (
-      <span className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-rose-600">
-        <XCircle className="size-3.5" />
-        연동 실패
-      </span>
-    );
-  }
-  return <span className="whitespace-nowrap text-xs font-semibold text-muted-foreground">네이버 미연동</span>;
 }
 
 function InfoRow({
@@ -1072,16 +1035,23 @@ function InfoRow({
 
 function InfoToggle({
   label,
+  hint,
   checked,
   onChange,
 }: {
   label: string;
+  hint?: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
 }) {
   return (
     <div className="flex items-center justify-between gap-4 py-2.5">
-      <span className="text-sm font-semibold text-foreground">{label}</span>
+      <span className="min-w-0">
+        <span className="block text-sm font-semibold text-foreground">{label}</span>
+        {hint ? (
+          <span className="mt-1 block text-xs font-normal text-muted-foreground">{hint}</span>
+        ) : null}
+      </span>
       <button
         type="button"
         role="switch"

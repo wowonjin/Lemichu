@@ -265,6 +265,14 @@ export default function LoginPage() {
             >
               회원가입으로 이동
             </Link>
+            <span className="mt-2 block">
+              <Link
+                href="/orders/lookup"
+                className="font-bold text-foreground underline-offset-4 hover:underline"
+              >
+                비회원 주문조회
+              </Link>
+            </span>
           </p>
       </AuthSplitLayout>
 

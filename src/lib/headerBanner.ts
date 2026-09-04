@@ -1,3 +1,5 @@
+import { getNoticeHrefByBannerId } from "@/data/notices";
+
 export const HEADER_BANNER_THEME_IDS = [
   "blue",
   "mint",
@@ -178,6 +180,24 @@ const DEFAULT_SLIDE_THEMES: Record<string, HeaderBannerThemeId> = {
   "first-purchase": "rose",
 };
 
+const LEGACY_HEADER_BANNER_HREFS: Record<string, string[]> = {
+  "welcome-coupon": ["/signup"],
+  "ss-new": ["/products?filter=new"],
+  "summer-week": ["/events/summer-special-week"],
+  "free-shipping": ["/policy/delivery"],
+  "guarantee": ["/policy/guarantee"],
+  "first-purchase": ["/events/welcome-first-purchase"],
+};
+
+export function resolveHeaderBannerHref(slide: Pick<HeaderBannerSlide, "id" | "href">) {
+  const noticeHref = getNoticeHrefByBannerId(slide.id);
+  if (!noticeHref) return slide.href || "/";
+  if (!slide.href || slide.href === "/" || LEGACY_HEADER_BANNER_HREFS[slide.id]?.includes(slide.href)) {
+    return noticeHref;
+  }
+  return slide.href;
+}
+
 export const DEFAULT_HEADER_BANNER: HeaderBannerSettings = {
   enabled: true,
   autoRotate: true,
@@ -189,7 +209,7 @@ export const DEFAULT_HEADER_BANNER: HeaderBannerSettings = {
       id: "welcome-coupon",
       badge: "쿠폰",
       text: "신규가입 즉시 5,000원 쿠폰 받기",
-      href: "/signup",
+      href: "/notices/welcome-coupon",
       enabled: true,
       theme: "blue",
     },
@@ -197,7 +217,7 @@ export const DEFAULT_HEADER_BANNER: HeaderBannerSettings = {
       id: "ss-new",
       badge: "신상",
       text: "27SS 신상 할인 상품 구경하기",
-      href: "/products?filter=new",
+      href: "/notices/ss-new",
       enabled: true,
       theme: "violet",
     },
@@ -205,7 +225,7 @@ export const DEFAULT_HEADER_BANNER: HeaderBannerSettings = {
       id: "summer-week",
       badge: "특가",
       text: "여름 특가 위크, 시즌 인기 명품 특가",
-      href: "/events/summer-special-week",
+      href: "/notices/summer-week",
       enabled: true,
       theme: "peach",
     },
@@ -213,7 +233,7 @@ export const DEFAULT_HEADER_BANNER: HeaderBannerSettings = {
       id: "free-shipping",
       badge: "혜택",
       text: "전상품 무료배송 · 관부가세 포함가",
-      href: "/policy/delivery",
+      href: "/notices/free-shipping",
       enabled: true,
       theme: "mint",
     },
@@ -221,7 +241,7 @@ export const DEFAULT_HEADER_BANNER: HeaderBannerSettings = {
       id: "guarantee",
       badge: "보장",
       text: "가품 판정 시 결제금액 200% 보상",
-      href: "/policy/guarantee",
+      href: "/notices/guarantee",
       enabled: true,
       theme: "navy",
     },
@@ -229,7 +249,7 @@ export const DEFAULT_HEADER_BANNER: HeaderBannerSettings = {
       id: "first-purchase",
       badge: "신규",
       text: "첫 구매 정품 검수비 무료 혜택",
-      href: "/events/welcome-first-purchase",
+      href: "/notices/first-purchase",
       enabled: true,
       theme: "rose",
     },
@@ -321,7 +341,10 @@ export function normalizeHeaderBanner(value: unknown): HeaderBannerSettings {
           id: asString(slide.id, `slide-${index + 1}`),
           badge: asString(slide.badge).trim(),
           text: asString(slide.text).trim(),
-          href: asString(slide.href, "/").trim() || "/",
+          href: resolveHeaderBannerHref({
+            id: asString(slide.id, `slide-${index + 1}`),
+            href: asString(slide.href, "/").trim() || "/",
+          }),
           enabled: asBoolean(slide.enabled, true),
           theme: resolveHeaderBannerThemeId(slide, index),
         }))

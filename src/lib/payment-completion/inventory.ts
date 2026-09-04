@@ -68,3 +68,57 @@ export function applyInventoryItems(
     ),
   };
 }
+
+export function revertInventoryItems(
+  product: InventoryProduct,
+  items: Array<Pick<OrderItemSnapshot, "variantId" | "quantity">>
+): InventoryUpdate {
+  const variants = Array.isArray(product.variants)
+    ? product.variants.map((variant) => ({ ...variant }))
+    : [];
+
+  if (variants.length === 0) {
+    const requested = items.reduce((sum, item) => sum + Math.max(item.quantity, 0), 0);
+    const current = Math.max(Number(product.stockQuantity ?? 0), 0);
+    return { stockQuantity: current + Math.max(requested, 0) };
+  }
+
+  for (const item of items) {
+    const quantity = Math.max(Math.floor(item.quantity), 0);
+    const index = variants.findIndex((variant) => variant.id === item.variantId);
+    if (quantity <= 0 || index < 0) continue;
+
+    const variant = variants[index];
+    if (!variant) continue;
+
+    if (variant.stockStatus === "quantity_managed") {
+      variants[index] = {
+        ...variant,
+        quantity: Math.max(variant.quantity ?? 0, 0) + quantity,
+      };
+      continue;
+    }
+
+    if (variant.stockStatus === "soldout") {
+      const previousQty = variant.quantity ?? 0;
+      if (quantity === 1 && previousQty === 0) {
+        const { quantity: _quantity, ...rest } = variant;
+        variants[index] = { ...rest, stockStatus: "available" };
+      } else {
+        variants[index] = {
+          ...variant,
+          stockStatus: "quantity_managed",
+          quantity: Math.max(previousQty, 0) + quantity,
+        };
+      }
+    }
+  }
+
+  return {
+    variants,
+    stockQuantity: variants.reduce(
+      (sum, variant) => sum + availableVariantQuantity(variant),
+      0
+    ),
+  };
+}

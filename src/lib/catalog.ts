@@ -154,7 +154,7 @@ async function loadRegisteredProducts(): Promise<Product[]> {
 
 const getCachedRegisteredProducts = unstable_cache(
   loadRegisteredProducts,
-  ["catalog-registered-products-v6"],
+  ["catalog-registered-products-v7"],
   { revalidate: 30, tags: ["products"] }
 );
 
@@ -164,18 +164,14 @@ function preOwnedOnly(products: Product[]) {
   return products.filter((product) => product.isPreOwned);
 }
 
-function availableForStorefront(products: Product[]) {
-  return products.filter((product) => product.availability !== "sold");
-}
-
 /** All registered products, including hidden new arrivals. Used for PDP and checkout. */
 export const getRegisteredProducts = cache(async () => {
   return fetchRegisteredProducts();
 });
 
-/** Storefront listings. Temporarily used-only so 전체 shows pre-owned products. */
+/** Storefront listings. Sold items stay visible until deleted from the server. */
 export const getCatalogProducts = cache(async () => {
-  return availableForStorefront(preOwnedOnly(await fetchRegisteredProducts()));
+  return preOwnedOnly(await fetchRegisteredProducts());
 });
 
 export const getHeaderCategoryMenu = cache(async () => {

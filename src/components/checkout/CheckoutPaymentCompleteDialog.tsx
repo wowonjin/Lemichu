@@ -9,11 +9,13 @@ export function CheckoutPaymentCompleteDialog({
   orderId,
   amount,
   onGoToDelivery,
+  isGuest = false,
 }: {
   open: boolean;
   orderId: string;
   amount: number;
   onGoToDelivery: () => void;
+  isGuest?: boolean;
 }) {
   return (
     <TossCheckoutSheet
@@ -49,7 +51,9 @@ export function CheckoutPaymentCompleteDialog({
           <p className="text-[14px] leading-6 text-[#4E5968]">
             입금이 확인되면 배송이 시작돼요.
             <br />
-            주문 내용은 관리자 주문 목록에서도 바로 확인할 수 있어요.
+            {isGuest
+              ? "전화번호나 이메일로 비회원 주문조회에서 주문상태, 택배사, 송장번호를 확인할 수 있어요."
+              : "마이페이지에서 주문상태와 배송 정보를 확인할 수 있어요."}
           </p>
         </div>
 
@@ -58,7 +62,7 @@ export function CheckoutPaymentCompleteDialog({
           onClick={onGoToDelivery}
           className="mt-6 flex h-14 w-full items-center justify-center rounded-[14px] bg-[#3182F6] text-[16px] font-semibold text-white transition-colors hover:bg-[#1B64DA]"
         >
-          쇼핑 계속하기
+          {isGuest ? "주문 조회하기" : "배송 현황 보기"}
         </button>
       </div>
     </TossCheckoutSheet>

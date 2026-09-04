@@ -9,8 +9,10 @@ import { ProductPreviewMedia } from "@/components/product/ProductPreviewMedia";
 import { cn } from "@/lib/cn";
 import { formatPrice, getDiscountRate } from "@/lib/formatPrice";
 import { WishlistToggleButton } from "@/components/product/WishlistToggleButton";
+import { audienceMoreHref } from "@/lib/homeCollection";
 import type { HomeTabProducts } from "@/lib/homeCatalog";
 import type { Product } from "@/types/product";
+import type { AudiencePickId } from "@/data/homeContent";
 
 const VISIBLE_COUNT = 4;
 
@@ -60,12 +62,10 @@ export function AudiencePickSection({
   title,
   description,
   tabs,
-  moreHref,
 }: {
   title: string;
   description?: string;
-  tabs: HomeTabProducts<string>[];
-  moreHref?: string;
+  tabs: HomeTabProducts<AudiencePickId>[];
 }) {
   const [tabId, setTabId] = useState(tabs[0]?.id ?? "");
   const tabPrefix = useId();
@@ -87,12 +87,10 @@ export function AudiencePickSection({
             {description ? <p className="home-desc">{description}</p> : null}
           </div>
 
-          {moreHref ? (
-            <Link href={moreHref} className="home-more mt-1">
-              전체보기
-              <ChevronRight className="size-4" />
-            </Link>
-          ) : null}
+          <Link href={audienceMoreHref(active.id)} className="home-more mt-1">
+            전체보기
+            <ChevronRight className="size-4" />
+          </Link>
         </Reveal>
 
         <Reveal delay={0.08} variant="soft">

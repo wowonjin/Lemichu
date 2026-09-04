@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getVerifiedAdmin } from "@/lib/admin-auth";
 import { normalizeDepositorName } from "@/lib/bank-relay/normalize";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { revalidateProductCatalog } from "@/lib/catalog-revalidate";
 import { applyPaymentCompletionInTransaction } from "@/lib/payment-completion";
 
 export const runtime = "nodejs";
@@ -182,6 +183,7 @@ export async function POST(
         createdAt: FieldValue.serverTimestamp(),
       });
     });
+    revalidateProductCatalog();
     return NextResponse.json({ ok: true, status: "MATCHED", orderId });
   } catch (error) {
     const code = error instanceof Error ? error.message : "MANUAL_MATCH_FAILED";

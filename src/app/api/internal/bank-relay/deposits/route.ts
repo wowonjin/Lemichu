@@ -5,6 +5,7 @@ import {
 } from "@/lib/bank-relay/crypto";
 import { processRelayDeposit } from "@/lib/bank-relay/process-deposit";
 import { parseRelayDepositPayload } from "@/lib/bank-relay/validation";
+import { revalidateProductCatalog } from "@/lib/catalog-revalidate";
 import { getAdminDb } from "@/lib/firebase-admin";
 
 export const runtime = "nodejs";
@@ -27,6 +28,9 @@ export async function POST(request: Request) {
       headers,
       payload,
     });
+    if (result.eventStatus === "MATCHED") {
+      revalidateProductCatalog();
+    }
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     if (error instanceof RelayAuthenticationError) {

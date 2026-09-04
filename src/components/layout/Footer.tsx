@@ -33,6 +33,7 @@ const columns = [
       { label: "정품 검수 안내", href: "/authentication" },
       { label: "가품 보상 정책", href: "/policy/guarantee" },
       { label: "배송/교환/반품", href: "/policy/delivery" },
+      { label: "비회원 주문조회", href: "/orders/lookup" },
       { label: "자주 묻는 질문", href: "/faq" },
     ],
   },

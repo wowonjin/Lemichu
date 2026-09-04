@@ -12,11 +12,25 @@ const LOCAL_FALLBACK_ERROR_CODES = new Set([
 
 function sanitize(keywords: unknown): string[] {
   if (!Array.isArray(keywords)) return [];
-  return keywords
-    .filter((item): item is string => typeof item === "string")
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .slice(0, MAX_RECENT);
+
+  const seen = new Set<string>();
+  const sanitized: string[] = [];
+
+  for (const item of keywords) {
+    if (typeof item !== "string") continue;
+
+    const keyword = item.trim();
+    if (!keyword) continue;
+
+    const normalized = keyword.toLocaleLowerCase("ko-KR");
+    if (seen.has(normalized)) continue;
+
+    seen.add(normalized);
+    sanitized.push(keyword);
+    if (sanitized.length >= MAX_RECENT) break;
+  }
+
+  return sanitized;
 }
 
 function mergeKeywords(primary: string[], secondary: string[]) {

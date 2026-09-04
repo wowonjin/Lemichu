@@ -17,7 +17,7 @@ export function HoverTooltip({
       <span
         role="tooltip"
         className={cn(
-          "pointer-events-none relative translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100",
+          "pointer-events-none absolute right-full top-1/2 mr-2.5 -translate-y-1/2 translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100",
           surfaceClassName,
           className
         )}

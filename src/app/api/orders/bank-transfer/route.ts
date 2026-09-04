@@ -25,7 +25,12 @@ import {
   calculatePurchasePoints,
   toSafePoints,
 } from "@/lib/points";
+import { revalidateProductCatalog } from "@/lib/catalog-revalidate";
 import { completePayment } from "@/lib/payment-completion";
+import {
+  computeInventoryUpdates,
+  writeInventoryUpdates,
+} from "@/lib/payment-completion/inventory-tx";
 
 export const runtime = "nodejs";
 
@@ -83,6 +88,7 @@ export async function POST(req: Request) {
 
     const createdAmounts = await db.runTransaction(async (tx) => {
       const latestUser = await tx.get(userRef);
+      const inventoryUpdates = await computeInventoryUpdates(db, tx, itemSnapshots);
       const latestPoints = usePoints ? toSafePoints(latestUser.data()?.points) : 0;
       const amounts = calculateCheckoutAmounts(resolved, {
         pointsToUse: latestPoints,
@@ -127,11 +133,13 @@ export async function POST(req: Request) {
           method: paymentMethod,
         },
         inventory: {
-          processed: false,
+          processed: true,
+          processedAt: FieldValue.serverTimestamp(),
         },
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       });
+      writeInventoryUpdates(tx, inventoryUpdates);
 
       if (amounts.pointsUsed > 0) {
         tx.set(
@@ -160,6 +168,8 @@ export async function POST(req: Request) {
         paymentReference: `points-only:${orderId}`,
         paymentMethod: "POINTS",
       });
+    } else {
+      revalidateProductCatalog();
     }
 
     return NextResponse.json({

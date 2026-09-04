@@ -106,33 +106,33 @@ export function FloatingQuickButtons() {
   };
 
   return (
-    <div className="fixed right-3 top-1/2 z-50 hidden -translate-y-1/2 flex-col items-end gap-2 md:right-5 md:flex">
+    <div className="pointer-events-none fixed right-3 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-end gap-2 md:right-5 md:flex">
       {quickButtons.map((button) => (
-        <div key={button.href} className="group flex items-center gap-2.5">
+        <div key={button.href} className="group relative flex items-center justify-end">
           <Tooltip label={button.label} />
           <Link
             href={button.href}
             aria-label={button.label}
-            className={`${sideButtonClassName} size-[58px]`}
+            className={`pointer-events-auto ${sideButtonClassName} size-[58px]`}
           >
             <SideIcon src={button.src} label={button.label} size={72} />
           </Link>
         </div>
       ))}
-      <div className="group flex items-center gap-2.5">
+      <div className="group relative flex items-center justify-end">
         <Tooltip label="카카오톡 문의" />
         <KakaoInquiryButton
-          sizeClassName="size-[58px]"
+          sizeClassName="pointer-events-auto size-[58px]"
           buttonClassName={sideButtonClassName}
         />
       </div>
-      <div className="group flex items-center gap-2.5">
+      <div className="group relative flex items-center justify-end">
         <Tooltip label="맨위로" />
         <button
           type="button"
           aria-label="맨위로"
           onClick={scrollToTop}
-          className={`${sideButtonClassName} size-[58px]`}
+          className={`pointer-events-auto ${sideButtonClassName} size-[58px]`}
         >
           <TopIcon />
         </button>

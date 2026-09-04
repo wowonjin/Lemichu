@@ -125,8 +125,14 @@ export function checkoutOrderErrorMessage(error: unknown) {
   if (code === "VARIANT_REQUIRED") return "색상과 사이즈 옵션을 선택해주세요.";
   if (code === "VARIANT_NOT_FOUND") return "선택한 상품 옵션을 찾을 수 없어요.";
   if (code === "VARIANT_SOLD_OUT") return "선택한 상품 옵션이 품절되었습니다.";
-  if (code === "INSUFFICIENT_VARIANT_STOCK") {
+  if (code === "INSUFFICIENT_VARIANT_STOCK" || code === "INSUFFICIENT_INVENTORY") {
     return "선택한 옵션의 재고가 부족합니다.";
+  }
+  if (code === "INVENTORY_VARIANT_NOT_FOUND") {
+    return "선택한 상품 옵션을 찾을 수 없어요.";
+  }
+  if (code === "INVENTORY_PRODUCT_NOT_FOUND") {
+    return "구매할 상품 정보를 찾을 수 없어요.";
   }
   return "주문을 접수하지 못했어요.";
 }
@@ -145,7 +151,15 @@ export function checkoutOrderErrorStatus(error: unknown) {
     return 400;
   }
   if (code === "PRODUCT_NOT_FOUND") return 404;
-  if (["VARIANT_SOLD_OUT", "INSUFFICIENT_VARIANT_STOCK"].includes(code)) {
+  if (
+    [
+      "VARIANT_SOLD_OUT",
+      "INSUFFICIENT_VARIANT_STOCK",
+      "INSUFFICIENT_INVENTORY",
+      "INVENTORY_VARIANT_NOT_FOUND",
+      "INVENTORY_PRODUCT_NOT_FOUND",
+    ].includes(code)
+  ) {
     return 409;
   }
   return 500;

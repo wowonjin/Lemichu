@@ -5,7 +5,7 @@ import { Suspense, useEffect, useRef, useState, type FormEvent, type ReactNode }
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { ADMIN_EMAIL, isAdminUser, type AuthUser, observeAuthUser, signOut } from "@/lib/auth";
+import { isAdminUser, type AuthUser, observeAuthUser, signOut } from "@/lib/auth";
 import { getLoginHref } from "@/lib/redirect";
 import { HoverTooltip } from "@/components/ui/hover-tooltip";
 import { HeaderSearchPanel } from "@/components/search/HeaderSearchPanel";
@@ -163,7 +163,7 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const activeMenu = categoryMenu.find((tab) => tab.label === activeTab) ?? categoryMenu[0];
-  const canAccessAdmin = isAdminUser(authUser) && authUser.email.toLowerCase() === ADMIN_EMAIL;
+  const canAccessAdmin = isAdminUser(authUser);
   const loginHref = getLoginHref(pathname);
   const isAuthPage = pathname === "/login" || pathname === "/signup";
   const closeMenu = () => setIsMenuOpen(false);
@@ -339,6 +339,19 @@ export function Header({ categoryMenu = [] }: { categoryMenu?: CategoryMenuTab[]
                 {isSearchOpen ? null : <HoverTooltip label="찾기" />}
               </button>
               )}
+              {canAccessAdmin ? (
+                <Link
+                  href="/admin"
+                  className={cn(
+                    "inline-flex items-center rounded-md bg-foreground font-semibold text-background transition-colors hover:bg-foreground/90",
+                    isAuthPage
+                      ? "h-8 px-2 text-[13px] sm:h-9 sm:px-3 sm:text-sm md:h-10 md:px-4"
+                      : "h-8 px-2 text-[13px] md:h-10 md:px-3.5 md:text-sm"
+                  )}
+                >
+                  관리자
+                </Link>
+              ) : null}
               {authUser ? (
                 <>
                   <HeaderIconLink href="/my" label="찜" className="hidden md:grid">

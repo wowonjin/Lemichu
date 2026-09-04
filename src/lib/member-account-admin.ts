@@ -35,6 +35,7 @@ import {
   type UserCouponStatus,
 } from "@/lib/member-account";
 import { toSafePoints } from "@/lib/points";
+import { restoreOrderInventory } from "@/lib/payment-completion";
 import { restoreOrderPoints } from "@/lib/points-admin";
 
 const COUPONS = "coupons";
@@ -547,6 +548,7 @@ export async function updateReturnRequest(
         updatedAt: FieldValue.serverTimestamp(),
       });
       await restoreOrderPoints(request.orderId).catch(() => undefined);
+      await restoreOrderInventory(request.orderId).catch(() => undefined);
     }
   }
 
