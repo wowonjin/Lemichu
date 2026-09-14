@@ -147,16 +147,20 @@ export async function POST(req: Request) {
       );
     }
 
-    const isInvalidRequest = error instanceof Error && error.message === "INVALID_REQUEST";
+    const errorCode = error instanceof Error ? error.message : "CONFIRM_PAYMENT_FAILED";
+    const isInvalidRequest = errorCode === "INVALID_REQUEST";
+    const isInventoryError = errorCode === "INSUFFICIENT_INVENTORY";
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "CONFIRM_PAYMENT_FAILED",
+        error: errorCode,
         message: isInvalidRequest
           ? "결제 승인 요청 정보가 올바르지 않아요."
-          : "결제 승인 중 문제가 발생했어요.",
+          : isInventoryError
+            ? "결제 직후 재고가 부족해 주문을 확정하지 못했어요. 고객센터로 문의해 주세요."
+            : "결제 승인 중 문제가 발생했어요.",
       },
-      { status: isInvalidRequest ? 400 : 500 }
+      { status: isInvalidRequest ? 400 : isInventoryError ? 409 : 500 }
     );
   }
 }

@@ -173,6 +173,14 @@ function CompanyFacts() {
           <dt className="w-[5.25rem] shrink-0 text-muted-foreground/60">사업장 소재지</dt>
           <dd>서울시 상봉로 23길 11, 804호</dd>
         </div>
+        <div className="flex gap-3">
+          <dt className="w-[5.25rem] shrink-0 text-muted-foreground/60">전화번호</dt>
+          <dd>
+            <a href="tel:010-2178-0091" className="transition-colors hover:text-foreground">
+              010-2178-0091
+            </a>
+          </dd>
+        </div>
       </dl>
 
       <div className="hidden space-y-1 text-[11px] leading-6 text-muted-foreground md:block">
@@ -202,6 +210,12 @@ function CompanyFacts() {
         <p>
           <span className="text-muted-foreground/65">사업장 소재지</span>
           <span className="ml-1.5">서울시 상봉로 23길 11, 804호</span>
+        </p>
+        <p>
+          <span className="text-muted-foreground/65">전화번호</span>
+          <a href="tel:010-2178-0091" className="ml-1.5 transition-colors hover:text-foreground">
+            010-2178-0091
+          </a>
         </p>
       </div>
     </>

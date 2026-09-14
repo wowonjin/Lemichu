@@ -1,6 +1,7 @@
 "use client";
 
 import { getFirebaseIdToken } from "@/lib/auth";
+import type { CheckoutDeliveryInput } from "@/lib/bank-transfer-order";
 import type { CheckoutItemInput } from "@/lib/checkout";
 import type { TossCheckoutMethod } from "@/lib/points";
 
@@ -28,8 +29,31 @@ type TossPayment = {
   requestPayment: (request: TossPaymentRequest) => Promise<void>;
 };
 
+type TossPaymentWindow = {
+  on: (
+    event: "paymentRequest",
+    handler: (payload: { paymentMethod?: unknown }) => void | Promise<void>
+  ) => void;
+};
+
+type TossWidgets = {
+  setAmount: (amount: { currency: "KRW"; value: number }) => Promise<void>;
+  renderPaymentWindow: (options: {
+    variantKey: { paymentMethod: string; agreement: string };
+  }) => Promise<TossPaymentWindow>;
+  requestPayment: (request: {
+    orderId: string;
+    orderName: string;
+    successUrl?: string;
+    failUrl?: string;
+    customerEmail?: string;
+    customerName?: string;
+  }) => Promise<void>;
+};
+
 type TossPaymentsInstance = {
   payment: (options: { customerKey: string }) => TossPayment;
+  widgets: (options: { customerKey: string }) => TossWidgets;
 };
 
 type TossPaymentsFactory = (clientKey: string) => TossPaymentsInstance;
@@ -42,6 +66,15 @@ declare global {
 
 const TOSS_SCRIPT_ID = "toss-payments-v2-standard";
 const TOSS_SCRIPT_SRC = "https://js.tosspayments.com/v2/standard";
+
+function isWidgetClientKey(clientKey: string) {
+  const lower = clientKey.toLowerCase();
+  return (
+    lower.includes("_gck_") ||
+    lower.startsWith("test_gck_") ||
+    lower.startsWith("live_gck_")
+  );
+}
 
 function loadTossPaymentsV2(): Promise<TossPaymentsFactory> {
   if (typeof window === "undefined") {
@@ -83,7 +116,7 @@ function loadTossPaymentsV2(): Promise<TossPaymentsFactory> {
 export async function requestTossPayment(
   items: CheckoutItemInput[],
   method: TossCheckoutMethod = "CARD",
-  options?: { usePoints?: boolean }
+  options?: { usePoints?: boolean; delivery?: CheckoutDeliveryInput }
 ) {
   const token = await getFirebaseIdToken();
   if (!token) {
@@ -96,7 +129,12 @@ export async function requestTossPayment(
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ items, method, usePoints: Boolean(options?.usePoints) }),
+    body: JSON.stringify({
+      items,
+      method,
+      usePoints: Boolean(options?.usePoints),
+      delivery: options?.delivery,
+    }),
   });
   const json = await response.json().catch(() => ({}));
 
@@ -109,8 +147,43 @@ export async function requestTossPayment(
     return;
   }
 
+  const clientKey = String(json.paymentClientKey);
   const TossPayments = await loadTossPaymentsV2();
-  const tossPayments = TossPayments(String(json.paymentClientKey));
+  const tossPayments = TossPayments(clientKey);
+  const customerEmail = json.customerEmail;
+  const customerName = json.customerName;
+
+  if (isWidgetClientKey(clientKey)) {
+    const widgets = tossPayments.widgets({ customerKey: String(json.customerKey) });
+    await widgets.setAmount({
+      currency: "KRW",
+      value: Number(json.order.amount),
+    });
+    const paymentWindow = await widgets.renderPaymentWindow({
+      variantKey: {
+        paymentMethod: "DEFAULT",
+        agreement: "AGREEMENT",
+      },
+    });
+    paymentWindow.on("paymentRequest", async () => {
+      try {
+        await widgets.requestPayment({
+          orderId: String(json.order.orderId),
+          orderName: String(json.order.orderName),
+          successUrl: String(json.order.successUrl),
+          failUrl: String(json.order.failUrl),
+          customerEmail,
+          customerName,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "";
+        if (message.includes("취소")) return;
+        throw error;
+      }
+    });
+    return;
+  }
+
   const payment = tossPayments.payment({ customerKey: String(json.customerKey) });
   const checkoutMethod: TossCheckoutMethod = method === "TRANSFER" ? "TRANSFER" : "CARD";
 
@@ -124,8 +197,8 @@ export async function requestTossPayment(
     orderName: String(json.order.orderName),
     successUrl: String(json.order.successUrl),
     failUrl: String(json.order.failUrl),
-    customerEmail: json.customerEmail,
-    customerName: json.customerName,
+    customerEmail,
+    customerName,
     ...(checkoutMethod === "TRANSFER"
       ? {
           transfer: {

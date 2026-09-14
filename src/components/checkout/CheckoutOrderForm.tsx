@@ -37,6 +37,7 @@ import { formatPrice, formatPriceWithUnit } from "@/lib/formatPrice";
 import { submitGuestBankTransferOrder } from "@/lib/guest-order";
 import { fetchMyProfile } from "@/lib/member-account-client";
 import { isRealImage } from "@/lib/placeholder";
+import { requestTossPayment } from "@/lib/toss-checkout";
 
 const EMAIL_DOMAINS = [
   { value: "direct", label: "직접 입력" },
@@ -579,8 +580,8 @@ export function CheckoutOrderForm({ draft }: { draft: CheckoutDraft }) {
         return;
       }
     }
-    if (paymentMethod === "card") {
-      toast("신용카드 결제는 준비 중이에요. 무통장입금을 이용해 주세요.");
+    if (paymentMethod === "card" && !isMemberCheckout) {
+      toast("신용카드 결제는 로그인 후 이용할 수 있어요.");
       return;
     }
     if (!agreeTerms || !agreePrivacy) {
@@ -613,6 +614,14 @@ export function CheckoutOrderForm({ draft }: { draft: CheckoutDraft }) {
 
     setSubmitting(true);
     try {
+      if (paymentMethod === "card") {
+        await requestTossPayment(orderItems, "CARD", {
+          usePoints: draft.usePoints === true,
+          delivery,
+        });
+        return;
+      }
+
       const result = isMemberCheckout
         ? await submitBankTransferOrder({
             items: orderItems,
@@ -635,7 +644,13 @@ export function CheckoutOrderForm({ draft }: { draft: CheckoutDraft }) {
       setCreatedOrder(result);
       clearCheckoutDraft();
     } catch (error) {
-      toast(error instanceof Error ? error.message : "주문을 접수하지 못했어요.");
+      toast(
+        error instanceof Error
+          ? error.message
+          : paymentMethod === "card"
+            ? "결제를 시작하지 못했어요."
+            : "주문을 접수하지 못했어요."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -962,21 +977,21 @@ export function CheckoutOrderForm({ draft }: { draft: CheckoutDraft }) {
                 </div>
               ) : null}
 
-              <div className="flex cursor-not-allowed items-center gap-2.5 py-1 opacity-50">
+              <label className="flex cursor-pointer items-center gap-2.5 py-1">
                 <input
                   type="radio"
                   name="payment-method"
-                  checked={false}
-                  disabled
+                  checked={paymentMethod === "card"}
+                  onChange={() => setPaymentMethod("card")}
                   className="size-4 accent-[#3182F6]"
                 />
-                <span className="text-[15px] font-semibold text-[#8B95A1]">
+                <span className="text-[15px] font-semibold text-[#191F28]">
                   신용카드
                 </span>
                 <span className="rounded-full bg-[#F2F4F6] px-2 py-0.5 text-[11px] font-semibold text-[#8B95A1]">
-                  준비중
+                  토스페이먼츠
                 </span>
-              </div>
+              </label>
             </div>
           </CheckoutCollapsibleSection>
 

@@ -71,10 +71,25 @@ function toPaidAt(value?: Date | Timestamp) {
 }
 
 function toPaymentMethodCode(order: CompletionOrder, method: string): PaymentMethod {
-  if (order.paymentMethod) return order.paymentMethod;
   if (order.payment?.provider === "bank-transfer") return "BANK_TRANSFER";
-  if (order.payment?.provider === "points") return "POINTS";
-  return method.toUpperCase().includes("TRANSFER") ? "TOSS_TRANSFER" : "TOSS_CARD";
+  if (order.payment?.provider === "points" || order.paymentMethod === "POINTS") {
+    return "POINTS";
+  }
+
+  const normalized = method.toUpperCase();
+  if (
+    normalized.includes("TRANSFER") ||
+    method.includes("계좌이체") ||
+    method.includes("퀵계좌")
+  ) {
+    return "TOSS_TRANSFER";
+  }
+  if (normalized.includes("CARD") || method.includes("카드")) {
+    return "TOSS_CARD";
+  }
+
+  if (order.paymentMethod) return order.paymentMethod;
+  return "TOSS_CARD";
 }
 
 function isAlreadyPaid(order: CompletionOrder) {

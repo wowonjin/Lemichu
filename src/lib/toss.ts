@@ -10,6 +10,15 @@ export function generateTossOrderId(): string {
   return `TP-${year}${month}${day}-${random}`;
 }
 
+export function isTossWidgetClientKey(clientKey: string): boolean {
+  const lower = clientKey.toLowerCase();
+  return (
+    lower.includes("_gck_") ||
+    lower.startsWith("test_gck_") ||
+    lower.startsWith("live_gck_")
+  );
+}
+
 export function getTossPaymentClientKey(): string {
   const value = (process.env.TOSS_PAYMENT_CLIENT_KEY || process.env.TOSS_CLIENT_KEY || "").trim();
   if (!value) {
@@ -19,10 +28,6 @@ export function getTossPaymentClientKey(): string {
   const lower = value.toLowerCase();
   if (lower.startsWith("test_sk_") || lower.startsWith("live_sk_")) {
     throw new Error("TOSS_PAYMENT_CLIENT_KEY_IS_SECRET_KEY");
-  }
-
-  if (lower.includes("_gck_") || lower.startsWith("test_gck_") || lower.startsWith("live_gck_")) {
-    throw new Error("TOSS_PAYMENT_CLIENT_KEY_IS_WIDGET_KEY");
   }
 
   return value;

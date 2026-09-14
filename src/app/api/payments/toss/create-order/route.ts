@@ -12,6 +12,7 @@ import {
 import { FirebaseAuthError, getAdminDb, requireFirebaseUser } from "@/lib/firebase-admin";
 import { calculatePurchasePoints, toSafePoints, type TossCheckoutMethod } from "@/lib/points";
 import { completePayment } from "@/lib/payment-completion";
+import { parseCheckoutDelivery } from "@/lib/bank-transfer-order-server";
 import { generateTossOrderId, getTossPaymentClientKey } from "@/lib/toss";
 
 function toCheckoutMethod(value: unknown): TossCheckoutMethod {
@@ -58,8 +59,8 @@ function getErrorMessage(error: unknown) {
   if (code === "INSUFFICIENT_VARIANT_STOCK") return "선택한 옵션의 재고가 부족합니다.";
   if (code === "TOSS_PAYMENT_CLIENT_KEY_NOT_SET") return "토스페이먼츠 클라이언트 키 설정이 필요합니다.";
   if (code === "TOSS_PAYMENT_CLIENT_KEY_IS_SECRET_KEY") return "토스페이먼츠 클라이언트 키에 시크릿 키가 입력되어 있어요.";
-  if (code === "TOSS_PAYMENT_CLIENT_KEY_IS_WIDGET_KEY") return "토스 단건 결제에는 API 개별 연동 클라이언트 키가 필요합니다.";
   if (code === "INVALID_AMOUNT") return "결제 금액을 확인해주세요.";
+  if (code === "INVALID_DELIVERY") return "배송 정보를 확인해주세요.";
   return "결제 주문을 생성하지 못했어요.";
 }
 
@@ -73,6 +74,15 @@ export async function POST(req: Request) {
     );
     const usePoints =
       Boolean(body && typeof body === "object" && (body as { usePoints?: unknown }).usePoints);
+    const deliveryInput =
+      body && typeof body === "object" ? (body as { delivery?: unknown }).delivery : undefined;
+    const delivery = deliveryInput ? parseCheckoutDelivery(deliveryInput) : undefined;
+    if (delivery && "error" in delivery) {
+      return NextResponse.json(
+        { ok: false, error: "INVALID_DELIVERY", message: delivery.error },
+        { status: 400 }
+      );
+    }
 
     const db = getAdminDb();
     const userRef = db.collection("users").doc(user.uid);
@@ -127,6 +137,7 @@ export async function POST(req: Request) {
         amounts: latestAmounts,
         source: "web-toss",
         orderNo: orderId,
+        ...(delivery && !("error" in delivery) ? { delivery } : {}),
         payment: {
           provider: latestPaidInFull ? "points" : "toss",
           orderId,
@@ -228,6 +239,7 @@ export async function POST(req: Request) {
       [
         "INVALID_REQUEST",
         "INVALID_AMOUNT",
+        "INVALID_DELIVERY",
         "EMPTY_CHECKOUT_ITEMS",
         "VARIANT_REQUIRED",
         "VARIANT_NOT_FOUND",
