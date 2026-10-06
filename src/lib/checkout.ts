@@ -107,6 +107,13 @@ export function resolveCheckoutItems(
       throw new Error("PRODUCT_NOT_FOUND");
     }
 
+    if (
+      product.availability === "sold" ||
+      product.availability === "temporarily_unavailable"
+    ) {
+      throw new Error("VARIANT_SOLD_OUT");
+    }
+
     const variantId = typeof item.variantId === "string" ? item.variantId.trim() : "";
     const variant = product.variants?.length
       ? product.variants.find((candidate) => candidate.id === variantId)

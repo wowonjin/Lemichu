@@ -240,7 +240,7 @@ export const DEFAULT_HEADER_BANNER: HeaderBannerSettings = {
     {
       id: "guarantee",
       badge: "보장",
-      text: "가품 판정 시 결제금액 200% 보상",
+      text: "가품 판정 시 결제금액 100% 보상",
       href: "/notices/guarantee",
       enabled: true,
       theme: "navy",

@@ -24,6 +24,7 @@ import {
   isVariantAvailable,
 } from "@/lib/product-variants";
 import { resolvePurchasePoints, type TossCheckoutMethod } from "@/lib/points";
+import { isSoldProduct } from "@/components/product/SoldOutOverlay";
 import type { Product, ProductVariant } from "@/types/product";
 
 type ProductVariantPurchaseValue = {
@@ -73,9 +74,11 @@ export function ProductVariantPurchaseProvider({
     method: paymentMethod,
   });
   const requiresVariantSelection = Boolean(product.variants?.length);
-  const canPurchase = requiresVariantSelection
-    ? Boolean(selectedVariant && isVariantAvailable(selectedVariant))
-    : product.availability === "available";
+  const canPurchase = isSoldProduct(product)
+    ? false
+    : requiresVariantSelection
+      ? Boolean(selectedVariant && isVariantAvailable(selectedVariant))
+      : product.availability === "available";
 
   return (
     <ProductVariantPurchaseContext.Provider

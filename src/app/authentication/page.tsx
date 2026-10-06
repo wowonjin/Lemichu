@@ -17,8 +17,8 @@ const highlights = [
   },
   {
     icon: ShieldAlert,
-    title: "가품 시 200% 보상",
-    description: "가품으로 판정될 경우 결제 금액의 200%를 보상해드립니다.",
+    title: "가품 시 100% 보상",
+    description: "가품으로 판정될 경우 결제 금액의 100%를 보상해드립니다.",
   },
   {
     icon: Truck,

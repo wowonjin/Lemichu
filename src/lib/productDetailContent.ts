@@ -37,6 +37,7 @@ const LABEL_ALIASES: Record<string, string> = {
   원산지: "원산지",
   브랜드: "브랜드",
   카테고리: "카테고리",
+  관부가세: "관부가세",
   상태: "상태",
   관리법: "관리",
   구성품: "구성",
@@ -78,7 +79,7 @@ const SUB_FIELD_LABELS = new Set([
 const FEATURE_SECTIONS = new Set(["상세 정보", "상세 사양", "구성 및 사양", "사양"]);
 const OPEN_SPEC_LABELS = new Set(["사이즈", "소재"]);
 const IGNORED_SECTIONS = new Set(["옵션 상세", "상세 설명", "참고"]);
-const HIDDEN_SPEC_LABELS = new Set(["상품명", "카테고리", "상품번호"]);
+const HIDDEN_SPEC_LABELS = new Set(["상품명", "카테고리", "상품번호", "관부가세"]);
 const PLACEHOLDER_VALUES = new Set([
   "f",
   "free",
@@ -137,7 +138,6 @@ const SPEC_ORDER = [
   "상품 구분",
   "상태 등급",
   "배송",
-  "관부가세",
 ];
 
 const DIMENSION_LABELS = /^(머리둘레|챙 길이|챙길이|너비|높이|폭|기장|핸들 길이|핸들 높이)$/;
@@ -290,7 +290,6 @@ export function getProductDetailSpecRows(
     { label: "색상", value: product.color ?? "상세 옵션 확인" },
     { label: "사이즈", value: product.size ?? "단일 사이즈" },
     { label: "배송", value: product.deliveryBadge },
-    { label: "관부가세", value: "상품가 포함" },
   ];
 
   for (const row of fallbacks) {

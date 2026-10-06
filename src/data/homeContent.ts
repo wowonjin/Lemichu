@@ -4,7 +4,7 @@ export const homeBenefitItems = [
   { id: "auth", title: "정품 검수", description: "출고 전 전문 검수" },
   { id: "duty", title: "관부가세 포함", description: "추가 비용 없음" },
   { id: "delivery", title: "배송 예정일 안내", description: "주문 전 일정 확인" },
-  { id: "guarantee", title: "가품 200% 보상", description: "공인 판정 시 지급" },
+  { id: "guarantee", title: "가품 100% 보상", description: "공인 판정 시 지급" },
 ] as const;
 
 export type AudiencePickId = "first-luxury" | "office" | "gift" | "classic";
@@ -211,7 +211,7 @@ export const homeFaqItems = [
   },
   {
     q: "가품으로 판정되면 어떻게 되나요?",
-    a: "공인된 감정 기관을 통해 가품으로 판정될 경우 결제 금액의 200%를 보상합니다. 보상은 가품 판정 리포트 확인 후 영업일 기준 3일 이내에 처리됩니다.",
+    a: "공인된 감정 기관을 통해 가품으로 판정될 경우 결제 금액의 100%를 보상합니다. 보상은 가품 판정 리포트 확인 후 영업일 기준 3일 이내에 처리됩니다.",
   },
   {
     q: "교환·반품은 언제 가능한가요?",

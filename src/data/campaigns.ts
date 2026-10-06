@@ -54,7 +54,7 @@ export type TrustItem = {
 
 export const trustItems: TrustItem[] = [
   { id: "auth", title: "정품 검수", description: "전문 검수팀 1:1 확인", icon: ShieldCheck },
-  { id: "guarantee", title: "가품 보상", description: "가품 판정 시 200% 보상", icon: ShieldAlert },
+  { id: "guarantee", title: "가품 보상", description: "가품 판정 시 결제금액 100% 보상", icon: ShieldAlert },
   { id: "delivery", title: "빠른 배송", description: "오늘출고 당일 발송", icon: Truck },
   { id: "care", title: "프리미엄 케어", description: "클리닝·복원 케어 연계", icon: Gem },
   { id: "payment", title: "안전 결제", description: "에스크로 안심 결제", icon: CreditCard },
@@ -187,7 +187,7 @@ export const authSteps: AuthStep[] = [
   { id: "grade", title: "상품 상태 등급화", description: "외관·사용감을 기준으로 S/A/B 등급을 투명하게 부여합니다.", icon: BadgeCheck },
   { id: "serial", title: "시리얼 / 구성품 확인", description: "시리얼 넘버와 정품 구성품을 대조해 진위를 검증합니다.", icon: Boxes },
   { id: "report", title: "검수 리포트 제공", description: "검수 항목과 결과를 리포트로 투명하게 공개합니다.", icon: FileCheck2 },
-  { id: "policy", title: "보상 정책 안내", description: "가품 판정 시 200% 보상으로 안심하고 구매하세요.", icon: ShieldCheck },
+  { id: "policy", title: "보상 정책 안내", description: "가품 판정 시 결제금액 100% 보상으로 안심하고 구매하세요.", icon: ShieldCheck },
 ];
 
 /* -------------------------------------------------------------------------- */

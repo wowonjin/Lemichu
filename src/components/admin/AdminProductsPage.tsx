@@ -61,7 +61,6 @@ const emptyForm: FormState = {
   detailContent: "",
 };
 
-const maxOptionalImages = 8;
 const productDraftStorageKey = "lemichu-admin-product-draft";
 const conditionGradeOptions: Array<{ value: ConditionGrade; label: string }> = [
   { value: "NEW", label: "NEW · 새상품" },
@@ -370,9 +369,7 @@ export function AdminProductCreatePage() {
   }
 
   function handleOptionalImagesAdded(files: File[]) {
-    setOptionalImageFiles((current) =>
-      [...current, ...files].slice(0, maxOptionalImages)
-    );
+    setOptionalImageFiles((current) => [...current, ...files]);
   }
 
   function handleOptionalImageRemove(index: number) {
@@ -550,16 +547,15 @@ export function AdminProductCreatePage() {
               emptyHint="목록용 썸네일과 상세용 이미지를 자동 생성합니다. (JPEG, PNG, WebP, AVIF)"
             />
           </Field>
-          <Field label={`추가 이미지 (최대 ${maxOptionalImages}장)`}>
+          <Field label="추가 이미지">
             <ImageDropzone
               files={optionalImageFiles}
               onFilesAdded={handleOptionalImagesAdded}
               onFileRemove={handleOptionalImageRemove}
-              disabled={isSubmitting || optionalImageFiles.length >= maxOptionalImages}
+              disabled={isSubmitting}
               multiple
-              maxFiles={maxOptionalImages}
               emptyTitle="추가 이미지를 끌어다 놓거나 클릭해서 선택하세요"
-              emptyHint="상세 갤러리에 사용할 이미지를 여러 장 넣을 수 있습니다."
+              emptyHint="상세 갤러리에 사용할 이미지를 원하는 만큼 넣을 수 있습니다."
             />
           </Field>
         </section>
@@ -885,22 +881,19 @@ export function AdminProductEditPage({ productId }: { productId: string }) {
               emptyHint="선택하지 않으면 현재 대표 이미지를 유지합니다."
             />
           </Field>
-          <Field label={`추가 이미지 교체 (선택 · 최대 ${maxOptionalImages}장)`}>
+          <Field label="추가 이미지 교체 (선택)">
             <ImageDropzone
               files={optionalImageFiles}
               onFilesAdded={(files) =>
-                setOptionalImageFiles((current) =>
-                  [...current, ...files].slice(0, maxOptionalImages)
-                )
+                setOptionalImageFiles((current) => [...current, ...files])
               }
               onFileRemove={(index) =>
                 setOptionalImageFiles((current) => current.filter((_, i) => i !== index))
               }
-              disabled={isSubmitting || optionalImageFiles.length >= maxOptionalImages}
+              disabled={isSubmitting}
               multiple
-              maxFiles={maxOptionalImages}
               emptyTitle="교체할 추가 이미지를 선택하세요"
-              emptyHint="선택하면 기존 추가 이미지 전체를 교체합니다."
+              emptyHint="선택하면 기존 추가 이미지 전체를 교체합니다. 장수 제한은 없습니다."
             />
           </Field>
         </section>
@@ -1178,9 +1171,9 @@ function ImageDropzone({
           </span>
           <p className="mt-3 text-sm font-semibold text-foreground">{emptyTitle}</p>
           <p className="mt-1 text-xs text-muted-foreground">{emptyHint}</p>
-          {maxFiles ? (
+          {files.length > 0 ? (
             <p className="mt-1 text-xs font-medium text-muted-foreground">
-              {files.length}/{maxFiles}장 선택됨
+              {maxFiles ? `${files.length}/${maxFiles}장 선택됨` : `${files.length}장 선택됨`}
             </p>
           ) : null}
         </div>

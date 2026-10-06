@@ -169,7 +169,7 @@ function detailHtml(product, mapped) {
     ...intro,
     specs ? `<h3>옵션 상세</h3><ul>${specs}</ul>` : "",
     ...cleaned,
-    "<p>가품 판정 시 결제금액 200%를 보상합니다. 상품 옵션과 구성품은 구매 전 문의할 수 있습니다.</p>",
+    "<p>가품 판정 시 결제금액 100%를 보상합니다. 상품 옵션과 구성품은 구매 전 문의할 수 있습니다.</p>",
   ]
     .filter(Boolean)
     .join("");

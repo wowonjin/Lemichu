@@ -11,6 +11,7 @@ import {
   type AuthUser,
 } from "@/lib/auth";
 import { cn } from "@/lib/cn";
+import { isSoldProduct } from "@/components/product/SoldOutOverlay";
 import type { Product } from "@/types/product";
 
 type FormState = {
@@ -41,6 +42,8 @@ export function ProductAdminEditor({ product }: { product: Product }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(() => toFormState(product));
   const [saving, setSaving] = useState(false);
+  const [soldSaving, setSoldSaving] = useState(false);
+  const [soldOverride, setSoldOverride] = useState<boolean | null>(null);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
 
@@ -50,7 +53,45 @@ export function ProductAdminEditor({ product }: { product: Product }) {
     setForm(toFormState(product));
   }, [product]);
 
+  useEffect(() => {
+    if (soldOverride !== null && isSoldProduct(product) === soldOverride) {
+      setSoldOverride(null);
+    }
+  }, [product, soldOverride]);
+
   if (!isAdminUser(authUser)) return null;
+
+  const sold = soldOverride ?? isSoldProduct(product);
+
+  const setSoldOut = async (nextSoldOut: boolean) => {
+    setError("");
+    setSoldSaving(true);
+    try {
+      const token = await getFirebaseIdToken();
+      const response = await fetch(`/api/admin/products/${product.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(authUser?.email ? { "x-admin-email": authUser.email } : {}),
+        },
+        body: JSON.stringify({ soldOut: nextSoldOut }),
+      });
+
+      const result = (await response.json()) as { ok?: boolean; message?: string };
+      if (!response.ok || !result.ok) {
+        throw new Error(result.message ?? "품절 처리에 실패했어요.");
+      }
+
+      setSoldOverride(nextSoldOut);
+      setSaved(false);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "품절 처리 중 오류가 발생했어요.");
+    } finally {
+      setSoldSaving(false);
+    }
+  };
 
   const update = (field: keyof FormState) =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -165,6 +206,38 @@ export function ProductAdminEditor({ product }: { product: Product }) {
               </div>
 
               <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+                <div className="flex items-center justify-between gap-3 rounded-md border border-[#EBEBEB] px-3.5 py-3 dark:border-border">
+                  <div>
+                    <p className="text-xs font-semibold text-[#8B8B8B] dark:text-muted-foreground">
+                      판매 상태
+                    </p>
+                    <p className="mt-0.5 text-sm font-semibold text-foreground">
+                      {sold ? "품절" : "판매중"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void setSoldOut(!sold)}
+                    disabled={soldSaving || saving}
+                    className={cn(
+                      "inline-flex h-10 shrink-0 items-center justify-center rounded-md px-4 text-[13px] font-semibold transition-colors disabled:opacity-60",
+                      sold
+                        ? "bg-[#F7F7F7] text-foreground hover:bg-[#F0F0F0] dark:bg-muted dark:hover:bg-secondary"
+                        : "bg-foreground text-background hover:bg-foreground/90"
+                    )}
+                  >
+                    {soldSaving ? (
+                      <>
+                        <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                        처리 중...
+                      </>
+                    ) : sold ? (
+                      "판매 재개"
+                    ) : (
+                      "품절 처리"
+                    )}
+                  </button>
+                </div>
                 <Field label="브랜드">
                   <input
                     value={form.brand}
@@ -234,7 +307,7 @@ export function ProductAdminEditor({ product }: { product: Product }) {
                   <button
                     type="button"
                     onClick={save}
-                    disabled={saving}
+                    disabled={saving || soldSaving}
                     className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-md bg-foreground text-[14px] font-semibold text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
                   >
                     {saving ? (

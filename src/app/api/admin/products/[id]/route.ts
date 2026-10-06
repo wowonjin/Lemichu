@@ -4,6 +4,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { verifyAdminRequest } from "@/lib/admin-auth";
 import { getAdminDb } from "@/lib/firebase-admin";
 import type { ProductImageAsset } from "@/lib/product-images";
+import { buildSoldOutUpdate } from "@/lib/product-sold-out";
 import { isConditionGrade, type ConditionGrade } from "@/types/product";
 
 export const runtime = "nodejs";
@@ -21,6 +22,7 @@ type UpdatePayload = {
   isPreOwned?: boolean;
   condition?: ConditionGrade | null;
   todayShip?: boolean;
+  soldOut?: boolean;
   representativeImageUrl?: string;
   optionalImageUrls?: string[];
   representativeImage?: ProductImageAsset;
@@ -152,7 +154,15 @@ export async function PATCH(
     updates.optionalImageUrls = payload.optionalImageUrls;
   }
 
-  if (Object.keys(updates).length === 0) {
+  const hasSoldOut = typeof payload.soldOut === "boolean";
+  if (payload.soldOut !== undefined && !hasSoldOut) {
+    return NextResponse.json(
+      { ok: false, message: "품절 처리 값이 올바르지 않습니다." },
+      { status: 400 }
+    );
+  }
+
+  if (Object.keys(updates).length === 0 && !hasSoldOut) {
     return NextResponse.json(
       { ok: false, message: "수정할 항목이 없습니다." },
       { status: 400 }
@@ -168,6 +178,10 @@ export async function PATCH(
         { ok: false, message: "상품을 찾을 수 없습니다." },
         { status: 404 }
       );
+    }
+
+    if (hasSoldOut) {
+      Object.assign(updates, buildSoldOutUpdate(snapshot.data() ?? {}, payload.soldOut === true));
     }
 
     await docRef.update({
